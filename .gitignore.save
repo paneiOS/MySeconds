@@ -1,9 +1,16 @@
-### macOS ###
+B### macOS ###
+# General
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Icon must end with two
 Icon
+
+# Thumbnails
 ._*
+
+# Files that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd
 .Spotlight-V100
@@ -11,18 +18,27 @@ Icon
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
 .AppleDB
 .AppleDesktop
 Network Trash Folder
 Temporary Items
 .apdisk
 
-
 ### Xcode ###
-# Xcode specific files to ignore
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User settings
 xcuserdata/
+
+## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
 *.xcscmblueprint
 *.xccheckout
+
+## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
 build/
 DerivedData/
 *.moved-aside
@@ -34,29 +50,22 @@ DerivedData/
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
+
+### Xcode Patch ###
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 !*.xcodeproj/xcshareddata/
-!*.xcodeproj/project.xcworkspace/
 !*.xcworkspace/contents.xcworkspacedata
 /*.gcno
-**/xcshareddata/WorkspaceSettings.xcsettings
-
-
-### Tuist ###
-# Tuist specific files to ignore
-graph.dot
-Derived/
-Tuist/.build
-
 
 ### Projects ###
-# Xcode projects and workspaces
 *.xcodeproj
 *.xcworkspace
 
+### Tuist derived files ###
+graph.dot
+Derived/
 
-### Swift Package Manager ###
-Packages/
-Package.pins
-Package.resolved
+### Tuist managed dependencies ###
+Tuist/.build
+
