@@ -1,0 +1,15 @@
+{
+  "originHash" : "694cf932c37a0f60fd4558936f2dcf11054d8a3813919d12c2039b1b290dc925",
+  "pins" : [
+    {
+      "identity" : "modernribs",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/DevYeom/ModernRIBs.git",
+      "state" : {
+        "revision" : "8884514a2b98e98dd381f941054a5cbb275eaaf2",
+        "version" : "1.0.2"
+      }
+    }
+  ],
+  "version" : 3
+}

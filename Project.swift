@@ -2,23 +2,21 @@ import ProjectDescription
 
 let project = Project(
     name: "MySeconds",
+    packages: [
+        .package(url: "https://github.com/DevYeom/ModernRIBs.git", from: "1.0.0")
+    ],
     targets: [
         .target(
             name: "MySeconds",
             destinations: .iOS,
             product: .app,
             bundleId: "io.tuist.MySeconds",
-            infoPlist: .extendingDefault(
-                with: [
-                    "UILaunchScreen": [
-                        "UIColorName": "",
-                        "UIImageName": "",
-                    ],
-                ]
-            ),
+            infoPlist: .default,
             sources: ["MySeconds/Sources/**"],
             resources: ["MySeconds/Resources/**"],
-            dependencies: []
+            dependencies: [
+                .package(product: "ModernRIBs", type: .runtime)
+            ]
         ),
         .target(
             name: "MySecondsTests",
