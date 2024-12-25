@@ -11,7 +11,14 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "io.tuist.MySeconds",
-            infoPlist: .default,
+            infoPlist: .extendingDefault(
+                with: [
+                    "UIApplicationSceneManifest": [
+                        "UIApplicationSupportsMultipleScenes": false
+                    ],
+                    "UIApplicationMainStoryboardFile": "",
+                ]
+            ),
             sources: ["MySeconds/Sources/**"],
             resources: ["MySeconds/Resources/**"],
             dependencies: [
