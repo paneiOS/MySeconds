@@ -3,7 +3,7 @@ import ProjectDescription
 let project = Project(
     name: "MySeconds",
     packages: [
-        .package(url: "https://github.com/DevYeom/ModernRIBs.git", from: "1.0.0")
+        .package(url: "https://github.com/DevYeom/ModernRIBs.git", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -14,9 +14,9 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UIApplicationSceneManifest": [
-                        "UIApplicationSupportsMultipleScenes": false
+                        "UIApplicationSupportsMultipleScenes": false,
                     ],
-                    "UIApplicationMainStoryboardFile": ""
+                    "UIApplicationMainStoryboardFile": "",
                 ]
             ),
             sources: ["MySeconds/Sources/**"],
@@ -28,14 +28,18 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 ),
                 .pre(
-                    script: "swiftformat .",
+                    script: """
+                    export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+                    swiftformat .
+                    """,
                     name: "SwiftFormat",
                     basedOnDependencyAnalysis: false
-                )
+                ),
             ],
             dependencies: [
-                .package(product: "ModernRIBs", type: .runtime)
-            ]
+                .package(product: "ModernRIBs", type: .runtime),
+            ],
+            settings: .settings(base: ["SWIFT_VERSION": "6.0"])
         ),
         .target(
             name: "MySecondsTests",
@@ -45,7 +49,8 @@ let project = Project(
             infoPlist: .default,
             sources: ["MySeconds/Tests/**"],
             resources: [],
-            dependencies: [.target(name: "MySeconds")]
-        )
+            dependencies: [.target(name: "MySeconds")],
+            settings: .settings(base: ["SWIFT_VERSION": "6.0"])
+        ),
     ]
 )

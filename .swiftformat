@@ -1,11 +1,29 @@
---swiftversion 5.7               # Swift 버전 설정
---indent 4                       # 들여쓰기: 4칸 (스페이스 사용)
---allman false                   # K&R 스타일의 중괄호 사용
---linebreaks lf                  # 줄바꿈 형식: LF (Unix 스타일)
---self remove                    # 필요 없는 self 키워드 제거
---semicolons inline              # 세미콜론 제거
---disable blankLinesAtStartOfScope # 블록 시작 시 빈 줄 금지
---enable trailingCommas          # 컬렉션 마지막에 쉼표 추가
---stripunusedargs unnamed        # 사용되지 않는 클로저 매개변수 제거
---wraparguments beforefirst      # 함수 인자를 첫 번째 인자 전에 줄바꿈
---wrapcollections beforefirst    # 컬렉션 요소를 첫 번째 요소 전에 줄바꿈
+# Swift 버전 설정
+--swiftversion 6
+
+# 들여쓰기: 4칸 (스페이스 사용)
+--indent 4
+
+# K&R 스타일의 중괄호 사용
+--allman false
+
+# 줄바꿈 형식: LF (Unix 스타일)
+--linebreaks lf
+
+# 필요 없는 self 키워드 제거
+--self remove
+
+# 세미콜론 제거
+--semicolons inline
+
+# 블록 시작 시 빈 줄 금지
+--disable blankLinesAtStartOfScope
+
+# 컬렉션 마지막에 쉼표 추가
+--enable trailingCommas
+
+# 함수 인자를 첫 번째 인자 전에 줄바꿈
+--wraparguments beforefirst
+
+# 컬렉션 요소를 첫 번째 요소 전에 줄바꿈
+--wrapcollections beforefirst
