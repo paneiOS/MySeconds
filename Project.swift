@@ -16,11 +16,18 @@ let project = Project(
                     "UIApplicationSceneManifest": [
                         "UIApplicationSupportsMultipleScenes": false
                     ],
-                    "UIApplicationMainStoryboardFile": "",
+                    "UIApplicationMainStoryboardFile": ""
                 ]
             ),
             sources: ["MySeconds/Sources/**"],
             resources: ["MySeconds/Resources/**"],
+            scripts: [
+                .pre(
+                    script: "swiftlint",
+                    name: "SwiftLint",
+                    basedOnDependencyAnalysis: false
+                )
+            ],
             dependencies: [
                 .package(product: "ModernRIBs", type: .runtime)
             ]
@@ -34,6 +41,6 @@ let project = Project(
             sources: ["MySeconds/Tests/**"],
             resources: [],
             dependencies: [.target(name: "MySeconds")]
-        ),
+        )
     ]
 )

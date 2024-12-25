@@ -1,0 +1,25 @@
+line_length:
+  warning: 150  # 경고를 발생시킬 최대 길이
+  error: 200    # 오류를 발생시킬 최대 길이
+  ignores_function_declarations: true  # 함수 선언은 무시
+  ignores_comments: true               # 주석은 무시
+  ignores_urls: true                   # URL은 무시
+
+nesting:
+  type_level: 3 # 기본값은 1
+
+function_body_length:
+  warning: 100
+  error: 150
+
+file_length:
+  warning: 500
+  error: 800 # 필요하다면 error 경계도 조정할 수 있습니다.
+
+type_body_length:
+  warning: 300
+  error: 400 # 필요에 따라 에러 경계도 조정할 수 있습니다.
+
+disabled_rules:
+#  - line_length
+
