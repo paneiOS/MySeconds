@@ -26,6 +26,11 @@ let project = Project(
                     script: "swiftlint",
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
+                ),
+                .pre(
+                    script: "swiftformat .",
+                    name: "SwiftFormat",
+                    basedOnDependencyAnalysis: false
                 )
             ],
             dependencies: [
