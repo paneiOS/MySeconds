@@ -10,7 +10,7 @@ let project = Project(
             name: "MySeconds",
             destinations: .iOS,
             product: .app,
-            bundleId: "io.tuist.MySeconds",
+            bundleId: "com.panestudio.myseconds",
             infoPlist: .extendingDefault(
                 with: [
                     "UIApplicationSceneManifest": [
@@ -39,18 +39,32 @@ let project = Project(
             dependencies: [
                 .package(product: "ModernRIBs", type: .runtime),
             ],
-            settings: .settings(base: ["SWIFT_VERSION": "6.0"])
+            settings: .settings(
+                base: [
+                    "SWIFT_VERSION": "6.0",
+                    "CODE_SIGN_IDENTITY": "Apple Development",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds",
+                ]
+            )
         ),
         .target(
             name: "MySecondsTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "io.tuist.MySecondsTests",
+            bundleId: "com.panestudio.myseconds",
             infoPlist: .default,
             sources: ["MySeconds/Tests/**"],
             resources: [],
             dependencies: [.target(name: "MySeconds")],
-            settings: .settings(base: ["SWIFT_VERSION": "6.0"])
+            settings: .settings(
+                base: [
+                    "SWIFT_VERSION": "6.0",
+                    "CODE_SIGN_IDENTITY": "Apple Development",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds",
+                ]
+            )
         ),
     ]
 )
