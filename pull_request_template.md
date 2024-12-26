@@ -1,6 +1,6 @@
-## #️⃣ Jira Ticket Number
+## 🔗 Jira Ticket Link
 
-<!--- ex) #지라티켓번호 -->
+<!--- ex) 지라티켓 Link -->
 
 ## 📝 요약(Summary)
 
