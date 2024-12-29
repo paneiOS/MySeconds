@@ -4,6 +4,7 @@ let project = Project(
     name: "MySeconds",
     packages: [
         .package(url: "https://github.com/DevYeom/ModernRIBs.git", from: "1.0.0"),
+        .package(url: "https://github.com/SnapKit/SnapKit.git", from: "5.0.0")
     ],
     targets: [
         .target(
@@ -16,7 +17,7 @@ let project = Project(
                     "UIApplicationSceneManifest": [
                         "UIApplicationSupportsMultipleScenes": false,
                     ],
-                    "UIApplicationMainStoryboardFile": "",
+                    "UIApplicationMainStoryboardFile": ""
                 ]
             ),
             sources: ["MySeconds/Sources/**"],
@@ -34,17 +35,18 @@ let project = Project(
                     """,
                     name: "SwiftFormat",
                     basedOnDependencyAnalysis: false
-                ),
+                )
             ],
             dependencies: [
                 .package(product: "ModernRIBs", type: .runtime),
+                .package(product: "SnapKit", type: .runtime)
             ],
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
                     "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
-                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
         ),
@@ -62,7 +64,7 @@ let project = Project(
                     "SWIFT_VERSION": "6.0",
                     "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
-                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
         ),
