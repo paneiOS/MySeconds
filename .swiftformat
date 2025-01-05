@@ -19,11 +19,11 @@
 # 블록 시작 시 빈 줄 금지
 --disable blankLinesAtStartOfScope
 
-# 컬렉션 마지막에 쉼표 추가
---enable trailingCommas
-
 # 함수 인자를 첫 번째 인자 전에 줄바꿈
 --wraparguments beforefirst
 
 # 컬렉션 요소를 첫 번째 요소 전에 줄바꿈
 --wrapcollections beforefirst
+
+# trailing comma 제거
+--commas inline
