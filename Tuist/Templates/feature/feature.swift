@@ -16,11 +16,11 @@ let template = Template(
     ],
     items: [
         .file(
-            path: "\(nameAttribute)/Project.swift",
+            path: "Modules/\(nameAttribute)/Project.swift",
             templatePath: "Project.stencil"
         ),
         .file(
-            path: "\(nameAttribute)/Sources/\(nameAttribute).swift",
+            path: "Modules/\(nameAttribute)/Sources/\(nameAttribute).swift",
             templatePath: "Feature.stencil"
         )
     ]
