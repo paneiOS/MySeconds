@@ -1,0 +1,17 @@
+import ProjectDescription
+
+let project = Project(
+    name: "{{ name }}",
+    targets: [
+        .target(
+            name: "{{ name }}",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.panestudio.{{ name | lowercase }}",
+            infoPlist: .default,
+            sources: ["Sources/**"],
+            resources: ["Resources/**"],
+            dependencies: []
+        )
+    ]
+)
