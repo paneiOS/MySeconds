@@ -10,7 +10,7 @@ let project = Project(
             bundleId: "com.panestudio.resourcekit",
             infoPlist: .default,
             sources: ["Sources/**"],
-            resources: [],
+            resources: ["Resources/**"],
             dependencies: []
         )
     ]

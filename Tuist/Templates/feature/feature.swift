@@ -1,5 +1,5 @@
 //
-//  Feature.swift
+//  feature.swift
 //  Templates
 //
 //  Created by 이정환 on 1/3/25.
@@ -11,9 +11,7 @@ let nameAttribute: Template.Attribute = .required("name")
 
 let template = Template(
     description: "Creates a new feature module",
-    attributes: [
-        nameAttribute
-    ],
+    attributes: [nameAttribute],
     items: [
         .file(
             path: "Modules/\(nameAttribute)/Project.swift",

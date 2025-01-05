@@ -15,7 +15,7 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UIApplicationSceneManifest": [
-                        "UIApplicationSupportsMultipleScenes": false,
+                        "UIApplicationSupportsMultipleScenes": false
                     ],
                     "UIApplicationMainStoryboardFile": ""
                 ]
@@ -68,6 +68,6 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
-        ),
+        )
     ]
 )
