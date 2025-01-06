@@ -1,0 +1,33 @@
+//
+//  {{ name }}Builder.swift
+//  MySeconds
+//
+//  Created by {{ userName }} on {{ date }}.
+//
+
+import ModernRIBs
+
+protocol {{ name }}Dependency: Dependency {}
+
+final class {{ name }}Component: Component<{{ name }}Dependency> {}
+
+// MARK: - Builder
+
+protocol {{ name }}Buildable: Buildable {
+    func build(withListener listener: {{ name }}Listener) -> {{ name }}Routing
+}
+
+final class {{ name }}Builder: Builder<{{ name }}Dependency>, {{ name }}Buildable {
+
+    override init(dependency: {{ name }}Dependency) {
+        super.init(dependency: dependency)
+    }
+
+    func build(withListener listener: {{ name }}Listener) -> {{ name }}Routing {
+        let component = {{ name }}Component(dependency: dependency)
+        let viewController = {{ name }}ViewController()
+        let interactor = {{ name }}Interactor(presenter: viewController)
+        interactor.listener = listener
+        return {{ name }}Router(interactor: interactor, viewController: viewController)
+    }
+}

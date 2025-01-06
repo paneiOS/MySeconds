@@ -1,0 +1,23 @@
+//
+//  {{ name }}Router.swift
+//  MySeconds
+//
+//  Created by {{ userName }} on {{ date }}.
+//
+
+import ModernRIBs
+
+protocol {{ name }}Interactable: Interactable {
+    var router: {{ name }}Routing? { get set }
+    var listener: {{ name }}Listener? { get set }
+}
+
+protocol {{ name }}ViewControllable: ViewControllable {}
+
+final class {{ name }}Router: ViewableRouter<{{ name }}Interactable, {{ name }}ViewControllable>, {{ name }}Routing {
+
+    override init(interactor: {{ name }}Interactable, viewController: {{ name }}ViewControllable) {
+        super.init(interactor: interactor, viewController: viewController)
+        interactor.router = self
+    }
+}

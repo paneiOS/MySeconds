@@ -1,0 +1,12 @@
+//
+//  {{ name }}Feature.swift
+//  MySeconds
+//
+//  Created by {{ userName }} on {{ date }}.
+//
+
+import Foundation
+
+public class {{ name }} {
+    public init() {}
+}
