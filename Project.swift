@@ -15,7 +15,7 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UIApplicationSceneManifest": [
-                        "UIApplicationSupportsMultipleScenes": false,
+                        "UIApplicationSupportsMultipleScenes": false
                     ],
                     "UIApplicationMainStoryboardFile": ""
                 ]
@@ -39,7 +39,8 @@ let project = Project(
             ],
             dependencies: [
                 .package(product: "ModernRIBs", type: .runtime),
-                .package(product: "SnapKit", type: .runtime)
+                .package(product: "SnapKit", type: .runtime),
+                .project(target: "ResourceKit", path: "Modules/ResourceKit")
             ],
             settings: .settings(
                 base: [
@@ -67,6 +68,6 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
-        ),
+        )
     ]
 )

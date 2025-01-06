@@ -1,16 +1,16 @@
 import ProjectDescription
 
 let project = Project(
-    name: "{{ name }}",
+    name: "ResourceKit",
     targets: [
         .target(
-            name: "{{ name }}",
+            name: "ResourceKit",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.{{ name | lowercase }}",
+            bundleId: "com.panestudio.resourcekit",
             infoPlist: .default,
             sources: ["Sources/**"],
-            resources: [],
+            resources: ["Resources/**"],
             dependencies: []
         )
     ]
