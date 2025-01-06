@@ -1,0 +1,15 @@
+//
+//  {{ name }}Tests.swift
+//  MySeconds
+//
+//  Created by {{ userName }} on {{ date }}.
+//
+
+import XCTest
+
+final class {{ name }}Tests: XCTestCase {
+    func testExample() {
+        // TODO: Add test cases here
+        XCTAssertTrue(true)
+    }
+}

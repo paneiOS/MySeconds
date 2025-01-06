@@ -1,3 +1,10 @@
+//
+//  {{ name }}Project.swift
+//  MySeconds
+//
+//  Created by {{ userName }} on {{ date }}.
+//
+
 import ProjectDescription
 
 let project = Project(
