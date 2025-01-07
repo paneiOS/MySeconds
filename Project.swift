@@ -24,7 +24,10 @@ let project = Project(
             resources: ["MySeconds/Resources/**"],
             scripts: [
                 .pre(
-                    script: "swiftlint",
+                    script: """
+                    export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+                    swiftlint lint --reporter xcode
+                    """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
                 ),
@@ -40,8 +43,7 @@ let project = Project(
             dependencies: [
                 .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime),
-                .project(target: "ResourceKit", path: "Modules/ResourceKit"),
-                .project(target: "Login", path: "Modules/Login")
+                .project(target: "ResourceKit", path: "Modules/ResourceKit")
             ],
             settings: .settings(
                 base: [
