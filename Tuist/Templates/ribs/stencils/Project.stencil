@@ -18,12 +18,15 @@ let project = Project(
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],
-            dependencies: []
+            dependencies: [
+                .package(product: "ModernRIBs", type: .runtime),
+                .package(product: "SnapKit", type: .runtime)
+            ]
         ),
         .target(
             name: "{{ name }}Tests",
             destinations: .iOS,
-            product: .framework,
+            product: .unitTests,
             bundleId: "com.panestudio.{{ name | lowercase }}",
             infoPlist: .default,
             sources: ["Tests/**"],
