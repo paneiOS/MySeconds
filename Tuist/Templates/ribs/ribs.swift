@@ -28,6 +28,10 @@ let ribsTemplate = Template(
     ],
     items: [
         .file(
+            path: "Modules/\(nameAttribute)/AppSources/AppDelegate.swift",
+            templatePath: "stencils/AppDelegate.stencil"
+        ),
+        .file(
             path: "Modules/\(nameAttribute)/Project.swift",
             templatePath: "stencils/Project.stencil"
         ),
@@ -38,6 +42,10 @@ let ribsTemplate = Template(
         .file(
             path: "Modules/\(nameAttribute)/Sources/\(nameAttribute)Router.swift",
             templatePath: "stencils/Router.stencil"
+        ),
+        .file(
+            path: "Modules/\(nameAttribute)/AppSources/SceneDelegate.swift",
+            templatePath: "stencils/SceneDelegate.stencil"
         ),
         .file(
             path: "Modules/\(nameAttribute)/Sources/\(nameAttribute)Interactor.swift",
