@@ -44,7 +44,8 @@ let project = Project(
             dependencies: [
                 .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime),
-                .project(target: "ResourceKit", path: "Modules/ResourceKit")
+                .project(target: "ResourceKit", path: "Modules/ResourceKit"),
+                .project(target: "Login", path: "Modules/Login")
             ],
             settings: .settings(
                 base: [
