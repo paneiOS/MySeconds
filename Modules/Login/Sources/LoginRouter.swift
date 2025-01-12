@@ -5,6 +5,7 @@
 //  Created by pane on 01/09/2025.
 //
 
+import GoogleSignIn
 import ModernRIBs
 
 protocol LoginInteractable: Interactable {
@@ -19,5 +20,9 @@ final class LoginRouter: ViewableRouter<LoginInteractable, LoginViewControllable
     override init(interactor: LoginInteractable, viewController: LoginViewControllable) {
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
+    }
+
+    func processGoogleSignInURL(_ url: URL) {
+        GIDSignIn.sharedInstance.handle(url)
     }
 }

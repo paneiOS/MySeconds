@@ -7,9 +7,14 @@
 
 import ModernRIBs
 
-protocol LoginDependency: Dependency {}
+public protocol LoginDependency: Dependency {
+    var googleSignInService: GoogleSignInService { get }
+//    var appleSignInService: AppleSignInService
+}
 
-final class LoginComponent: Component<LoginDependency> {}
+final class LoginComponent: Component<LoginDependency> {
+    var googleSignInService: GoogleSignInService { dependency.googleSignInService }
+}
 
 // MARK: - Builder
 
@@ -17,17 +22,26 @@ protocol LoginBuildable: Buildable {
     func build(withListener listener: LoginListener) -> LoginRouting
 }
 
-final class LoginBuilder: Builder<LoginDependency>, LoginBuildable {
+public final class LoginBuilder: Builder<LoginDependency>, LoginBuildable {
 
-    override init(dependency: LoginDependency) {
+    override public init(dependency: LoginDependency) {
         super.init(dependency: dependency)
     }
 
-    func build(withListener listener: LoginListener) -> LoginRouting {
+    public func build(withListener listener: LoginListener) -> LoginRouting {
         let component = LoginComponent(dependency: dependency)
         let viewController = LoginViewController()
-        let interactor = LoginInteractor(presenter: viewController)
+        let interactor = LoginInteractor(
+            presenter: viewController,
+            googleSignInService: component.googleSignInService
+        )
         interactor.listener = listener
         return LoginRouter(interactor: interactor, viewController: viewController)
+    }
+}
+
+extension EmptyComponent: LoginDependency {
+    public var googleSignInService: GoogleSignInService {
+        .init(clientID: "")
     }
 }

@@ -1,3 +1,10 @@
+//
+//  AppDelegate.swift
+//  MySeconds
+//
+//  Created by pane on 01/09/2025.
+//
+
 import UIKit
 
 @main
@@ -20,8 +27,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
-    func application(
-        _: UIApplication,
-        didDiscardSceneSessions _: Set<UISceneSession>
-    ) {}
+    func application(_: UIApplication, didDiscardSceneSessions _: Set<UISceneSession>) {}
 }

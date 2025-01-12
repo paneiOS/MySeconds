@@ -7,8 +7,13 @@
 
 import UIKit
 
+import Login
+import ModernRIBs
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
+    private var mockListener: MockLoginListener = .init()
+    private var loginRouter: LoginRouting?
 
     func scene(
         _ scene: UIScene,
@@ -16,35 +21,19 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         options _: UIScene.ConnectionOptions
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-
         let window = UIWindow(windowScene: windowScene)
-        let rootViewController = UIViewController()
-        rootViewController.view.backgroundColor = .white
 
+        let loginBuilder = LoginBuilder(dependency: EmptyComponent())
+        let loginRouter = loginBuilder.build(withListener: self.mockListener)
+        self.loginRouter = loginRouter
         self.window = window
-        self.window?.rootViewController = rootViewController
+        self.window?.rootViewController = loginRouter.viewControllable.uiviewController
         self.window?.makeKeyAndVisible()
-
-        print("SceneDelegate: Scene will connect to session")
     }
 
-    func sceneDidDisconnect(_: UIScene) {
-        print("SceneDelegate: Scene did disconnect")
-    }
-
-    func sceneDidBecomeActive(_: UIScene) {
-        print("SceneDelegate: Scene did become active")
-    }
-
-    func sceneWillResignActive(_: UIScene) {
-        print("SceneDelegate: Scene will resign active")
-    }
-
-    func sceneWillEnterForeground(_: UIScene) {
-        print("SceneDelegate: Scene will enter foreground")
-    }
-
-    func sceneDidEnterBackground(_: UIScene) {
-        print("SceneDelegate: Scene did enter background")
+    func scene(_: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let loginRouter,
+              let url = URLContexts.first?.url else { return }
+        loginRouter.processGoogleSignInURL(url)
     }
 }

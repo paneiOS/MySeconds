@@ -15,11 +15,10 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.panestudio.login",
-            infoPlist: .default,
             sources: ["Sources/**"],
-            resources: [],
             dependencies: [
                 .package(product: "FirebaseAuth", type: .runtime),
+                .package(product: "GoogleSignIn", type: .runtime),
                 .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime)
             ]
@@ -28,9 +27,31 @@ let project = Project(
             name: "LoginModuleApp",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.panestudio.LoginModleApp",
-            infoPlist: .default,
+            bundleId: "com.panestudio.myseconds",
+            infoPlist: .extendingDefault(
+                with: [
+                    "UILaunchStoryboardName": "LaunchScreen",
+                    "UIApplicationSceneManifest": [
+                        "UIApplicationSupportsMultipleScenes": false,
+                        "UISceneConfigurations": [
+                            "UIWindowSceneSessionRoleApplication": [
+                                [
+                                    "UISceneConfigurationName": "Default Configuration",
+                                    "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate"
+                                ]
+                            ]
+                        ]
+                    ],
+                    "CFBundleURLTypes": [
+                        [
+                            "CFBundleTypeRole": "Editor",
+                            "CFBundleURLSchemes": ["com.googleusercontent.apps.120605294852-s7fhvg2713civjkojb7utjjbnsa7apmt"]
+                        ]
+                    ]
+                ]
+            ),
             sources: ["AppSources/**"],
+            resources: ["../../MySeconds/Resources/GoogleService-Info.plist"],
             scripts: [
                 .pre(
                     script: """

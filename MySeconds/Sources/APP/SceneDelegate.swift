@@ -1,3 +1,10 @@
+//
+//  SceneDelegate.swift
+//  MySeconds
+//
+//  Created by pane on 01/09/2025.
+//
+
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {

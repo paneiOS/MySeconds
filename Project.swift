@@ -5,7 +5,8 @@ let project = Project(
     packages: [
         .package(url: "https://github.com/DevYeom/ModernRIBs.git", from: "1.0.0"),
         .package(url: "https://github.com/SnapKit/SnapKit.git", from: "5.0.0"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.6.0")
+        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.6.0"),
+        .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "8.0.0")
     ],
     targets: [
         .target(
@@ -15,14 +16,24 @@ let project = Project(
             bundleId: "com.panestudio.myseconds",
             infoPlist: .extendingDefault(
                 with: [
+                    "UILaunchStoryboardName": "LaunchScreen",
                     "UIApplicationSceneManifest": [
                         "UIApplicationSupportsMultipleScenes": false
                     ],
-                    "UIApplicationMainStoryboardFile": ""
+                    "UIApplicationMainStoryboardFile": "",
+                    "CFBundleURLTypes": [
+                        [
+                            "CFBundleTypeRole": "Editor",
+                            "CFBundleURLSchemes": ["com.googleusercontent.apps.120605294852-s7fhvg2713civjkojb7utjjbnsa7apmt"]
+                        ]
+                    ]
                 ]
             ),
             sources: ["MySeconds/Sources/**"],
-            resources: ["MySeconds/Resources/**"],
+            resources: [
+                "MySeconds/Resources/**",
+                "MySeconds/Resources/GoogleService-Info.plist"
+            ],
             scripts: [
                 .pre(
                     script: """
