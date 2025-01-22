@@ -9,15 +9,17 @@ import Foundation
 
 import ProjectDescription
 
-let dateFormatter = DateFormatter()
-dateFormatter.dateFormat = "mm/dd/yyyy"
-let currentDate = dateFormatter.string(from: Date())
+let currentDate: String = {
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = "MM/dd/yyyy"
+    return dateFormatter.string(from: Date())
+}()
 
-let userName = NSUserName()
+let userName: String = NSUserName()
 
 let nameAttribute: Template.Attribute = .required("name")
 
-let template = Template(
+let ribsTemplate = Template(
     description: "ModernRIBs ownsView 기반 RIB 생성",
     attributes: [
         nameAttribute,
@@ -25,6 +27,10 @@ let template = Template(
         .optional("date", default: .string(currentDate))
     ],
     items: [
+        .file(
+            path: "Modules/\(nameAttribute)/AppSources/AppDelegate.swift",
+            templatePath: "stencils/AppDelegate.stencil"
+        ),
         .file(
             path: "Modules/\(nameAttribute)/Project.swift",
             templatePath: "stencils/Project.stencil"
@@ -36,6 +42,10 @@ let template = Template(
         .file(
             path: "Modules/\(nameAttribute)/Sources/\(nameAttribute)Router.swift",
             templatePath: "stencils/Router.stencil"
+        ),
+        .file(
+            path: "Modules/\(nameAttribute)/AppSources/SceneDelegate.swift",
+            templatePath: "stencils/SceneDelegate.stencil"
         ),
         .file(
             path: "Modules/\(nameAttribute)/Sources/\(nameAttribute)Interactor.swift",

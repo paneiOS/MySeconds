@@ -1,5 +1,5 @@
 //
-//  {{ name }}Project.swift
+//  Project.swift
 //  MySeconds
 //
 //  Created by {{ userName }} on {{ date }}.
@@ -18,12 +18,44 @@ let project = Project(
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],
-            dependencies: []
+            dependencies: [
+                .package(product: "ModernRIBs", type: .runtime),
+                .package(product: "SnapKit", type: .runtime)
+            ]
+        ),
+        .target(
+            name: "{{ name }}ModuleApp",
+            destinations: .iOS,
+            product: .app,
+            bundleId: "com.panestudio.{{ name }}ModleApp",
+            infoPlist: .default,
+            sources: ["AppSources/**"],
+                        scripts: [
+                .pre(
+                    script: """
+                    export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+                    swiftlint lint --reporter xcode
+                    """,
+                    name: "SwiftLint",
+                    basedOnDependencyAnalysis: false
+                ),
+                .pre(
+                    script: """
+                    export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+                    swiftformat .
+                    """,
+                    name: "SwiftFormat",
+                    basedOnDependencyAnalysis: false
+                )
+            ],
+            dependencies: [
+                .target(name: "{{ name }}")
+            ]
         ),
         .target(
             name: "{{ name }}Tests",
             destinations: .iOS,
-            product: .framework,
+            product: .unitTests,
             bundleId: "com.panestudio.{{ name | lowercase }}",
             infoPlist: .default,
             sources: ["Tests/**"],
@@ -31,4 +63,3 @@ let project = Project(
         )
     ]
 )
-

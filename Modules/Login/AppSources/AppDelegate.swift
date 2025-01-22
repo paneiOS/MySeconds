@@ -1,22 +1,24 @@
 //
 //  AppDelegate.swift
-//  MySeconds
+//  Login
 //
 //  Created by pane on 01/09/2025.
 //
 
 import UIKit
 
+import Firebase
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
-
-    // MARK: - UIApplicationDelegate Methods
+    var window: UIWindow?
 
     func application(
         _: UIApplication,
         didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        true
+        FirebaseApp.configure()
+        return true
     }
 
     func application(

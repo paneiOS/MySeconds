@@ -10,8 +10,8 @@
 # 줄바꿈 형식: LF (Unix 스타일)
 --linebreaks lf
 
-# 필요 없는 self 키워드 제거
---self remove
+# self 키워드 제거 금지
+--self insert
 
 # 세미콜론 제거
 --semicolons inline
