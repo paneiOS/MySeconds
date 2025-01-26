@@ -1,20 +1,20 @@
 //
-//  {{ name }}Project.swift
+//  UtilsKitProject.swift
 //  MySeconds
 //
-//  Created by {{ userName }} on {{ date }}.
+//  Created by hh647 on 01/26/2025.
 //
 
 import ProjectDescription
 
 let project = Project(
-    name: "{{ name }}",
+    name: "UtilsKit",
     targets: [
         .target(
-            name: "{{ name }}",
+            name: "UtilsKit",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.{{ name | lowercase }}",
+            bundleId: "com.panestudio.utilskit",
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],
