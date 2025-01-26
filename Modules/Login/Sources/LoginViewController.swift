@@ -76,23 +76,3 @@ extension LoginViewController {
         present(alert, animated: true)
     }
 }
-
-// TODO: - 임시
-
-extension UIView {
-    func addSubviews(_ views: UIView...) {
-        views.forEach { self.addSubview($0) }
-    }
-}
-
-public func printDebug(
-    _ message: Any,
-    file: String = #file,
-    function: String = #function,
-    line: Int = #line
-) {
-    #if DEBUG
-        let fileName = (file as NSString).lastPathComponent
-        print("[DEBUG] fileName: \(fileName) ::: line: \(line) ::: func: \(function) -> \(message)")
-    #endif
-}

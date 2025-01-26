@@ -72,7 +72,8 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .target(name: "Login")
+                .target(name: "Login"),
+                .project(target: "UtilsKit", path: "../UtilsKit")
             ]
         ),
         .target(
