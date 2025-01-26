@@ -16,9 +16,6 @@
 # 세미콜론 제거
 --semicolons inline
 
-# 블록 시작 시 빈 줄 금지
---disable blankLinesAtStartOfScope
-
 # 함수 인자를 첫 번째 인자 전에 줄바꿈
 --wraparguments beforefirst
 
@@ -27,3 +24,9 @@
 
 # trailing comma 제거
 --commas inline
+
+# 블록 시작 시 빈 줄 금지
+--disable blankLinesAtStartOfScope
+
+# 멀티라인 중괄호 유지
+--disable wrapMultilineStatementBraces
