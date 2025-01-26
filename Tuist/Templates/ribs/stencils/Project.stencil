@@ -59,7 +59,9 @@ let project = Project(
             bundleId: "com.panestudio.{{ name | lowercase }}",
             infoPlist: .default,
             sources: ["Tests/**"],
-            dependencies: [.target(name: "{{ name }}")]
+            dependencies: [
+                .target(name: "{{ name }}")
+            ]
         )
     ]
 )

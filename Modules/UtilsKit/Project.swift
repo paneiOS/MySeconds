@@ -36,7 +36,13 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: []
+            dependencies: [],
+            settings: .settings(
+                base: [
+                    "DEFINES_MODULE": "YES",
+                    "SWIFT_INSTALL_OBJC_HEADER": "YES"
+                ]
+            )
         )
     ]
 )
