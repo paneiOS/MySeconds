@@ -30,10 +30,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window?.rootViewController = loginRouter.viewControllable.uiviewController
         self.window?.makeKeyAndVisible()
     }
-
-    func scene(_: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-        guard let loginRouter,
-              let url = URLContexts.first?.url else { return }
-        loginRouter.processGoogleSignInURL(url)
-    }
 }

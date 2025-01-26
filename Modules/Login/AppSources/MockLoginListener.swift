@@ -10,7 +10,15 @@ import Login
 import ModernRIBs
 
 final class MockLoginListener: LoginListener {
-    func didCompleteLogin(result _: AuthDataResult) {
-        print("MockLoginListener: didCompleteLogin called")
+    func didCompleteLogin(with result: Login.LoginResult) {
+        printDebug("MockLoginListener: didCompleteLogin, \(result)")
+    }
+
+    func didFailLogin(with error: any Error) {
+        printDebug("MockLoginListener: didFailLogin, \(error)")
+    }
+
+    func didRequireAdditionalInfo(with uid: String) {
+        printDebug("MockLoginListener: didRequireAdditionalInfo, \(uid)")
     }
 }

@@ -18,6 +18,7 @@ let project = Project(
             sources: ["Sources/**"],
             dependencies: [
                 .package(product: "FirebaseAuth", type: .runtime),
+                .package(product: "FirebaseFirestore", type: .runtime),
                 .package(product: "GoogleSignIn", type: .runtime),
                 .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime)

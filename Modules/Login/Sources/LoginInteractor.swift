@@ -8,24 +8,33 @@
 import UIKit
 
 import FirebaseAuth
+import FirebaseFirestore
+import GoogleSignIn
 import ModernRIBs
 
-public protocol LoginRouting: ViewableRouting {
-    func processGoogleSignInURL(_ url: URL)
-}
+public protocol LoginRouting: ViewableRouting {}
 
 protocol LoginPresentable: Presentable {
     var listener: LoginPresentableListener? { get set }
 }
 
 public protocol LoginListener: AnyObject {
-    func didCompleteLogin(result: AuthDataResult)
+    func didCompleteLogin(with result: LoginResult)
+    func didFailLogin(with error: Error)
+    func didRequireAdditionalInfo(with uid: String)
+}
+
+public enum LoginResult {
+    case success
+    case additionalInfoRequired(uid: String)
+    case failure(Error)
 }
 
 final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable {
-
     weak var router: LoginRouting?
     weak var listener: LoginListener?
+
+    private let firestore = Firestore.firestore()
 
     private let googleSignInService: GoogleSignInService
 
@@ -39,19 +48,40 @@ final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInter
     }
 }
 
-extension LoginInteractor: LoginPresentableListener {
-    func isUserLoggedIn() -> Bool {
-        Auth.auth().currentUser != nil
+extension LoginInteractor {
+    private func checkUserInFirestore(with authResult: AuthDataResult) {
+        let uid = authResult.user.uid
+        self.firestore.collection("users").document(uid).getDocument { [weak self] document, error in
+            guard let self else { return }
+            if let error {
+                printDebug(error)
+            } else if let document, document.exists {
+                self.listener?.didCompleteLogin(with: .success)
+            } else {
+                self.listener?.didCompleteLogin(with: .additionalInfoRequired(uid: uid))
+            }
+        }
     }
 
+    private func checkAdditionalInfo(for document: DocumentSnapshot, uid: String) {
+        if let birthDate = document.data()?["birthDate"] as? String,
+           !birthDate.isEmpty {
+            self.listener?.didCompleteLogin(with: .success)
+        } else {
+            self.listener?.didCompleteLogin(with: .additionalInfoRequired(uid: uid))
+        }
+    }
+}
+
+extension LoginInteractor: LoginPresentableListener {
     func loginWithGoogle(with viewController: UIViewController) {
         self.googleSignInService.signIn(viewController: viewController) { [weak self] result in
             guard let self else { return }
             switch result {
-            case let .success(data):
-                self.listener?.didCompleteLogin(result: data)
+            case let .success(signInResult):
+                self.checkUserInFirestore(with: signInResult)
             case let .failure(error):
-                print("Google Login Failed:", error.localizedDescription)
+                self.listener?.didCompleteLogin(with: .failure(error))
             }
         }
     }
