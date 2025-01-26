@@ -23,7 +23,6 @@ protocol LoginBuildable: Buildable {
 }
 
 public final class LoginBuilder: Builder<LoginDependency>, LoginBuildable {
-
     override public init(dependency: LoginDependency) {
         super.init(dependency: dependency)
     }

@@ -16,13 +16,19 @@ protocol LoginInteractable: Interactable {
 protocol LoginViewControllable: ViewControllable {}
 
 final class LoginRouter: ViewableRouter<LoginInteractable, LoginViewControllable>, LoginRouting {
-
     override init(interactor: LoginInteractable, viewController: LoginViewControllable) {
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
     }
 
-    func processGoogleSignInURL(_ url: URL) {
-        GIDSignIn.sharedInstance.handle(url)
+    func googleSignIn(completion: @escaping (Result<GIDSignInResult, Error>) -> Void) {
+        let presentingVC: UIViewController = self.viewController.uiviewController
+        GIDSignIn.sharedInstance.signIn(withPresenting: presentingVC) { result, error in
+            if let error {
+                completion(.failure(error))
+            } else if let result {
+                completion(.success(result))
+            }
+        }
     }
 }
