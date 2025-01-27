@@ -24,10 +24,10 @@ final class LoginRouter: ViewableRouter<LoginInteractable, LoginViewControllable
     func googleSignIn(completion: @escaping (Result<GIDSignInResult, Error>) -> Void) {
         let presentingVC: UIViewController = self.viewController.uiviewController
         GIDSignIn.sharedInstance.signIn(withPresenting: presentingVC) { result, error in
-            if let error {
-                completion(.failure(error))
-            } else if let result {
+            if let result {
                 completion(.success(result))
+            } else if let error {
+                completion(.failure(error))
             }
         }
     }

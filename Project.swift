@@ -34,11 +34,12 @@ let project = Project(
                 "MySeconds/Resources/**",
                 "MySeconds/Resources/GoogleService-Info.plist"
             ],
+            entitlements: "MySeconds.entitlements",
             scripts: [
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --reporter xcode
+                    swiftlint lint --config "${SRCROOT}/.swiftlint.yml" --reporter xcode
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -55,13 +56,14 @@ let project = Project(
             dependencies: [
                 .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime),
-                .project(target: "UtilsKit", path: "Modules/UtilsKit"),
+                .project(target: "Login", path: "Modules/Login"),
                 .project(target: "ResourceKit", path: "Modules/ResourceKit"),
-                .project(target: "Login", path: "Modules/Login")
+                .project(target: "UtilsKit", path: "Modules/UtilsKit")
             ],
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
+                    "CODE_SIGN_STYLE": "Manual",
                     "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
@@ -80,7 +82,6 @@ let project = Project(
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
-                    "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]

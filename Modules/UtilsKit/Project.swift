@@ -1,5 +1,5 @@
 //
-//  UtilsKitProject.swift
+//  Project.swift
 //  MySeconds
 //
 //  Created by hh647 on 01/26/2025.
@@ -22,7 +22,7 @@ let project = Project(
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --reporter xcode
+                    swiftlint lint --config "../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false

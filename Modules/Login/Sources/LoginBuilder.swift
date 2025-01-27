@@ -8,11 +8,12 @@
 import ModernRIBs
 
 public protocol LoginDependency: Dependency {
+    var appleSignInService: AppleSignInService { get }
     var googleSignInService: GoogleSignInService { get }
-//    var appleSignInService: AppleSignInService
 }
 
 final class LoginComponent: Component<LoginDependency> {
+    var appleSignInService: AppleSignInService { dependency.appleSignInService }
     var googleSignInService: GoogleSignInService { dependency.googleSignInService }
 }
 
@@ -32,6 +33,7 @@ public final class LoginBuilder: Builder<LoginDependency>, LoginBuildable {
         let viewController = LoginViewController()
         let interactor = LoginInteractor(
             presenter: viewController,
+            appleSignInService: component.appleSignInService,
             googleSignInService: component.googleSignInService
         )
         interactor.listener = listener
@@ -40,7 +42,11 @@ public final class LoginBuilder: Builder<LoginDependency>, LoginBuildable {
 }
 
 extension EmptyComponent: LoginDependency {
+    public var appleSignInService: AppleSignInService {
+        .init()
+    }
+
     public var googleSignInService: GoogleSignInService {
-        .init(clientID: "")
+        .init()
     }
 }

@@ -53,11 +53,12 @@ let project = Project(
             ),
             sources: ["AppSources/**"],
             resources: ["../../MySeconds/Resources/GoogleService-Info.plist"],
+            entitlements: "../../MySeconds.entitlements",
             scripts: [
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --reporter xcode
+                    swiftlint lint --config "../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -72,8 +73,16 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .target(name: "Login")
-            ]
+                .target(name: "Login"),
+                .project(target: "UtilsKit", path: "../UtilsKit")
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                ]
+            )
         ),
         .target(
             name: "LoginTests",

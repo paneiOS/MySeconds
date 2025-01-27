@@ -12,6 +12,8 @@ import FirebaseFirestore
 import GoogleSignIn
 import ModernRIBs
 
+import UtilsKit
+
 public protocol LoginRouting: ViewableRouting {}
 
 protocol LoginPresentable: Presentable {
@@ -24,24 +26,20 @@ public protocol LoginListener: AnyObject {
     func didRequireAdditionalInfo(with uid: String)
 }
 
-public enum LoginResult {
-    case success
-    case additionalInfoRequired(uid: String)
-    case failure(Error)
-}
-
 final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable {
     weak var router: LoginRouting?
     weak var listener: LoginListener?
 
     private let firestore = Firestore.firestore()
-
+    private let appleSignInService: AppleSignInService
     private let googleSignInService: GoogleSignInService
 
     init(
         presenter: LoginPresentable,
+        appleSignInService: AppleSignInService,
         googleSignInService: GoogleSignInService
     ) {
+        self.appleSignInService = appleSignInService
         self.googleSignInService = googleSignInService
         super.init(presenter: presenter)
         presenter.listener = self
@@ -53,12 +51,14 @@ extension LoginInteractor {
         let uid = authResult.user.uid
         self.firestore.collection("users").document(uid).getDocument { [weak self] document, error in
             guard let self else { return }
-            if let error {
+            if let document {
+                if document.exists {
+                    self.listener?.didCompleteLogin(with: .success)
+                } else {
+                    self.listener?.didCompleteLogin(with: .additionalInfoRequired(uid: uid))
+                }
+            } else if let error {
                 printDebug(error)
-            } else if let document, document.exists {
-                self.listener?.didCompleteLogin(with: .success)
-            } else {
-                self.listener?.didCompleteLogin(with: .additionalInfoRequired(uid: uid))
             }
         }
     }
@@ -74,28 +74,21 @@ extension LoginInteractor {
 }
 
 extension LoginInteractor: LoginPresentableListener {
-    func loginWithGoogle(with viewController: UIViewController) {
-        self.googleSignInService.signIn(viewController: viewController) { [weak self] result in
-            guard let self else { return }
-            switch result {
-            case let .success(signInResult):
-                self.checkUserInFirestore(with: signInResult)
-            case let .failure(error):
-                self.listener?.didCompleteLogin(with: .failure(error))
-            }
-        }
+    func appleLogin() {
+        self.appleSignInService.signIn(delegate: self)
     }
 
-//    func loginWithApple() {
-//        guard let topViewController = UIApplication.shared.windows.first?.rootViewController else { return }
-//
-//        appleSignInService.signIn(presentingViewController: topViewController) { result in
-//            switch result {
-//            case .success(let authData):
-//                print("Apple Login Success:", authData.user.uid)
-//            case .failure(let error):
-//                print("Apple Login Failed:", error.localizedDescription)
-//            }
-//        }
-//    }
+    func googleLogin(with viewController: UIViewController) {
+        self.googleSignInService.signIn(viewController: viewController, delegate: self)
+    }
+}
+
+extension LoginInteractor: SocialLoginDelegate {
+    func didSucceedLogin(with authData: FirebaseAuth.AuthDataResult) {
+        self.checkUserInFirestore(with: authData)
+    }
+
+    func didFailLogin(with error: LoginError) {
+        self.listener?.didFailLogin(with: error)
+    }
 }

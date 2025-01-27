@@ -7,8 +7,9 @@
 
 import UIKit
 
-import Login
 import ModernRIBs
+
+import Login
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
