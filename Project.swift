@@ -38,7 +38,7 @@ let project = Project(
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --reporter xcode
+                    swiftlint lint --config "${SRCROOT}/.swiftlint.yml" --reporter xcode
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
