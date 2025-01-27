@@ -5,11 +5,16 @@
 //  Created by pane on 01/09/2025.
 //
 
+import AVFoundation
 import UIKit
 
 import AuthenticationServices
 import GoogleSignIn
 import SnapKit
+
+import MySecondsKit
+import ResourceKit
+import UtilsKit
 
 protocol LoginPresentableListener: AnyObject {
     func appleLogin()
@@ -19,15 +24,16 @@ protocol LoginPresentableListener: AnyObject {
 final class LoginViewController: UIViewController, LoginPresentable, LoginViewControllable {
     // MARK: - UI Components
 
-    private lazy var loginStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [
-            googleSignInButton,
-            appleSignInButton
-        ])
+    private lazy var totalView: UIStackView = {
+        let stackView: UIStackView = .init()
         stackView.axis = .vertical
         stackView.spacing = 12
         return stackView
     }()
+
+    private let topView: UIView = .init()
+
+    private let videoView: UIComponents.Views.VideoView = .init(player: .sampleVideo)
 
     private lazy var googleSignInButton: GIDSignInButton = {
         let button: GIDSignInButton = .init()
@@ -57,11 +63,26 @@ final class LoginViewController: UIViewController, LoginPresentable, LoginViewCo
 
     private func makeUI() {
         view.backgroundColor = .white
-        view.addSubview(self.loginStackView)
-
-        self.loginStackView.snp.makeConstraints {
+        view.addSubview(self.totalView)
+        [self.topView, self.appleSignInButton, self.googleSignInButton].forEach {
+            self.totalView.addArrangedSubview($0)
+        }
+        self.totalView.snp.makeConstraints {
+            $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
             $0.leading.trailing.equalToSuperview().inset(24)
             $0.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(16)
+        }
+
+        self.appleSignInButton.snp.makeConstraints {
+            $0.leading.trailing.equalToSuperview()
+            $0.height.equalTo(self.appleSignInButton.snp.width).multipliedBy(48.0 / 345.0)
+        }
+
+        self.topView.addSubview(self.videoView)
+        self.videoView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview().inset(118)
+            $0.centerX.equalToSuperview()
+            $0.width.equalTo(self.videoView.snp.height).multipliedBy(240.0 / 396.0)
         }
     }
 }

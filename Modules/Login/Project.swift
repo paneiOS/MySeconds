@@ -21,7 +21,10 @@ let project = Project(
                 .package(product: "FirebaseFirestore", type: .runtime),
                 .package(product: "GoogleSignIn", type: .runtime),
                 .package(product: "ModernRIBs", type: .runtime),
-                .package(product: "SnapKit", type: .runtime)
+                .package(product: "SnapKit", type: .runtime),
+                .project(target: "MySecondsKit", path: "../../Modules/MySecondsKit"),
+                .project(target: "ResourceKit", path: "../../Modules/ResourceKit"),
+                .project(target: "UtilsKit", path: "../../Modules/UtilsKit")
             ]
         ),
         .target(
@@ -88,12 +91,19 @@ let project = Project(
             name: "LoginTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "com.panestudio.login",
+            bundleId: "com.panestudio.myseconds",
             infoPlist: .default,
             sources: ["Tests/**"],
             dependencies: [
                 .target(name: "Login")
-            ]
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                ]
+            )
         )
     ]
 )
