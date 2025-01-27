@@ -12,7 +12,8 @@ import GoogleSignIn
 import SnapKit
 
 protocol LoginPresentableListener: AnyObject {
-    func loginWithGoogle(with viewController: UIViewController)
+    func appleLogin()
+    func googleLogin(with viewController: UIViewController)
 }
 
 final class LoginViewController: UIViewController, LoginPresentable, LoginViewControllable {
@@ -32,13 +33,13 @@ final class LoginViewController: UIViewController, LoginPresentable, LoginViewCo
         let button: GIDSignInButton = .init()
         button.style = .wide
         button.colorScheme = .light
-        button.addTarget(self, action: #selector(didTapGoogleSignIn), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapGoogleLogin), for: .touchUpInside)
         return button
     }()
 
     private lazy var appleSignInButton: ASAuthorizationAppleIDButton = {
         let button = ASAuthorizationAppleIDButton(type: .signIn, style: .black)
-//        button.addTarget(self, action: #selector(didTapAppleSignIn), for: .touchUpInside)
+        button.addTarget(self, action: #selector(didTapAppleLogin), for: .touchUpInside)
         return button
     }()
 
@@ -66,8 +67,12 @@ final class LoginViewController: UIViewController, LoginPresentable, LoginViewCo
 }
 
 extension LoginViewController {
-    @objc private func didTapGoogleSignIn() {
-        self.listener?.loginWithGoogle(with: self)
+    @objc private func didTapGoogleLogin() {
+        self.listener?.googleLogin(with: self)
+    }
+
+    @objc private func didTapAppleLogin() {
+        self.listener?.appleLogin()
     }
 
     private func showAlert(title: String, message: String) {

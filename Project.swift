@@ -34,6 +34,7 @@ let project = Project(
                 "MySeconds/Resources/**",
                 "MySeconds/Resources/GoogleService-Info.plist"
             ],
+            entitlements: "MySeconds.entitlements",
             scripts: [
                 .pre(
                     script: """
@@ -62,6 +63,7 @@ let project = Project(
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
+                    "CODE_SIGN_STYLE": "Manual",
                     "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
@@ -80,7 +82,6 @@ let project = Project(
             settings: .settings(
                 base: [
                     "SWIFT_VERSION": "6.0",
-                    "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
