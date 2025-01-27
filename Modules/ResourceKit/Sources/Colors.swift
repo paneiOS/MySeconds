@@ -9,14 +9,6 @@ import UIKit
 
 public extension UIColor {
 
-    // MARK: - Color
-
-    /// hex #FFFFFF, r: 255, g: 255, b: 255
-    static let white = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-
-    /// hex #000000, r: 0, g: 0, b: 0
-    static let black = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-
     // MARK: - Neutral
 
     /// hex #FAFAFA, r: 250, g: 250, b: 250
