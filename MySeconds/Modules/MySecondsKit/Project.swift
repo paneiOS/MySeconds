@@ -1,21 +1,27 @@
+//
+//  Project.swift
+//  MySeconds
+//
+//  Created by hh647 on 01/27/2025.
+//
+
 import ProjectDescription
 
 let project = Project(
-    name: "ResourceKit",
+    name: "MySecondsKit",
     targets: [
         .target(
-            name: "ResourceKit",
+            name: "MySecondsKit",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.resourcekit",
+            bundleId: "com.panestudio.mysecondskit",
             infoPlist: .default,
             sources: ["Sources/**"],
-            resources: ["Resources/**"],
             scripts: [
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --config "../../.swiftlint.yml"
+                    swiftlint lint --config "../../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -29,7 +35,16 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: []
+            dependencies: [
+                .project(target: "UtilsKit", path: "../UtilsKit")
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                ]
+            )
         )
     ]
 )

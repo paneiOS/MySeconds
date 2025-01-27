@@ -23,7 +23,6 @@ let project = Project(
                 .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime),
                 .project(target: "MySecondsKit", path: "../../Modules/MySecondsKit"),
-                .project(target: "ResourceKit", path: "../../Modules/ResourceKit"),
                 .project(target: "UtilsKit", path: "../../Modules/UtilsKit")
             ]
         ),
@@ -55,13 +54,13 @@ let project = Project(
                 ]
             ),
             sources: ["AppSources/**"],
-            resources: ["../../MySeconds/Resources/GoogleService-Info.plist"],
-            entitlements: "../../MySeconds.entitlements",
+            resources: ["../../../MySeconds/Resources/GoogleService-Info.plist"],
+            entitlements: "../../../MySeconds.entitlements",
             scripts: [
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --config "../../.swiftlint.yml"
+                    swiftlint lint --config "../../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false

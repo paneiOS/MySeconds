@@ -2,26 +2,27 @@
 //  Project.swift
 //  MySeconds
 //
-//  Created by hh647 on 01/27/2025.
+//  Created by hh647 on 01/26/2025.
 //
 
 import ProjectDescription
 
 let project = Project(
-    name: "MySecondsKit",
+    name: "UtilsKit",
     targets: [
         .target(
-            name: "MySecondsKit",
+            name: "UtilsKit",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.mysecondskit",
+            bundleId: "com.panestudio.utilskit",
             infoPlist: .default,
             sources: ["Sources/**"],
+            resources: [],
             scripts: [
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --config "../../.swiftlint.yml"
+                    swiftlint lint --config "../../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -35,14 +36,11 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: [
-                .project(target: "UtilsKit", path: "../../Modules/UtilsKit")
-            ],
+            dependencies: [],
             settings: .settings(
                 base: [
-                    "CODE_SIGN_STYLE": "Manual",
-                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
-                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                    "DEFINES_MODULE": "YES",
+                    "SWIFT_INSTALL_OBJC_HEADER": "YES"
                 ]
             )
         )

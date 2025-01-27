@@ -56,10 +56,10 @@ let project = Project(
             dependencies: [
                 .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime),
-                .project(target: "Login", path: "Modules/Login"),
-                .project(target: "MySecondsKit", path: "Modules/MySecondsKit"),
-                .project(target: "ResourceKit", path: "Modules/ResourceKit"),
-                .project(target: "UtilsKit", path: "Modules/UtilsKit")
+                .project(target: "Login", path: "MySeconds/Modules/Login"),
+                .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
+                .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
+                .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit")
             ],
             settings: .settings(
                 base: [
