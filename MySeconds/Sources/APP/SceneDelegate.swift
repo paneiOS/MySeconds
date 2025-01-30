@@ -7,8 +7,11 @@
 
 import UIKit
 
+import ModernRIBs
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
+    private var launchRouter: LaunchRouting?
 
     func scene(
         _ scene: UIScene,
@@ -16,8 +19,14 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         options _: UIScene.ConnectionOptions
     ) {
         guard let windowScene = scene as? UIWindowScene else { return }
-        self.window = UIWindow(windowScene: windowScene)
-        self.window?.rootViewController = UIViewController()
+        let window = UIWindow(windowScene: windowScene)
+        self.window = window
+
+        let appComponent = AppComponent()
+        let launchRouter = RootBuilder(dependency: appComponent).build()
+        self.launchRouter = launchRouter
+        launchRouter.launch(from: window)
+
         self.window?.makeKeyAndVisible()
     }
 }

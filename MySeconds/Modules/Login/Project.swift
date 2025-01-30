@@ -20,11 +20,18 @@ let project = Project(
                 .package(product: "FirebaseAuth", type: .runtime),
                 .package(product: "FirebaseFirestore", type: .runtime),
                 .package(product: "GoogleSignIn", type: .runtime),
-                .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime),
                 .project(target: "MySecondsKit", path: "../../Modules/MySecondsKit"),
+                .project(target: "ResourceKit", path: "../../Modules/ResourceKit"),
                 .project(target: "UtilsKit", path: "../../Modules/UtilsKit")
-            ]
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                ]
+            )
         ),
         .target(
             name: "LoginModuleApp",
@@ -75,8 +82,7 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .target(name: "Login"),
-                .project(target: "UtilsKit", path: "../UtilsKit")
+                .target(name: "Login")
             ],
             settings: .settings(
                 base: [

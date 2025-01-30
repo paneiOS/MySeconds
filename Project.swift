@@ -1,5 +1,13 @@
 import ProjectDescription
 
+#if Tuist
+    let packageSettings = PackageSettings(
+        productTypes: [
+            "ModernRIBs": .framework
+        ]
+    )
+#endif
+
 let project = Project(
     name: "MySeconds",
     packages: [
@@ -18,7 +26,15 @@ let project = Project(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",
                     "UIApplicationSceneManifest": [
-                        "UIApplicationSupportsMultipleScenes": false
+                        "UIApplicationSupportsMultipleScenes": false,
+                        "UISceneConfigurations": [
+                            "UIWindowSceneSessionRoleApplication": [
+                                [
+                                    "UISceneConfigurationName": "Default Configuration",
+                                    "UISceneDelegateClassName": "$(PRODUCT_MODULE_NAME).SceneDelegate"
+                                ]
+                            ]
+                        ]
                     ],
                     "UIApplicationMainStoryboardFile": "",
                     "CFBundleURLTypes": [
@@ -54,7 +70,6 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .package(product: "ModernRIBs", type: .runtime),
                 .package(product: "SnapKit", type: .runtime),
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
@@ -63,7 +78,6 @@ let project = Project(
             ],
             settings: .settings(
                 base: [
-                    "SWIFT_VERSION": "6.0",
                     "CODE_SIGN_STYLE": "Manual",
                     "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",

@@ -7,46 +7,38 @@
 
 import ModernRIBs
 
-public protocol LoginDependency: Dependency {
-    var appleSignInService: AppleSignInService { get }
-    var googleSignInService: GoogleSignInService { get }
-}
+import UtilsKit
 
-final class LoginComponent: Component<LoginDependency> {
-    var appleSignInService: AppleSignInService { dependency.appleSignInService }
-    var googleSignInService: GoogleSignInService { dependency.googleSignInService }
-}
+public protocol LoginDependency: Dependency {}
+
+public final class LoginComponent: Component<EmptyComponent> {}
 
 // MARK: - Builder
 
-protocol LoginBuildable: Buildable {
+public protocol LoginBuildable: Buildable {
     func build(withListener listener: LoginListener) -> LoginRouting
 }
 
-public final class LoginBuilder: Builder<LoginDependency>, LoginBuildable {
-    override public init(dependency: LoginDependency) {
+public final class LoginBuilder: Builder<LoginComponent>, LoginBuildable, Deinitializable {
+
+    override public init(dependency: LoginComponent) {
         super.init(dependency: dependency)
     }
 
+    deinit {
+        printDeinit()
+    }
+
     public func build(withListener listener: LoginListener) -> LoginRouting {
-        let component = LoginComponent(dependency: dependency)
         let viewController = LoginViewController()
+        viewController.modalPresentationStyle = .fullScreen
+        let socialLoginService = DefaultSocialLoginService()
         let interactor = LoginInteractor(
             presenter: viewController,
-            appleSignInService: component.appleSignInService,
-            googleSignInService: component.googleSignInService
+            socialLoginService: socialLoginService
         )
         interactor.listener = listener
+
         return LoginRouter(interactor: interactor, viewController: viewController)
-    }
-}
-
-extension EmptyComponent: LoginDependency {
-    public var appleSignInService: AppleSignInService {
-        .init()
-    }
-
-    public var googleSignInService: GoogleSignInService {
-        .init()
     }
 }

@@ -12,15 +12,7 @@ import Login
 import UtilsKit
 
 final class MockLoginListener: LoginListener {
-    func didCompleteLogin(with result: Login.LoginResult) {
+    func didLogin(with result: Login.LoginResult) {
         printDebug("MockLoginListener: didCompleteLogin, \(result)")
-    }
-
-    func didFailLogin(with error: any Error) {
-        printDebug("MockLoginListener: didFailLogin, \(error)")
-    }
-
-    func didRequireAdditionalInfo(with uid: String) {
-        printDebug("MockLoginListener: didRequireAdditionalInfo, \(uid)")
     }
 }
