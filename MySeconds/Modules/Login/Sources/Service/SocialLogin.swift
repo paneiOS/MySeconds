@@ -1,5 +1,5 @@
 //
-//  SocialLoginService.swift
+//  SocialLogin.swift
 //  Login
 //
 //  Created by JeongHwan Lee on 1/11/25.
@@ -9,13 +9,14 @@ import UIKit
 
 import FirebaseAuth
 
-protocol SocialLoginDelegate: AnyObject {
+public protocol SocialLoginDelegate: AnyObject {
     func didSucceedLogin(with authData: AuthDataResult)
     func didFailLogin(with error: LoginError)
 }
 
-protocol SocialLoginService {
-    func signIn(viewController: UIViewController?, delegate: SocialLoginDelegate)
+public enum SocialLoginType {
+    case apple
+    case google
 }
 
 public enum LoginResult {

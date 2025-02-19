@@ -21,7 +21,7 @@ protocol LoginPresentableListener: AnyObject {
     func googleLogin(with viewController: UIViewController)
 }
 
-final class LoginViewController: UIViewController, LoginPresentable, LoginViewControllable {
+final class LoginViewController: UIViewController, LoginPresentable, LoginViewControllable, Deinitializable {
     // MARK: - UI Components
 
     private lazy var totalView: UIStackView = {
@@ -61,11 +61,15 @@ final class LoginViewController: UIViewController, LoginPresentable, LoginViewCo
         self.makeUI()
     }
 
+    deinit {
+        printDeinit()
+    }
+
     private func makeUI() {
         view.backgroundColor = .white
         view.addSubview(self.totalView)
-        [self.topView, self.appleSignInButton, self.googleSignInButton].forEach {
-            self.totalView.addArrangedSubview($0)
+        for item in [self.topView, self.appleSignInButton, self.googleSignInButton] {
+            self.totalView.addArrangedSubview(item)
         }
         self.totalView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)

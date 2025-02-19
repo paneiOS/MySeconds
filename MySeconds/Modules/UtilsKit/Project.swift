@@ -17,7 +17,6 @@ let project = Project(
             bundleId: "com.panestudio.utilskit",
             infoPlist: .default,
             sources: ["Sources/**"],
-            resources: [],
             scripts: [
                 .pre(
                     script: """
@@ -36,9 +35,14 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: [],
+            dependencies: [
+                .package(product: "ModernRIBs", type: .runtime)
+            ],
             settings: .settings(
                 base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds",
                     "DEFINES_MODULE": "YES",
                     "SWIFT_INSTALL_OBJC_HEADER": "YES"
                 ]

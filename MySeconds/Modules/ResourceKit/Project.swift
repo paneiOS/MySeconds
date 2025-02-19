@@ -29,7 +29,14 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: []
+            dependencies: [],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                ]
+            )
         )
     ]
 )
