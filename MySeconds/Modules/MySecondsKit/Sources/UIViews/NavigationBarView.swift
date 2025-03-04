@@ -9,7 +9,7 @@ import ResourceKit
 import SnapKit
 import UIKit
 
-protocol NavigationDelegate: AnyObject {
+public protocol NavigationDelegate: AnyObject {
     func backBtnTapped()
     func mainFirstBtnTapped()
     func mainSecondBtnTapped()
@@ -22,7 +22,7 @@ public enum NavigationType: Equatable {
 }
 
 public class NavigationBarView: UIView {
-    weak var delegate: NavigationDelegate?
+    public weak var delegate: NavigationDelegate?
     private var searchPlaceholder: String
     private var naviType: NavigationType {
         didSet {
