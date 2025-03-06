@@ -17,6 +17,10 @@ let project = Project(
             bundleId: "com.panestudio.mysecondskit",
             infoPlist: .default,
             sources: ["Sources/**"],
+            resources: [
+                .glob(pattern: "../../Resources/**"),
+                .glob(pattern: "../ResourceKit/Resources/**")
+            ],
             scripts: [
                 .pre(
                     script: """
@@ -36,7 +40,8 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .project(target: "UtilsKit", path: "../UtilsKit")
+                .project(target: "UtilsKit", path: "../UtilsKit"),
+                .package(product: "SnapKit", type: .runtime)
             ],
             settings: .settings(
                 base: [

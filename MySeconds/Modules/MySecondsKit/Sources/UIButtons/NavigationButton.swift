@@ -5,8 +5,10 @@
 //  Created by Chung Wussup on 2/26/25.
 //
 
-import ResourceKit
 import UIKit
+
+import ResourceKit
+import SnapKit
 
 public extension UIComponents.Buttons {
     final class NavigationButton: UIButton {
@@ -26,11 +28,10 @@ public extension UIComponents.Buttons {
             self.configuration = config
             self.tintColor = tintColor
             self.addTarget(target, action: action, for: .touchUpInside)
-            self.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                self.widthAnchor.constraint(equalToConstant: 40),
-                self.heightAnchor.constraint(equalToConstant: 40)
-            ])
+
+            self.snp.makeConstraints {
+                $0.height.width.equalTo(40)
+            }
         }
 
         @available(*, unavailable)
