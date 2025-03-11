@@ -25,7 +25,7 @@ public enum NavigationType {
     case search
 }
 
-public class NavigationBarView: UIView {
+public final class NavigationBarView: UIView {
     // MARK: - UI Components
     
     private let mainView: UIView = .init()
