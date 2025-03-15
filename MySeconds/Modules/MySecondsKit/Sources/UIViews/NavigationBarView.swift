@@ -12,9 +12,10 @@ import SnapKit
 // MARK: - NavigationDelegate
 
 public protocol NavigationDelegate: AnyObject {
-    func backBtnTapped()
-    func primaryButtonTapped()
-    func secondaryButtonTapped()
+    func menuButtonTapped()
+    func achiveButtonTapped()
+    func ellipseButtonTapped()
+    func backButtonTapped()
 }
 
 // MARK: - NavigationType
@@ -27,14 +28,8 @@ public enum NavigationType {
 
 public final class NavigationBarView: UIView {
     // MARK: - UI Components
-    
+
     private let mainView: UIView = .init()
-    private lazy var backButton = UIComponents.Buttons.NavigationButton(
-        image: UIImage(named: "chevronLeft", in: bundle, compatibleWith: nil),
-        tintColor: .neutral800,
-        action: #selector(didTapBackButton),
-        target: self
-    )
 
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -44,17 +39,45 @@ public final class NavigationBarView: UIView {
         return label
     }()
 
-    private lazy var primaryButton = UIComponents.Buttons.NavigationButton(
-        image: UIImage(named: "archive", in: bundle, compatibleWith: nil),
-        action: #selector(didTapPrimaryButton),
-        target: self
-    )
+    private lazy var backButton: UIButton = {
+        let action = UIAction(image: UIImage(resource: ImageResource.chevronLeft)
+            .withRenderingMode(.alwaysTemplate)) { _ in
+                self.delegate?.achiveButtonTapped()
+            }
+        let button = UIButton(type: .custom, primaryAction: action)
+        button.tintColor = .neutral400
+        return button
+    }()
 
-    private lazy var secondaryButton = UIComponents.Buttons.NavigationButton(
-        image: UIImage(named: "menu", in: bundle, compatibleWith: nil),
-        action: #selector(didTapSecondaryButton),
-        target: self
-    )
+    private lazy var archiveButton: UIButton = {
+        let action = UIAction(image: UIImage(resource: ImageResource.archive)
+            .withRenderingMode(.alwaysTemplate)) { _ in
+                self.delegate?.achiveButtonTapped()
+            }
+        let button = UIButton(type: .custom, primaryAction: action)
+        button.tintColor = .neutral400
+        return button
+    }()
+
+    private lazy var menuButton: UIButton = {
+        let action = UIAction(image: UIImage(resource: ImageResource.menu)
+            .withRenderingMode(.alwaysTemplate)) { _ in
+                self.delegate?.menuButtonTapped()
+            }
+        let button = UIButton(type: .custom, primaryAction: action)
+        button.tintColor = .neutral400
+        return button
+    }()
+
+    private lazy var ellipsisButton: UIButton = {
+        let action = UIAction(image: UIImage(resource: ImageResource.ellipsis)
+            .withRenderingMode(.alwaysTemplate)) { _ in
+                self.delegate?.ellipseButtonTapped()
+            }
+        let button = UIButton(type: .custom, primaryAction: action)
+        button.tintColor = .black
+        return button
+    }()
 
     private let buttonStackView: UIStackView = {
         let stack = UIStackView()
@@ -73,13 +96,36 @@ public final class NavigationBarView: UIView {
         return view
     }()
 
+    private let logoImageView: UIImageView = {
+        let image = UIImage(resource: ImageResource.logo)
+            .withRenderingMode(.alwaysTemplate)
+        let imageView = UIImageView(image: image)
+        imageView.tintColor = .neutral400
+        return imageView
+    }()
+
+    private let searchImageView: UIImageView = {
+        let image = UIImage(resource: ImageResource.search)
+            .withRenderingMode(.alwaysTemplate)
+        let imageView = UIImageView(image: image)
+        imageView.tintColor = .neutral400
+        return imageView
+    }()
+
+    private let searchTextField: UITextField = {
+        let textField = UITextField()
+        textField.font = .systemFont(ofSize: 16)
+        textField.textColor = .neutral400
+        return textField
+    }()
+
     // MARK: - Properties
-    
+
     public weak var delegate: NavigationDelegate?
     private let searchPlaceholder: String
     private let naviType: NavigationType
     private let bundle = Bundle.module
-    
+
     // MARK: - Init
 
     public init(
@@ -98,7 +144,7 @@ public final class NavigationBarView: UIView {
     }
 
     // MARK: - Setup UI
-    
+
     private func setupUI() {
         self.addSubviews(self.mainView)
 
@@ -111,35 +157,32 @@ public final class NavigationBarView: UIView {
         case .main:
             self.setupMainUI()
         case let .title(hasBack, title, hasPrimaryButton):
-            self.setupTitleUI(hasBack: hasBack, title: title, hasPrimaryButton: hasPrimaryButton)
+            self.setupTitleUI(
+                hasBack: hasBack,
+                title: title,
+                hasPrimaryButton: hasPrimaryButton
+            )
         case .search:
             self.setupSearchUI()
         }
     }
 
     private func setupMainUI() {
-        guard let image = UIImage(named: "logo", in: bundle, compatibleWith: nil) else {
-            return
-        }
+        self.mainView.addSubviews(self.logoImageView, self.buttonStackView)
 
-        let logoImageView = UIImageView(image: image.withRenderingMode(.alwaysTemplate))
-        logoImageView.tintColor = .neutral400
-
-        self.mainView.addSubviews(logoImageView, self.buttonStackView)
-
-        [self.primaryButton, self.secondaryButton].forEach {
-            self.buttonStackView.addArrangedSubview($0)
+        for item in [self.archiveButton, self.menuButton] {
+            self.buttonStackView.addArrangedSubview(item)
         }
         self.buttonStackView.isHidden = false
 
-        logoImageView.snp.makeConstraints {
-            $0.leading.equalTo(self.mainView.snp.leading).offset(24)
+        self.logoImageView.snp.makeConstraints {
+            $0.leading.equalTo(self.mainView.snp.leading).inset(24)
             $0.centerY.equalToSuperview()
             $0.width.equalTo(96)
             $0.height.equalTo(32)
         }
         self.buttonStackView.snp.makeConstraints {
-            $0.trailing.equalTo(self.mainView.snp.trailing).offset(-16)
+            $0.trailing.equalTo(self.mainView.snp.trailing).inset(16)
             $0.centerY.equalToSuperview()
         }
     }
@@ -149,86 +192,55 @@ public final class NavigationBarView: UIView {
         self.mainView.addSubviews(self.titleLabel)
 
         self.titleLabel.snp.makeConstraints {
-            $0.centerX.centerY.equalToSuperview()
+            $0.center.equalToSuperview()
         }
 
         if hasBack {
             self.mainView.addSubviews(self.backButton)
-
             self.backButton.snp.makeConstraints {
-                $0.leading.equalToSuperview().offset(10)
+                $0.leading.equalToSuperview().inset(10)
                 $0.centerY.equalToSuperview()
             }
         }
 
         if hasPrimaryButton {
-            guard let ellipsisImage = UIImage(named: "ellipsis",
-                                              in: bundle,
-                                              compatibleWith: nil) else {
-                return
-            }
             self.buttonStackView.isHidden = false
-            self.primaryButton.setImage(ellipsisImage, for: .normal)
-            self.buttonStackView.addArrangedSubview(self.primaryButton)
+            self.buttonStackView.addArrangedSubview(self.ellipsisButton)
             self.mainView.addSubviews(self.buttonStackView)
             self.buttonStackView.snp.makeConstraints {
-                $0.trailing.equalToSuperview().offset(-16)
+                $0.trailing.equalToSuperview().inset(16)
                 $0.centerY.equalToSuperview()
             }
         }
     }
 
     private func setupSearchUI() {
-        guard let searchImage = UIImage(named: "search", in: bundle, compatibleWith: nil) else {
-            return
-        }
-        let searchIcon = UIImageView(image: searchImage.withRenderingMode(.alwaysTemplate))
-        searchIcon.tintColor = .neutral400
-
-        let textField = UITextField()
-        textField.placeholder = self.searchPlaceholder
-        textField.font = .systemFont(ofSize: 16)
-        textField.textColor = .neutral400
-
-        self.searchView.addSubviews(searchIcon, textField)
+        self.searchTextField.placeholder = self.searchPlaceholder
+        self.searchView.addSubviews(self.searchImageView, self.searchTextField)
         self.mainView.addSubviews(self.searchView, self.backButton)
 
-        searchIcon.snp.makeConstraints {
-            $0.leading.equalToSuperview().offset(12)
+        self.searchImageView.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(12)
             $0.centerY.equalToSuperview()
             $0.width.height.equalTo(20)
         }
 
-        textField.snp.makeConstraints {
-            $0.leading.equalTo(searchIcon.snp.trailing).offset(8)
-            $0.trailing.equalToSuperview().offset(-12)
+        self.searchTextField.snp.makeConstraints {
+            $0.leading.equalTo(self.searchImageView.snp.trailing).offset(8)
+            $0.trailing.equalToSuperview().inset(12)
             $0.centerY.equalToSuperview()
         }
 
         self.backButton.snp.makeConstraints {
-            $0.leading.equalToSuperview().offset(8)
+            $0.leading.equalToSuperview().inset(8)
             $0.centerY.equalToSuperview()
         }
 
         self.searchView.snp.makeConstraints {
             $0.leading.equalTo(self.backButton.snp.trailing).offset(8)
-            $0.trailing.equalToSuperview().offset(-24)
+            $0.trailing.equalToSuperview().inset(24)
             $0.centerY.equalToSuperview()
             $0.height.equalTo(40)
         }
-    }
-
-    // MARK: - Actions
-    
-    @objc private func didTapBackButton() {
-        self.delegate?.backBtnTapped()
-    }
-
-    @objc private func didTapPrimaryButton() {
-        self.delegate?.primaryButtonTapped()
-    }
-
-    @objc private func didTapSecondaryButton() {
-        self.delegate?.secondaryButtonTapped()
     }
 }
