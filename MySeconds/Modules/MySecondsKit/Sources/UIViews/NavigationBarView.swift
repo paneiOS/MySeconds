@@ -17,7 +17,7 @@ public protocol NavigationDelegate: AnyObject {
     func ellipseButtonTapped()
     func backButtonTapped()
 }
-
+    
 // MARK: - NavigationType
 
 public enum NavigationType {
@@ -124,7 +124,6 @@ public final class NavigationBarView: UIView {
     public weak var delegate: NavigationDelegate?
     private let searchPlaceholder: String
     private let naviType: NavigationType
-    private let bundle = Bundle.module
 
     // MARK: - Init
 
