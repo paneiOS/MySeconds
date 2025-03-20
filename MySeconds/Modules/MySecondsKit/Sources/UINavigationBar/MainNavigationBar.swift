@@ -43,7 +43,7 @@ public final class MainNavigationBar: UINavigationBar {
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .white
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor.black,
+            .foregroundColor: UIColor.neutral800,
             .font: UIFont.systemFont(ofSize: 16, weight: .regular)
         ]
         self.standardAppearance = appearance
