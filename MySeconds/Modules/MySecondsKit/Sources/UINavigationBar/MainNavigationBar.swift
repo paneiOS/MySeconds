@@ -7,6 +7,8 @@
 
 import UIKit
 
+import ResourceKit
+
 public protocol MainNavigationBarDelegate: AnyObject {
     func didTapBackButton()
 }
@@ -17,7 +19,7 @@ public final class MainNavigationBar: UINavigationBar {
     public weak var navigationDelegate: MainNavigationBarDelegate?
     
     private lazy var backButton: UIButton = {
-        let action = UIAction(image: UIImage(resource: ImageResource.chevronLeft)
+        let action = UIAction(image: ResourceKitAsset.chevronLeft.image
             .withRenderingMode(.alwaysTemplate)) { _ in
                 self.navigationDelegate?.didTapBackButton()
             }
