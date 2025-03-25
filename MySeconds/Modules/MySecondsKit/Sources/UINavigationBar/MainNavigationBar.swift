@@ -61,7 +61,7 @@ public final class MainNavigationBar: UINavigationBar {
     ) {
         let naviItem = UINavigationItem(title: title)
 
-        naviItem.leftBarButtonItem = backButton
+        naviItem.leftBarButtonItem = self.backButton
         naviItem.rightBarButtonItems = self.setupRightButtonItems(buttons: rightButtons)
 
         self.items = [naviItem]
@@ -90,7 +90,7 @@ public final class MainNavigationBar: UINavigationBar {
                 action()
             }, for: .touchUpInside)
         }
-        
+
         return button
     }
 }

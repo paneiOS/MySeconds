@@ -1,5 +1,5 @@
 //
-//  MSNavigationController.swift
+//  AppDelegate.swift
 //  MySecondsKit
 //
 //  Created by Chung Wussup on 3/25/25.
@@ -13,7 +13,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         _: UIApplication,
         didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        return true
+        true
     }
 
     func application(
