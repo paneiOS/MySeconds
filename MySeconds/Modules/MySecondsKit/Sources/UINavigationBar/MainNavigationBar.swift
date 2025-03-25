@@ -19,14 +19,11 @@ public final class MainNavigationBar: UINavigationBar {
 
     public weak var navigationDelegate: MainNavigationBarDelegate?
 
-    private lazy var backButton: UIButton = {
-        let action = UIAction(image: ResourceKitAsset.chevronLeft.image
-            .withRenderingMode(.alwaysTemplate)) { _ in
-                self.navigationDelegate?.didTapBackButton()
-            }
-        let button = UIButton(type: .custom, primaryAction: action)
-        button.tintColor = .neutral800
-        return button
+    public private(set) lazy var backButton: UIBarButtonItem = {
+        let image = ResourceKitAsset.chevronLeft.image.withRenderingMode(.alwaysTemplate)
+        let item = UIBarButtonItem(image: image, style: .plain, target: nil, action: nil)
+        item.tintColor = .neutral800
+        return item
     }()
 
     // MARK: - Initializers
@@ -64,7 +61,7 @@ public final class MainNavigationBar: UINavigationBar {
     ) {
         let naviItem = UINavigationItem(title: title)
 
-        naviItem.leftBarButtonItem = UIBarButtonItem(customView: self.backButton)
+        naviItem.leftBarButtonItem = backButton
         naviItem.rightBarButtonItems = self.setupRightButtonItems(buttons: rightButtons)
 
         self.items = [naviItem]
