@@ -27,7 +27,7 @@ let project = Project(
             name: "{{ name }}ModuleApp",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.panestudio.{{ name }}ModleApp",
+            bundleId: "com.panestudio.myseconds",
             infoPlist: .default,
             sources: ["AppSources/**"],
                         scripts: [
