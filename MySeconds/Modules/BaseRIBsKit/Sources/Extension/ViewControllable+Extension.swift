@@ -1,8 +1,8 @@
 //
-//  ViewControllable+.swift
-//  UtilsKit
+//  ViewControllable+Extension.swift
+//  BaseRIBsKit
 //
-//  Created by 이정환 on 1/30/25.
+//  Created by 이정환 on 4/22/25.
 //
 
 import UIKit
@@ -18,3 +18,4 @@ public extension ViewControllable {
         uiviewController.dismiss(animated: animated, completion: completion)
     }
 }
+
