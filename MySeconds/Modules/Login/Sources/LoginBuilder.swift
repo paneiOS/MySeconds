@@ -19,14 +19,10 @@ public protocol LoginBuildable: Buildable {
     func build(withListener listener: LoginListener) -> LoginRouting
 }
 
-public final class LoginBuilder: Builder<LoginComponent>, LoginBuildable, Deinitializable {
+public final class LoginBuilder: Builder<LoginComponent>, LoginBuildable {
 
     override public init(dependency: LoginComponent) {
         super.init(dependency: dependency)
-    }
-
-    deinit {
-        printDeinit()
     }
 
     public func build(withListener listener: LoginListener) -> LoginRouting {

@@ -21,7 +21,7 @@ protocol LoginPresentableListener: AnyObject {
     func googleLogin(with viewController: UIViewController)
 }
 
-final class LoginViewController: UIViewController, LoginPresentable, LoginViewControllable, Deinitializable {
+final class LoginViewController: UIViewController, LoginPresentable, LoginViewControllable {
     // MARK: - UI Components
 
     private lazy var totalView: UIStackView = {
@@ -59,10 +59,6 @@ final class LoginViewController: UIViewController, LoginPresentable, LoginViewCo
         super.viewDidLoad()
 
         self.makeUI()
-    }
-
-    deinit {
-        printDeinit()
     }
 
     private func makeUI() {

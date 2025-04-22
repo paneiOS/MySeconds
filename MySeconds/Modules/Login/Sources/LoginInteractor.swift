@@ -24,7 +24,7 @@ public protocol LoginListener: AnyObject {
     func didLogin(with result: LoginResult)
 }
 
-final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable, Deinitializable {
+final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable {
     weak var router: LoginRouting?
     weak var listener: LoginListener?
 
@@ -38,10 +38,6 @@ final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInter
         self.socialLoginService = socialLoginService
         super.init(presenter: presenter)
         presenter.listener = self
-    }
-
-    deinit {
-        printDeinit()
     }
 }
 

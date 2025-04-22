@@ -17,15 +17,11 @@ protocol LoginInteractable: Interactable {
 
 protocol LoginViewControllable: ViewControllable {}
 
-final class LoginRouter: ViewableRouter<LoginInteractable, LoginViewControllable>, LoginRouting, Deinitializable {
+final class LoginRouter: ViewableRouter<LoginInteractable, LoginViewControllable>, LoginRouting {
 
     override init(interactor: LoginInteractable, viewController: LoginViewControllable) {
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
-    }
-
-    deinit {
-        printDeinit()
     }
 
     func googleSignIn(completion: @escaping (Result<GIDSignInResult, Error>) -> Void) {
