@@ -1,24 +1,30 @@
+//
+//  Project.swift
+//  MySeconds
+//
+//  Created by pane on 04/22/2025.
+//
+
 import ProjectDescription
 
-#if Tuist
-    let packageSettings = PackageSettings(
-        productTypes: [
-            "ModernRIBs": .framework
-        ]
-    )
-#endif
-
 let project = Project(
-    name: "MySeconds",
-    packages: [
-        .package(url: "https://github.com/DevYeom/ModernRIBs.git", from: "1.0.0"),
-        .package(url: "https://github.com/SnapKit/SnapKit.git", from: "5.0.0"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.6.0"),
-        .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "8.0.0")
-    ],
+    name: "BaseRIBsKit",
     targets: [
         .target(
-            name: "MySeconds",
+            name: "BaseRIBsKit",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.panestudio.baseribskit",
+            infoPlist: .default,
+            sources: ["Sources/**"],
+            resources: [],
+            dependencies: [
+                .package(product: "ModernRIBs", type: .runtime),
+                .package(product: "SnapKit", type: .runtime)
+            ]
+        ),
+        .target(
+            name: "BaseRIBsKitModuleApp",
             destinations: .iOS,
             product: .app,
             bundleId: "com.panestudio.myseconds",
@@ -36,7 +42,6 @@ let project = Project(
                             ]
                         ]
                     ],
-                    "UIApplicationMainStoryboardFile": "",
                     "CFBundleURLTypes": [
                         [
                             "CFBundleTypeRole": "Editor",
@@ -45,17 +50,12 @@ let project = Project(
                     ]
                 ]
             ),
-            sources: ["MySeconds/Sources/**"],
-            resources: [
-                "MySeconds/Resources/**",
-                "MySeconds/Resources/GoogleService-Info.plist"
-            ],
-            entitlements: "MySeconds.entitlements",
+            sources: ["AppSources/**"],
             scripts: [
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --config "${SRCROOT}/.swiftlint.yml" --reporter xcode
+                    swiftlint lint --config "../../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -70,34 +70,29 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .package(product: "SnapKit", type: .runtime),
-                .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
-                .project(target: "Login", path: "MySeconds/Modules/Login"),
-                .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
-                .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
-                .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit")
+                .target(name: "BaseRIBsKit")
             ],
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
-                    "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
         ),
         .target(
-            name: "MySecondsTests",
+            name: "BaseRIBsKitTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "com.panestudio.myseconds",
+            bundleId: "com.panestudio.baseribskit",
             infoPlist: .default,
-            sources: ["MySeconds/Tests/**"],
-            resources: [],
-            dependencies: [.target(name: "MySeconds")],
+            sources: ["Tests/**"],
+            dependencies: [
+                .target(name: "BaseRIBsKit")
+            ],
             settings: .settings(
                 base: [
-                    "SWIFT_VERSION": "6.0",
+                    "CODE_SIGN_STYLE": "Manual",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
