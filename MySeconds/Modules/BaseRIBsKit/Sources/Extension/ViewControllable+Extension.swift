@@ -18,4 +18,3 @@ public extension ViewControllable {
         uiviewController.dismiss(animated: animated, completion: completion)
     }
 }
-

@@ -10,7 +10,9 @@ import UIKit
 
 import ModernRIBs
 
-open class BaseViewController: UIViewController, ViewControllable {
+public protocol BaseViewControllable: ViewControllable {}
+
+open class BaseViewController: UIViewController, BaseViewControllable {
 
     // MARK: - Combine
 
