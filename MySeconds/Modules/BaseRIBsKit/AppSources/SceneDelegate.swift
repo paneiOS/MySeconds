@@ -13,8 +13,8 @@ import ModernRIBs
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
-
-    private var router: Routing?
+    private var mockListener: MockBaseListener = .init()
+    private var router: BaseRouting?
 
     func scene(
         _ scene: UIScene,
@@ -23,15 +23,22 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
-
-        let viewController = BaseViewController()
-        let interactor = BaseInteractor(presenter: viewController)
-        let router = BaseRouter(interactor: interactor, viewController: viewController)
-        interactor.router = router
-        self.router = router
-
         self.window = window
+
+        let builder: BaseBuilder = .init(
+            dependency: EmptyComponent()
+        )
+        let router = builder.build(withListener: self.mockListener)
+        self.router = router
         self.window?.rootViewController = router.viewControllable.uiviewController
         self.window?.makeKeyAndVisible()
     }
 }
+
+final class MockBaseDependency: Dependency {
+    public var token: String {
+        "mockTokenValue"
+    }
+}
+
+final class MockBaseListener: BaseListener {}
