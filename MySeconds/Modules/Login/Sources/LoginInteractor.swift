@@ -12,6 +12,7 @@ import FirebaseFirestore
 import GoogleSignIn
 import ModernRIBs
 
+import BaseRIBsKit
 import UtilsKit
 
 public protocol LoginRouting: ViewableRouting {}
@@ -24,7 +25,7 @@ public protocol LoginListener: AnyObject {
     func didLogin(with result: LoginResult)
 }
 
-final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable {
+final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable, BaseInteractable {
     weak var router: LoginRouting?
     weak var listener: LoginListener?
 
