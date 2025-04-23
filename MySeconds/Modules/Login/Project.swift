@@ -20,7 +20,6 @@ let project = Project(
                 .package(product: "FirebaseAuth", type: .runtime),
                 .package(product: "FirebaseFirestore", type: .runtime),
                 .package(product: "GoogleSignIn", type: .runtime),
-                .package(product: "SnapKit", type: .runtime),
                 .project(target: "BaseRIBsKit", path: "../../Modules/BaseRIBsKit"),
                 .project(target: "MySecondsKit", path: "../../Modules/MySecondsKit"),
                 .project(target: "ResourceKit", path: "../../Modules/ResourceKit"),

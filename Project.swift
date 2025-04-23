@@ -70,7 +70,6 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .package(product: "SnapKit", type: .runtime),
                 .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
