@@ -7,6 +7,8 @@
 
 import ModernRIBs
 
+import BaseRIBsKit
+
 protocol {{ name }}Interactable: Interactable {
     var router: {{ name }}Routing? { get set }
     var listener: {{ name }}Listener? { get set }
@@ -14,9 +16,9 @@ protocol {{ name }}Interactable: Interactable {
 
 protocol {{ name }}ViewControllable: ViewControllable {}
 
-final class {{ name }}Router: ViewableRouter<{{ name }}Interactable, {{ name }}ViewControllable>, {{ name }}Routing {
+final class {{ name }}Router: BaseRouter<{{ name }}Interactor, {{ name }}ViewController>, {{ name }}Routing {
 
-    override init(interactor: {{ name }}Interactable, viewController: {{ name }}ViewControllable) {
+    override init(interactor: {{ name }}Interactor, viewController: {{ name }}ViewController) {
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
     }

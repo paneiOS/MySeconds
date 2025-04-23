@@ -7,26 +7,30 @@
 
 import ModernRIBs
 
-protocol {{ name }}Dependency: Dependency {}
+import BaseRIBsKit
 
-final class {{ name }}Component: Component<{{ name }}Dependency> {}
+public protocol {{ name }}Dependency: Dependency {}
+
+public final class {{ name }}Component: Component<{{ name }}Dependency> {}
+
+extension {{ name }}Component: {{ name }}Dependency {}
 
 // MARK: - Builder
 
-protocol {{ name }}Buildable: Buildable {
+public protocol {{ name }}Buildable: Buildable {
     func build(withListener listener: {{ name }}Listener) -> {{ name }}Routing
 }
 
-final class {{ name }}Builder: Builder<{{ name }}Dependency>, {{ name }}Buildable {
+public final class {{ name }}Builder: BaseBuilder<{{ name }}Component>, {{ name }}Buildable {
 
-    override init(dependency: {{ name }}Dependency) {
+    override public init(dependency: {{ name }}Component) {
         super.init(dependency: dependency)
     }
 
-    func build(withListener listener: {{ name }}Listener) -> {{ name }}Routing {
+    public func build(withListener listener: {{ name }}Listener) -> {{ name }}Routing {
         let component = {{ name }}Component(dependency: dependency)
         let viewController = {{ name }}ViewController()
-        let interactor = {{ name }}Interactor(presenter: viewController)
+        let interactor = {{ name }}Interactor(presenter: viewController, component: dependency)
         interactor.listener = listener
         return {{ name }}Router(interactor: interactor, viewController: viewController)
     }

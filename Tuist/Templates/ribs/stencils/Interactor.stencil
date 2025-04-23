@@ -7,20 +7,22 @@
 
 import ModernRIBs
 
-protocol {{ name }}Routing: ViewableRouting {}
+import BaseRIBsKit
+
+public protocol {{ name }}Routing: ViewableRouting {}
 
 protocol {{ name }}Presentable: Presentable {
     var listener: {{ name }}PresentableListener? { get set }
 }
 
-protocol {{ name }}Listener: AnyObject {}
+public protocol {{ name }}Listener: AnyObject {}
 
 final class {{ name }}Interactor: PresentableInteractor<{{ name }}Presentable>, {{ name }}Interactable, {{ name }}PresentableListener {
 
     weak var router: {{ name }}Routing?
     weak var listener: {{ name }}Listener?
 
-    override init(presenter: {{ name }}Presentable) {
+    init(presenter: {{ name }}Presentable, component: {{ name }}Component) {
         super.init(presenter: presenter)
         presenter.listener = self
     }

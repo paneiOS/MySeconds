@@ -7,8 +7,14 @@
 
 import UIKit
 
+import ModernRIBs
+
+import {{ name }}
+
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
+    private var mockListener: Mock{{ name }}Listener = .init()
+    private var router: {{ name }}Routing?
 
     func scene(
         _ scene: UIScene,
@@ -16,35 +22,28 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         options _: UIScene.ConnectionOptions
     ) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-
         let window = UIWindow(windowScene: windowScene)
-        let rootViewController = UIViewController()
-        rootViewController.view.backgroundColor = .white
-
         self.window = window
-        self.window?.rootViewController = rootViewController
+
+        // TODO: - 모듈이름소문자로 수정 필요
+        let {{ name }}Builder = {{ name }}Builder(
+            dependency: .init(
+                dependency: Mock{{ name }}Dependency()
+            )
+        )
+        // TODO: - 모듈이름소문자로 수정 필요
+        let {{ name }}Router = {{ name }}Builder.build(withListener: self.mockListener)
+        self.router = {{ name }}Router
+
+        self.window?.rootViewController = {{ name }}Router.viewControllable.uiviewController
         self.window?.makeKeyAndVisible()
-
-        print("SceneDelegate: Scene will connect to session")
-    }
-
-    func sceneDidDisconnect(_: UIScene) {
-        print("SceneDelegate: Scene did disconnect")
-    }
-
-    func sceneDidBecomeActive(_: UIScene) {
-        print("SceneDelegate: Scene did become active")
-    }
-
-    func sceneWillResignActive(_: UIScene) {
-        print("SceneDelegate: Scene will resign active")
-    }
-
-    func sceneWillEnterForeground(_: UIScene) {
-        print("SceneDelegate: Scene will enter foreground")
-    }
-
-    func sceneDidEnterBackground(_: UIScene) {
-        print("SceneDelegate: Scene did enter background")
     }
 }
+
+final class Mock{{ name }}Dependency: {{ name }}Dependency {
+    public var token: String {
+        "mockTokenValue"
+    }
+}
+
+final class Mock{{ name }}Listener: {{ name }}Listener {}
