@@ -10,6 +10,7 @@ import UIKit
 import ModernRIBs
 
 import SignUp
+import UtilsKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -44,4 +45,8 @@ final class MockSignUpDependency: SignUpDependency {
     }
 }
 
-final class MockSignUpListener: SignUpListener {}
+final class MockSignUpListener: SignUpListener {
+    func sendUserInfo(with userInfo: SignUp.AdditionalUserInfo) {
+        printDebug("MockSignUpListener: sendUserInfo, \(userInfo)")
+    }
+}

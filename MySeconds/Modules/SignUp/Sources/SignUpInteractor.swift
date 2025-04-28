@@ -15,15 +15,23 @@ protocol SignUpPresentable: Presentable {
     var listener: SignUpPresentableListener? { get set }
 }
 
-public protocol SignUpListener: AnyObject {}
+public protocol SignUpListener: AnyObject {
+    func sendUserInfo(with userInfo: AdditionalUserInfo)
+}
 
-final class SignUpInteractor: PresentableInteractor<SignUpPresentable>, SignUpInteractable, SignUpPresentableListener {
+final class SignUpInteractor: PresentableInteractor<SignUpPresentable>, SignUpInteractable {
 
     weak var router: SignUpRouting?
     weak var listener: SignUpListener?
 
-    init(presenter: SignUpPresentable, component: SignUpComponent) {
+    init(presenter: SignUpPresentable, component _: SignUpComponent) {
         super.init(presenter: presenter)
         presenter.listener = self
+    }
+}
+
+extension SignUpInteractor: SignUpPresentableListener {
+    func sendUserInfo(with userInfo: AdditionalUserInfo) {
+        self.listener?.sendUserInfo(with: userInfo)
     }
 }

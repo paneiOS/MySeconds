@@ -21,7 +21,8 @@ let project = Project(
             dependencies: [
                 .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
                 .project(target: "MySecondsKit", path: "../MySecondsKit"),
-                .project(target: "ResourceKit", path: "../ResourceKit")
+                .project(target: "ResourceKit", path: "../ResourceKit"),
+                .project(target: "UtilsKit", path: "../UtilsKit")
             ]
         ),
         .target(
