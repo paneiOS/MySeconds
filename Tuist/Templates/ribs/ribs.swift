@@ -9,17 +9,17 @@ import Foundation
 
 import ProjectDescription
 
-fileprivate let currentDate: String = {
+private let currentDate: String = {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "MM/dd/yyyy"
     return dateFormatter.string(from: Date())
 }()
 
-fileprivate let userName: String = NSUserName()
+private let userName: String = NSUserName()
 
-fileprivate let nameAttribute: Template.Attribute = .required("name")
+private let nameAttribute: Template.Attribute = .required("name")
 
-fileprivate let modulePropertyName: Template.Attribute = .required("name")
+private let modulePropertyName: Template.Attribute = .required("name")
 
 let ribsTemplate = Template(
     description: "ModernRIBs ownsView 기반 RIB 생성",

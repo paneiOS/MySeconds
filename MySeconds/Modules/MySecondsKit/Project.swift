@@ -36,6 +36,7 @@ let project = Project(
                 )
             ],
             dependencies: [
+                .external(name: "SnapKit"),
                 .project(target: "UtilsKit", path: "../UtilsKit")
             ],
             settings: .settings(

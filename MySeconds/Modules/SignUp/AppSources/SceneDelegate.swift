@@ -32,7 +32,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
         let signUpRouter = signUpBuilder.build(withListener: self.mockListener)
         self.router = signUpRouter
-        
+
         self.window?.rootViewController = signUpRouter.viewControllable.uiviewController
         self.window?.makeKeyAndVisible()
     }

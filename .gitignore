@@ -60,3 +60,4 @@ Tuist/.build
 Packages/
 Package.pins
 Package.resolved
+.build/

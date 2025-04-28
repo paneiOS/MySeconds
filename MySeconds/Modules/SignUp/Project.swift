@@ -19,7 +19,9 @@ let project = Project(
             sources: ["Sources/**"],
             resources: [],
             dependencies: [
-                .project(target: "BaseRIBsKit", path: "../../Modules/BaseRIBsKit")
+                .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
+                .project(target: "MySecondsKit", path: "../MySecondsKit"),
+                .project(target: "ResourceKit", path: "../ResourceKit")
             ]
         ),
         .target(

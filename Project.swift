@@ -11,8 +11,6 @@ import ProjectDescription
 let project = Project(
     name: "MySeconds",
     packages: [
-        .package(url: "https://github.com/DevYeom/ModernRIBs.git", from: "1.0.0"),
-        .package(url: "https://github.com/SnapKit/SnapKit.git", from: "5.0.0"),
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.6.0"),
         .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "8.0.0")
     ],
