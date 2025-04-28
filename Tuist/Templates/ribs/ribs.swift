@@ -28,35 +28,35 @@ let ribsTemplate = Template(
     ],
     items: [
         .file(
-            path: "Modules/\(nameAttribute)/AppSources/AppDelegate.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/AppSources/AppDelegate.swift",
             templatePath: "stencils/AppDelegate.stencil"
         ),
         .file(
-            path: "Modules/\(nameAttribute)/Project.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/Project.swift",
             templatePath: "stencils/Project.stencil"
         ),
         .file(
-            path: "Modules/\(nameAttribute)/Sources/\(nameAttribute)Builder.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/Sources/\(nameAttribute)Builder.swift",
             templatePath: "stencils/Builder.stencil"
         ),
         .file(
-            path: "Modules/\(nameAttribute)/Sources/\(nameAttribute)Router.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/Sources/\(nameAttribute)Router.swift",
             templatePath: "stencils/Router.stencil"
         ),
         .file(
-            path: "Modules/\(nameAttribute)/AppSources/SceneDelegate.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/AppSources/SceneDelegate.swift",
             templatePath: "stencils/SceneDelegate.stencil"
         ),
         .file(
-            path: "Modules/\(nameAttribute)/Sources/\(nameAttribute)Interactor.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/Sources/\(nameAttribute)Interactor.swift",
             templatePath: "stencils/Interactor.stencil"
         ),
         .file(
-            path: "Modules/\(nameAttribute)/Sources/\(nameAttribute)ViewController.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/Sources/\(nameAttribute)ViewController.swift",
             templatePath: "stencils/ViewController.stencil"
         ),
         .file(
-            path: "Modules/\(nameAttribute)/Tests/\(nameAttribute)Tests.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/Tests/\(nameAttribute)Tests.swift",
             templatePath: "stencils/Tests.stencil"
         )
     ]
