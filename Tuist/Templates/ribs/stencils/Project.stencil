@@ -19,7 +19,7 @@ let project = Project(
             sources: ["Sources/**"],
             resources: [],
             dependencies: [
-                .project(target: "LayoutDependencies", path: "../../Modules/LayoutDependencies"),
+                .external(name: "SnapKit"),
                 .project(target: "BaseRIBsKit", path: "../../Modules/BaseRIBsKit")
             ]
         ),

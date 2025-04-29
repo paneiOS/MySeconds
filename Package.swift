@@ -1,4 +1,4 @@
-// swift-tools-version:5.7
+// swift-tools-version:5.9
 //
 //  Package.swift
 //  LoginManifests
@@ -8,8 +8,18 @@
 
 @preconcurrency import PackageDescription
 
+#if TUIST
+import ProjectDescription
+
+let packageSettings = PackageSettings(
+  productTypes: [
+    "SnapKit": .framework
+  ]
+)
+#endif
+
 let package = Package(
-    name: "MySeconds",
+    name: "MySecondsDependencies",
     platforms: [
         .iOS(.v15)
     ],
