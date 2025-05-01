@@ -1,5 +1,5 @@
 //
-//  VideoCreationProject.swift
+//  Project.swift
 //  MySeconds
 //
 //  Created by pane on 04/29/2025.
@@ -20,7 +20,10 @@ let project = Project(
             resources: [],
             dependencies: [
                 .external(name: "SnapKit"),
-                .project(target: "BaseRIBsKit", path: "../../Modules/BaseRIBsKit")
+                .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
+                .project(target: "MySecondsKit", path: "../MySecondsKit"),
+                .project(target: "ResourceKit", path: "../ResourceKit"),
+                .project(target: "UtilsKit", path: "../UtilsKit")
             ]
         ),
         .target(

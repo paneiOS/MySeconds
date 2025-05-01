@@ -25,24 +25,22 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        // TODO: - 모듈이름소문자로 수정 필요
-        let VideoCreationBuilder = VideoCreationBuilder(
+        let videoCreationBuilder = VideoCreationBuilder(
             dependency: .init(
                 dependency: MockVideoCreationDependency()
             )
         )
-        // TODO: - 모듈이름소문자로 수정 필요
-        let VideoCreationRouter = VideoCreationBuilder.build(withListener: self.mockListener)
-        self.router = VideoCreationRouter
+        let videoCreationRouter = videoCreationBuilder.build(withListener: self.mockListener)
+        self.router = videoCreationRouter
 
-        self.window?.rootViewController = VideoCreationRouter.viewControllable.uiviewController
+        self.window?.rootViewController = videoCreationRouter.viewControllable.uiviewController
         self.window?.makeKeyAndVisible()
     }
 }
 
 final class MockVideoCreationDependency: VideoCreationDependency {
-    public var token: String {
-        "mockTokenValue"
+    public var segments: [VideoCreation.VideoSegment] {
+        []
     }
 }
 

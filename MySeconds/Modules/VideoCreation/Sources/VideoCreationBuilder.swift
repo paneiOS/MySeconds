@@ -9,9 +9,13 @@ import ModernRIBs
 
 import BaseRIBsKit
 
-public protocol VideoCreationDependency: Dependency {}
+public protocol VideoCreationDependency: Dependency {
+    var segments: [VideoSegment] { get }
+}
 
-public final class VideoCreationComponent: Component<VideoCreationDependency> {}
+public final class VideoCreationComponent: Component<VideoCreationDependency> {
+    public var segments: [VideoSegment] { dependency.segments }
+}
 
 extension VideoCreationComponent: VideoCreationDependency {}
 
@@ -30,7 +34,7 @@ public final class VideoCreationBuilder: BaseBuilder<VideoCreationComponent>, Vi
     public func build(withListener listener: VideoCreationListener) -> VideoCreationRouting {
         let component = VideoCreationComponent(dependency: dependency)
         let viewController = VideoCreationViewController()
-        let interactor = VideoCreationInteractor(presenter: viewController, component: dependency)
+        let interactor = VideoCreationInteractor(presenter: viewController, component: component)
         interactor.listener = listener
         return VideoCreationRouter(interactor: interactor, viewController: viewController)
     }
