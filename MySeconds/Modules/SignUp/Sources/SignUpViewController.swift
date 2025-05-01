@@ -110,7 +110,7 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
     override func setupUI() {
         super.setupUI()
 
-        self.view.addSubviews(self.totalView)
+        self.view.addSubview(self.totalView)
         self.totalView.snp.makeConstraints {
             $0.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             $0.leading.trailing.equalToSuperview().inset(24)

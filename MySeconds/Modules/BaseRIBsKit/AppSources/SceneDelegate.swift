@@ -7,9 +7,9 @@
 
 import UIKit
 
-import BaseRIBsKit
-
 import ModernRIBs
+
+import BaseRIBsKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?

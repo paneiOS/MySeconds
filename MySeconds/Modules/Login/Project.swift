@@ -17,9 +17,10 @@ let project = Project(
             bundleId: "com.panestudio.login",
             sources: ["Sources/**"],
             dependencies: [
-                .package(product: "FirebaseAuth", type: .runtime),
-                .package(product: "FirebaseFirestore", type: .runtime),
-                .package(product: "GoogleSignIn", type: .runtime),
+                .external(name: "FirebaseAuth"),
+                .external(name: "FirebaseFirestore"),
+                .external(name: "GoogleSignIn"),
+
                 .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
                 .project(target: "MySecondsKit", path: "../MySecondsKit"),
                 .project(target: "ResourceKit", path: "../ResourceKit")
@@ -28,7 +29,8 @@ let project = Project(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
-                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds",
+                    "OTHER_LDFLAGS": "$(inherited) -ObjC"
                 ]
             )
         ),

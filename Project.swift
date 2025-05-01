@@ -1,19 +1,8 @@
 import ProjectDescription
 
-#if Tuist
-    let packageSettings = PackageSettings(
-        productTypes: [
-            "ModernRIBs": .framework
-        ]
-    )
-#endif
-
 let project = Project(
     name: "MySeconds",
-    packages: [
-        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.6.0"),
-        .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "8.0.0")
-    ],
+    packages: [],
     targets: [
         .target(
             name: "MySeconds",
