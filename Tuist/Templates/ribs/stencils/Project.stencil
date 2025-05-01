@@ -20,7 +20,7 @@ let project = Project(
             resources: [],
             dependencies: [
                 .external(name: "SnapKit"),
-                .project(target: "BaseRIBsKit", path: "../../Modules/BaseRIBsKit")
+                .project(target: "BaseRIBsKit", path: "../BaseRIBsKit")
             ]
         ),
         .target(

@@ -23,25 +23,6 @@ public struct GridSize {
     }
 }
 
-public struct SelectButtonsConfiguration {
-    let selectedColor: UIColor
-    let selectedTextColor: UIColor
-    let deSelectedColor: UIColor
-    let deSelectedTextColor: UIColor
-
-    public init(
-        selectedColor: UIColor = .black,
-        selectedTextColor: UIColor = .white,
-        deSelectedColor: UIColor = .white,
-        deSelectedTextColor: UIColor = .black
-    ) {
-        self.selectedColor = selectedColor
-        self.selectedTextColor = selectedTextColor
-        self.deSelectedColor = deSelectedColor
-        self.deSelectedTextColor = deSelectedTextColor
-    }
-}
-
 open class SelectButtonsView: UIView {
     private var cancellables = Set<AnyCancellable>()
 
@@ -55,6 +36,12 @@ open class SelectButtonsView: UIView {
     }()
 
     @Published public private(set) var selectedValue: String?
+    private var selectedButton: DSButton? {
+        didSet {
+            self.selectedValue = self.selectedButton?.currentTitle
+        }
+    }
+
     public var selectionPublisher: AnyPublisher<String?, Never> {
         self.$selectedValue.eraseToAnyPublisher()
     }
@@ -62,7 +49,7 @@ open class SelectButtonsView: UIView {
     public init(
         buttonTitles: [String],
         gridSize: GridSize,
-        configuration: SelectButtonsConfiguration = .init(),
+        configuration: ButtonStyleConfiguration = .init(),
         selectedIndex: Int? = nil
     ) {
         super.init(frame: .zero)
@@ -88,7 +75,7 @@ open class SelectButtonsView: UIView {
         }
     }
 
-    private func createGridButtons(from titles: [String], gridSize: GridSize, config: SelectButtonsConfiguration, selectedIndex: Int?) -> [[UIButton]] {
+    private func createGridButtons(from titles: [String], gridSize: GridSize, config: ButtonStyleConfiguration, selectedIndex: Int?) -> [[DSButton]] {
         return stride(from: 0, to: titles.count, by: gridSize.column)
             .map { startIndex in
                 (startIndex ..< min(startIndex + gridSize.column, titles.count))
@@ -100,34 +87,31 @@ open class SelectButtonsView: UIView {
                     }
             }
 
-        func createButton(title: String, config: SelectButtonsConfiguration, isSelected: Bool) -> UIButton {
-            let button = UIButton()
+        func createButton(title: String, config: ButtonStyleConfiguration, isSelected: Bool) -> DSButton {
+            let button = DSButton(styleConfiguration: config)
             button.setTitle(title, for: .normal)
-            button.setTitleColor(isSelected ? config.selectedTextColor : config.deSelectedTextColor, for: .normal)
-            button.backgroundColor = isSelected ? config.selectedColor : config.deSelectedColor
             button.layer.borderColor = UIColor.neutral200.cgColor
             button.layer.borderWidth = 1
             button.layer.cornerRadius = 8
             button.layer.masksToBounds = true
+            button.isSelected = isSelected
             button.publisher(for: .touchUpInside)
+                .filter { [weak self] _ in
+                    guard let self else { return false }
+                    return button !== self.selectedButton
+                }
                 .sink { [weak self] _ in
                     guard let self else { return }
-                    self.selectedValue = title
-                    for case let rowStack as UIStackView in self.mainStackView.arrangedSubviews {
-                        for case let btn as UIButton in rowStack.arrangedSubviews {
-                            let isSelected = btn.title(for: .normal) == self.selectedValue
-                            button.isSelected = isSelected
-                            btn.setTitleColor(isSelected ? config.selectedTextColor : config.deSelectedTextColor, for: .normal)
-                            btn.backgroundColor = isSelected ? config.selectedColor : config.deSelectedColor
-                        }
-                    }
+                    self.selectedButton?.isSelected = false
+                    button.isSelected = true
+                    self.selectedButton = button
                 }
                 .store(in: &self.cancellables)
             return button
         }
     }
 
-    private func createRowStackView(buttons: [UIButton]) -> UIStackView {
+    private func createRowStackView(buttons: [DSButton]) -> UIStackView {
         let rowStackView = UIStackView()
         rowStackView.axis = .horizontal
         rowStackView.spacing = 10

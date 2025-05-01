@@ -34,8 +34,8 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
         return stackView
     }()
 
-    private let sendButton: UIButton = {
-        let button: UIButton = .init()
+    private let sendButton: DSButton = {
+        let button: DSButton = .init()
         button.setAttributedTitle(
             .makeAttributedString(
                 text: "완료",
@@ -44,7 +44,6 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
             ),
             for: .normal
         )
-        button.backgroundColor = .neutral800
         button.layer.cornerRadius = 12
         button.layer.masksToBounds = true
         return button
