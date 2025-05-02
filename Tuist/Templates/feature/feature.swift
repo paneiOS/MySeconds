@@ -9,15 +9,15 @@ import Foundation
 
 import ProjectDescription
 
-let currentDate: String = {
+private let currentDate: String = {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "MM/dd/yyyy"
     return dateFormatter.string(from: Date())
 }()
 
-let userName: String = NSUserName()
+private let userName: String = NSUserName()
 
-let nameAttribute: Template.Attribute = .required("name")
+private let nameAttribute: Template.Attribute = .required("name")
 
 let featureTemplate = Template(
     description: "Creates a new feature module",
@@ -28,11 +28,11 @@ let featureTemplate = Template(
     ],
     items: [
         .file(
-            path: "Modules/\(nameAttribute)/Project.swift",
+            path: "MySeconds/Modules/\(nameAttribute)/Project.swift",
             templatePath: "stencils/Project.stencil"
         ),
         .file(
-            path: "Modules/\(nameAttribute)/Sources/\(nameAttribute).swift",
+            path: "MySeconds/Modules/\(nameAttribute)/Sources/\(nameAttribute).swift",
             templatePath: "stencils/Feature.stencil"
         )
     ]

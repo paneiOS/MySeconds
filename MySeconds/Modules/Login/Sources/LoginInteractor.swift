@@ -25,7 +25,7 @@ public protocol LoginListener: AnyObject {
     func didLogin(with result: LoginResult)
 }
 
-final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable, BaseInteractable {
+final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable {
     weak var router: LoginRouting?
     weak var listener: LoginListener?
 

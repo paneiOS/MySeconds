@@ -9,7 +9,7 @@ import ModernRIBs
 
 public protocol BaseInteractable: Interactable {}
 
-open class BaseRouter<InteractorType: Interactable, ViewControllerType: ViewControllable>: ViewableRouter<InteractorType, ViewControllerType> {
+open class BaseRouter<InteractorType: Interactable, ViewControllerType: ViewControllable>: ViewableRouter<InteractorType, ViewControllerType>, BaseRouting {
 
     override public init(interactor: InteractorType, viewController: ViewControllerType) {
         super.init(interactor: interactor, viewController: viewController)

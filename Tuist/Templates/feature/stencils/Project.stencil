@@ -14,7 +14,7 @@ let project = Project(
             name: "{{ name }}",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.{{ name | lowercase }}",
+            bundleId: "com.panestudio.{{ name }}",
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],
@@ -22,7 +22,7 @@ let project = Project(
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --config "../../.swiftlint.yml"
+                    swiftlint lint --config "../../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false

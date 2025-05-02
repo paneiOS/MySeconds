@@ -10,6 +10,8 @@ import UIKit
 
 import ModernRIBs
 
+protocol BaseresentableListener: AnyObject {}
+
 public protocol BaseViewControllable: ViewControllable {}
 
 open class BaseViewController: UIViewController, BaseViewControllable {

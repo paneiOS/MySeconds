@@ -19,7 +19,7 @@ let project = Project(
             sources: ["Sources/**"],
             resources: [],
             dependencies: [
-                .package(product: "ModernRIBs", type: .runtime)
+                .external(name: "ModernRIBs")
             ]
         ),
         .target(

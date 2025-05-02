@@ -10,6 +10,7 @@ import UIKit
 import ModernRIBs
 
 import Login
+import UtilsKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -34,5 +35,11 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.router = loginRouter
         self.window?.rootViewController = loginRouter.viewControllable.uiviewController
         self.window?.makeKeyAndVisible()
+    }
+}
+
+final class MockLoginListener: LoginListener {
+    func didLogin(with result: Login.LoginResult) {
+        printDebug("MockLoginListener: didCompleteLogin, \(result)")
     }
 }

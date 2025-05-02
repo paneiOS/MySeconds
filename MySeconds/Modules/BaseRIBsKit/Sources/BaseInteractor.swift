@@ -9,8 +9,13 @@ import Combine
 
 import ModernRIBs
 
+public protocol BaseRouting: ViewableRouting {}
+
+public protocol BaseListener: AnyObject {}
+
 open class BaseInteractor<PresenterType>: PresentableInteractor<PresenterType> {
-    public weak var router: Routing?
+    public weak var router: BaseRouting?
+    public weak var listener: BaseListener?
 
     public var cancellables = Set<AnyCancellable>()
 
@@ -25,3 +30,5 @@ open class BaseInteractor<PresenterType>: PresentableInteractor<PresenterType> {
         #endif
     }
 }
+
+extension BaseInteractor: BaseresentableListener {}

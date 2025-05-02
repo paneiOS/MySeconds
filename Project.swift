@@ -1,21 +1,8 @@
 import ProjectDescription
 
-#if Tuist
-    let packageSettings = PackageSettings(
-        productTypes: [
-            "ModernRIBs": .framework
-        ]
-    )
-#endif
-
 let project = Project(
     name: "MySeconds",
-    packages: [
-        .package(url: "https://github.com/DevYeom/ModernRIBs.git", from: "1.0.0"),
-        .package(url: "https://github.com/SnapKit/SnapKit.git", from: "5.0.0"),
-        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.6.0"),
-        .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "8.0.0")
-    ],
+    packages: [],
     targets: [
         .target(
             name: "MySeconds",
@@ -70,11 +57,11 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .package(product: "SnapKit", type: .runtime),
                 .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
                 .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
+                .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit")
             ],
             settings: .settings(
