@@ -25,9 +25,9 @@ public final class MSNavigationBar: UINavigationBar {
         self.setupNavigationBar()
     }
 
+    @available(*, unavailable)
     public required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        self.setupNavigationBar()
+        fatalError("init(coder:) has not been implemented")
     }
 
     // MARK: - Setup Methods
