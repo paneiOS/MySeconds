@@ -10,11 +10,11 @@ import ModernRIBs
 import BaseRIBsKit
 
 public protocol VideoCreationDependency: Dependency {
-    var segments: [VideoSegment] { get }
+    var clips: [CompositionClip] { get }
 }
 
 public final class VideoCreationComponent: Component<VideoCreationDependency> {
-    public var segments: [VideoSegment] { dependency.segments }
+    public var clips: [CompositionClip] { dependency.clips }
 }
 
 extension VideoCreationComponent: VideoCreationDependency {}
