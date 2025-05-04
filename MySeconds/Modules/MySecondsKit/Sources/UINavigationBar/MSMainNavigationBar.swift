@@ -12,7 +12,7 @@ import ResourceKit
 
 public final class MSNavigationBar: UINavigationBar {
     public typealias MSNavigationRightButton = (image: UIImage, tapPublisher: PassthroughSubject<Void, Never>)
-    
+
     // MARK: - Properties
 
     public let backButtonTapped = PassthroughSubject<Void, Never>()
@@ -26,7 +26,7 @@ public final class MSNavigationBar: UINavigationBar {
     }
 
     @available(*, unavailable)
-    public required init?(coder: NSCoder) {
+    public required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -48,19 +48,47 @@ public final class MSNavigationBar: UINavigationBar {
     // MARK: - Public Methods
 
     public func configure(
-        title: String,
+        isMain: Bool = false,
+        title: String? = nil,
         hasBackButton: Bool = true,
         rightButtons: [MSNavigationRightButton]? = nil
     ) {
-        let naviItem = UINavigationItem(title: title)
+        let naviItem = UINavigationItem(title: title ?? "")
 
-        naviItem.leftBarButtonItem = hasBackButton ? self.createBackButton() : nil
+        naviItem.leftBarButtonItem = self.makeLeftBarButtonItem(
+            isMain: isMain,
+            hasBackButton: hasBackButton
+        )
+
         naviItem.rightBarButtonItems = self.setupRightButtonItems(buttons: rightButtons)
 
         self.items = [naviItem]
     }
 
     // MARK: - Private Methods
+
+    private func makeLeftBarButtonItem(isMain: Bool, hasBackButton: Bool) -> UIBarButtonItem? {
+        if hasBackButton {
+            self.createBackButton()
+        } else if isMain {
+            self.createLogoImage()
+        } else {
+            nil
+        }
+    }
+
+    private func createLogoImage() -> UIBarButtonItem {
+        let logoImageView = UIImageView(image: ResourceKitAsset.mysecondsLogo.image.withRenderingMode(.alwaysTemplate))
+        logoImageView.contentMode = .scaleAspectFit
+        logoImageView.tintColor = .neutral400
+
+        let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 95.8, height: 32))
+        logoImageView.frame = containerView.bounds
+        containerView.addSubview(logoImageView)
+
+        return UIBarButtonItem(customView: containerView)
+    }
+
     private func setupRightButtonItems(
         buttons: [MSNavigationRightButton]?
     ) -> [UIBarButtonItem]? {
@@ -82,7 +110,10 @@ public final class MSNavigationBar: UINavigationBar {
 
     private func createBackButton() -> UIBarButtonItem {
         let button = UIButton(type: .custom)
-        button.setImage(ResourceKitAsset.chevronLeft.image.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.setImage(
+            ResourceKitAsset.chevronLeft.image.withRenderingMode(.alwaysTemplate),
+            for: .normal
+        )
         button.tintColor = .neutral800
 
         button.publisher(for: .touchUpInside)
