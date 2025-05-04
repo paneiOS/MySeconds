@@ -11,7 +11,7 @@ import SnapKit
 
 public final class MSNavigationController: UINavigationController {
 
-    private let msNaivagationBar = MainNavigationBar()
+    private let msNavigationBar = MainNavigationBar()
 
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -20,24 +20,24 @@ public final class MSNavigationController: UINavigationController {
     }
 
     private func setupMSNavigationBar() {
-        view.addSubview(self.msNaivagationBar)
-        self.msNaivagationBar.snp.makeConstraints {
+        view.addSubview(self.msNavigationBar)
+        self.msNavigationBar.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
             $0.leading.trailing.equalToSuperview()
             $0.height.equalTo(44)
         }
-        self.msNaivagationBar.backButton.target = self
-        self.msNaivagationBar.backButton.action = #selector(self.didTapBackButton)
+        self.msNavigationBar.backButton.target = self
+        self.msNavigationBar.backButton.action = #selector(self.didTapBackButton)
     }
-
-    public func pushViewController(
+    
+    public func msPushViewController(
         _ viewController: UIViewController,
         title: String,
         rightButtons: [(UIImage, (() -> Void)?)]? = nil,
         animated: Bool
     ) {
         super.pushViewController(viewController, animated: animated)
-        self.msNaivagationBar.configure(title: title, rightButtons: rightButtons)
+        self.msNavigationBar.configure(title: title, rightButtons: rightButtons)
     }
 
     @objc private func didTapBackButton() {
