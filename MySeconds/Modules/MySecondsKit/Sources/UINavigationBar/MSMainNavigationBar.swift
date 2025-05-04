@@ -1,30 +1,22 @@
 //
-//  MainNavigationBar.swift
+//  MSMainNavigationBar.swift
 //  MySecondsKit
 //
 //  Created by Chung Wussup on 3/18/25.
 //
 
+import Combine
 import UIKit
 
 import ResourceKit
 
-public protocol MainNavigationBarDelegate: AnyObject {
-    func didTapBackButton()
-}
-
-public final class MainNavigationBar: UINavigationBar {
-
+public final class MSNavigationBar: UINavigationBar {
+    public typealias MSNavigationRightButton = (image: UIImage, tapPublisher: PassthroughSubject<Void, Never>)
+    
     // MARK: - Properties
 
-    public weak var navigationDelegate: MainNavigationBarDelegate?
-
-    public private(set) lazy var backButton: UIBarButtonItem = {
-        let image = ResourceKitAsset.chevronLeft.image.withRenderingMode(.alwaysTemplate)
-        let item = UIBarButtonItem(image: image, style: .plain, target: nil, action: nil)
-        item.tintColor = .neutral800
-        return item
-    }()
+    public let backButtonTapped = PassthroughSubject<Void, Never>()
+    private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initializers
 
@@ -57,40 +49,49 @@ public final class MainNavigationBar: UINavigationBar {
 
     public func configure(
         title: String,
-        rightButtons: [(UIImage, (() -> Void)?)]? = nil
+        hasBackButton: Bool = true,
+        rightButtons: [MSNavigationRightButton]? = nil
     ) {
         let naviItem = UINavigationItem(title: title)
 
-        naviItem.leftBarButtonItem = self.backButton
+        naviItem.leftBarButtonItem = hasBackButton ? self.createBackButton() : nil
         naviItem.rightBarButtonItems = self.setupRightButtonItems(buttons: rightButtons)
 
         self.items = [naviItem]
     }
 
     // MARK: - Private Methods
-
     private func setupRightButtonItems(
-        buttons: [(UIImage, (() -> Void)?)]?
+        buttons: [MSNavigationRightButton]?
     ) -> [UIBarButtonItem]? {
         guard let buttons, !buttons.isEmpty else { return nil }
 
-        return buttons.map { image, action in
-            let button = self.createButton(image: image, action: action)
+        return buttons.map { image, publisher in
+            let button = UIButton(type: .custom)
+            button.setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
+            button.tintColor = .black
+            button.publisher(for: .touchUpInside)
+                .sink { _ in
+                    publisher.send()
+                }
+                .store(in: &self.cancellables)
+
             return UIBarButtonItem(customView: button)
         }
     }
 
-    private func createButton(image: UIImage, action: (() -> Void)?) -> UIButton {
+    private func createBackButton() -> UIBarButtonItem {
         let button = UIButton(type: .custom)
-        button.setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
-        button.tintColor = .black
+        button.setImage(ResourceKitAsset.chevronLeft.image.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.tintColor = .neutral800
 
-        if let action {
-            button.addAction(UIAction { _ in
-                action()
-            }, for: .touchUpInside)
-        }
+        button.publisher(for: .touchUpInside)
+            .sink { [weak self] _ in
+                self?.backButtonTapped.send()
+            }
+            .store(in: &self.cancellables)
 
-        return button
+        let barButton = UIBarButtonItem(customView: button)
+        return barButton
     }
 }
