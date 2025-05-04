@@ -8,6 +8,6 @@
 import Foundation
 
 public enum CompositionClip: Hashable {
-    case cover(StaticClip)
+    case cover(CoverClip)
     case video(VideoClip)
 }

@@ -5,6 +5,7 @@
 //  Created by pane on 04/29/2025.
 //
 
+import Combine
 import UIKit
 
 import SnapKit
@@ -14,12 +15,31 @@ import MySecondsKit
 import ResourceKit
 import UtilsKit
 
-protocol VideoCreationPresentableListener: AnyObject {}
+protocol VideoCreationPresentableListener: AnyObject {
+    func initClips()
+    var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
+}
 
 final class VideoCreationViewController: BaseViewController, VideoCreationPresentable, VideoCreationViewControllable {
     private enum Constants {
         static let makeButtonDuration: CGFloat = 1
+        private static let maximumColumn: Int = 4
+        static let cellSpacing: CGFloat = 4
+        private static let collectionViewInsets: CGFloat = 24.0
+        static let cellSize: CGSize = {
+            let totalSpacing = collectionViewInsets * 2
+                + CGFloat(maximumColumn - 1) * cellSpacing
+            let screenWidth = UIScreen.main.bounds.width
+            let cellWidth = (screenWidth - totalSpacing) / CGFloat(maximumColumn)
+            return .init(width: cellWidth, height: cellWidth)
+        }()
     }
+
+    private enum Section {
+        case main
+    }
+
+    private var clips: [CompositionClip] = []
 
     weak var listener: VideoCreationPresentableListener?
 
@@ -82,6 +102,33 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         return textField
     }()
 
+    private lazy var dataSource = UICollectionViewDiffableDataSource<Section, CompositionClip>(collectionView: collectionView) { [weak self] collectionView, indexPath, item in
+        guard let self else { fatalError("❌ VC가 메모리에서 해제되기 전에 호출될 일은 없습니다.") }
+        switch item {
+        case let .cover(coverData):
+            let cell = collectionView.dequeueReusableCell(CoverClipCell.self, for: indexPath)
+            cell.drawCell(data: coverData)
+            return cell
+
+        case let .video(videoData):
+            let cell = collectionView.dequeueReusableCell(VideoClipCell.self, for: indexPath)
+            cell.drawCell(data: videoData)
+            return cell
+        }
+    }
+
+    private lazy var collectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.itemSize = Constants.cellSize
+        layout.minimumInteritemSpacing = Constants.cellSpacing
+        layout.minimumLineSpacing = Constants.cellSpacing
+        let collectionView = IntrinsicCollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .clear
+        collectionView.register(CoverClipCell.self, forCellWithReuseIdentifier: CoverClipCell.reuseIdentifier)
+        collectionView.register(VideoClipCell.self, forCellWithReuseIdentifier: VideoClipCell.reuseIdentifier)
+        return collectionView
+    }()
+
     private var fillLayer: CALayer?
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -119,10 +166,30 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         }
 
         self.contentsSubView.addArrangedSubview(self.titleView)
+        self.contentsSubView.addArrangedSubview(self.collectionView)
+
+        self.collectionView.dataSource = self.dataSource
+        self.collectionView.delegate = self
     }
 
     override func bind() {
         super.bind()
+
+        self.viewDidLoadPublisher
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.initClips()
+            })
+            .store(in: &self.cancellables)
+
+        self.listener?.clipsPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] clips in
+                guard let self else { return }
+                self.clips = clips
+                self.applySnapshot()
+            })
+            .store(in: &self.cancellables)
 
         self.makeButton.publisher(for: .touchDown)
             .sink { [weak self] _ in
@@ -199,5 +266,25 @@ extension VideoCreationViewController: CAAnimationDelegate {
 
     private func longPressDidComplete() {
         print("완료")
+    }
+
+    private func applySnapshot() {
+        var snapShot = NSDiffableDataSourceSnapshot<Section, CompositionClip>()
+        snapShot.appendSections([.main])
+        snapShot.appendItems(self.clips, toSection: .main)
+        self.dataSource.apply(snapShot, animatingDifferences: true)
+    }
+}
+
+extension VideoCreationViewController: UICollectionViewDelegate {}
+
+private final class IntrinsicCollectionView: UICollectionView {
+    override var intrinsicContentSize: CGSize {
+        contentSize
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        invalidateIntrinsicContentSize()
     }
 }
