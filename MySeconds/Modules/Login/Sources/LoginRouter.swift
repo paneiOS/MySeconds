@@ -8,7 +8,7 @@
 import GoogleSignIn
 import ModernRIBs
 
-import UtilsKit
+import BaseRIBsKit
 
 protocol LoginInteractable: Interactable {
     var router: LoginRouting? { get set }
@@ -17,19 +17,15 @@ protocol LoginInteractable: Interactable {
 
 protocol LoginViewControllable: ViewControllable {}
 
-final class LoginRouter: ViewableRouter<LoginInteractable, LoginViewControllable>, LoginRouting, Deinitializable {
+final class LoginRouter: BaseRouter<LoginInteractor, LoginViewController>, LoginRouting {
 
-    override init(interactor: LoginInteractable, viewController: LoginViewControllable) {
+    override init(interactor: LoginInteractor, viewController: LoginViewController) {
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
     }
 
-    deinit {
-        printDeinit()
-    }
-
     func googleSignIn(completion: @escaping (Result<GIDSignInResult, Error>) -> Void) {
-        let presentingVC: UIViewController = self.viewController.uiviewController
+        let presentingVC = self.viewControllable.uiviewController
         GIDSignIn.sharedInstance.signIn(withPresenting: presentingVC) { result, error in
             if let result {
                 completion(.success(result))

@@ -7,11 +7,11 @@
 
 import UIKit
 
-import ModernRIBs
+import BaseRIBsKit
 
 protocol {{ name }}PresentableListener: AnyObject {}
 
-final class {{ name }}ViewController: UIViewController, {{ name }}Presentable, {{ name }}ViewControllable {
+final class {{ name }}ViewController: BaseViewController, {{ name }}Presentable, {{ name }}ViewControllable {
 
     weak var listener: {{ name }}PresentableListener?
 }

@@ -35,9 +35,7 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: [
-                .package(product: "ModernRIBs", type: .runtime)
-            ],
+            dependencies: [],
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
