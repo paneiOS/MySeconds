@@ -19,6 +19,11 @@ open class BaseViewController: UIViewController, BaseViewControllable {
     // MARK: - Combine
 
     public var cancellables = Set<AnyCancellable>()
+    
+    private let viewDidLoadSubject = PassthroughSubject<Void, Never>()
+    public var viewDidLoadPublisher: AnyPublisher<Void, Never> {
+        viewDidLoadSubject.eraseToAnyPublisher()
+    }
 
     // MARK: - Init / Deinit
 
@@ -41,6 +46,8 @@ open class BaseViewController: UIViewController, BaseViewControllable {
 
         self.setupUI()
         self.bind()
+        
+        self.viewDidLoadSubject.send(())
     }
 
     // MARK: - Overridable Hooks

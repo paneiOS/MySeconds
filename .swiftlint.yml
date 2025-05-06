@@ -1,38 +1,52 @@
-file_length:
-  warning: 500
-  error: 800
-  
-function_body_length:
-  warning: 150
-  error: 200
+# SwiftLint 기본 설정
 
+# 파일당 최대 줄 수 설정: 경고 및 에러 기준
+file_length:
+  warning: 500  # ⚠️ 이 줄 수를 넘으면 경고 발생
+  error: 800    # ❗️ 이 줄 수를 넘으면 오류로 간주
+
+# 함수 본문의 최대 길이 설정: 경고 및 에러 기준
+function_body_length:
+  warning: 150  # ⚠️ 함수 몸체가 이 줄 수를 넘으면 경고 발생
+  error: 200    # ❗️ 함수 몸체가 이 줄 수를 넘으면 오류로 간주
+
+# 식별자(변수, 함수, 타입 등) 이름 길이 설정
 identifier_name:
   min_length:
-    warning: 3
-    error: 2
+    warning: 3  # ⚠️ 식별자가 이 길이보다 짧으면 경고
+    error: 2    # ❗️ 식별자가 이 길이보다 짧으면 오류
   max_length:
-    warning: 40
-    error: 60
+    warning: 40 # ⚠️ 식별자가 이 길이보다 길면 경고
+    error: 60   # ❗️ 식별자가 이 길이보다 길면 오류
   excluded:
-    - x
+    - x        # 짧은 식별자 예외 목록
     - y
     - z
+    - id
 
+# 한 줄당 최대 문자 수 설정
 line_length:
-  warning: 200
-  error: 250
-  ignores_function_declarations: true
-  ignores_comments: true
-  ignores_urls: true
+  warning: 200                              # ⚠️ 이 문자 수를 넘으면 경고
+  error: 250                                # ❗️ 이 문자 수를 넘으면 오류
+  ignores_function_declarations: true       # 👀 함수 선언부는 검사 제외
+  ignores_comments: true                    # 👀 주석은 검사 제외
+  ignores_urls: true                        # 👀 URL은 검사 제외
 
+# 중첩된 레벨 제한 (예: if 안에 if)
 nesting:
-  type_level: 1
+  type_level: 1  # ⚠️ 타입 내부 중첩 레벨 최대 1
 
+# 타입 몸체(클래스/구조체/열거형) 길이 설정
 type_body_length:
-  warning: 300
-  error: 400
+  warning: 300  # ⚠️ 타입 몸체가 이 줄 수를 넘으면 경고
+  error: 400    # ❗️ 타입 몸체가 이 줄 수를 넘으면 오류
 
 disabled_rules:
+
+# Opt-in rules: 기본 비활성화 되어 있으니 직접 켜줘야 함
+opt_in_rules:
+  - unused_declarations       # 사용되지 않는 함수/변수/타입 선언에 경고
+  - unused_closure_parameter  # 사용되지 않는 클로저 파라미터에 경고
 
 excluded:
   - .build               # SPM 빌드 캐시 전체
