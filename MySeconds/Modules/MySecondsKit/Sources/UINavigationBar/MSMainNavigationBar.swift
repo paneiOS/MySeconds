@@ -17,6 +17,7 @@ public final class MSNavigationBar: UINavigationBar {
 
     public let backButtonTapped = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
+    public var backButtonHandler: (() -> Void)?
 
     // MARK: - Initializers
 
@@ -48,29 +49,33 @@ public final class MSNavigationBar: UINavigationBar {
     // MARK: - Public Methods
 
     public func configure(
-        isMain: Bool = false,
+        showLogo: Bool = false,
         title: String? = nil,
         hasBackButton: Bool = true,
-        rightButtons: [MSNavigationRightButton]? = nil
+        rightButtons: [MSNavigationRightButton]? = nil,
+        rightButtonSpacing: CGFloat = 0
     ) {
         let naviItem = UINavigationItem(title: title ?? "")
 
         naviItem.leftBarButtonItem = self.makeLeftBarButtonItem(
-            isMain: isMain,
+            showLogo: showLogo,
             hasBackButton: hasBackButton
         )
 
-        naviItem.rightBarButtonItems = self.setupRightButtonItems(buttons: rightButtons)
+        naviItem.rightBarButtonItems = self.setupRightButtonItems(
+            buttons: rightButtons,
+            spacing: rightButtonSpacing
+        )
 
         self.items = [naviItem]
     }
 
     // MARK: - Private Methods
 
-    private func makeLeftBarButtonItem(isMain: Bool, hasBackButton: Bool) -> UIBarButtonItem? {
+    private func makeLeftBarButtonItem(showLogo: Bool, hasBackButton: Bool) -> UIBarButtonItem? {
         if hasBackButton {
             self.createBackButton()
-        } else if isMain {
+        } else if showLogo {
             self.createLogoImage()
         } else {
             nil
@@ -90,22 +95,36 @@ public final class MSNavigationBar: UINavigationBar {
     }
 
     private func setupRightButtonItems(
-        buttons: [MSNavigationRightButton]?
+        buttons: [MSNavigationRightButton]?,
+        spacing: CGFloat
     ) -> [UIBarButtonItem]? {
         guard let buttons, !buttons.isEmpty else { return nil }
 
-        return buttons.map { image, publisher in
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.spacing = spacing
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
+
+        for (image, publisher) in buttons {
             let button = UIButton(type: .custom)
             button.setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
             button.tintColor = .black
+
+            button.snp.makeConstraints {
+                $0.size.equalTo(CGSize(width: 40, height: 40))
+            }
+
             button.publisher(for: .touchUpInside)
                 .sink { _ in
                     publisher.send()
                 }
                 .store(in: &self.cancellables)
 
-            return UIBarButtonItem(customView: button)
+            stackView.addArrangedSubview(button)
         }
+
+        return [UIBarButtonItem(customView: stackView)]
     }
 
     private func createBackButton() -> UIBarButtonItem {
@@ -115,14 +134,28 @@ public final class MSNavigationBar: UINavigationBar {
             for: .normal
         )
         button.tintColor = .neutral800
-
         button.publisher(for: .touchUpInside)
             .sink { [weak self] _ in
-                self?.backButtonTapped.send()
+                guard let self else { return }
+                if let handler = self.backButtonHandler {
+                    handler()
+                } else {
+                    self.findNavigationController()?.popViewController(animated: true)
+                }
             }
             .store(in: &self.cancellables)
 
-        let barButton = UIBarButtonItem(customView: button)
-        return barButton
+        return UIBarButtonItem(customView: button)
+    }
+
+    private func findNavigationController() -> UINavigationController? {
+        var responder: UIResponder? = self
+        while let next = responder?.next {
+            if let nav = next as? UINavigationController {
+                return nav
+            }
+            responder = next
+        }
+        return nil
     }
 }
