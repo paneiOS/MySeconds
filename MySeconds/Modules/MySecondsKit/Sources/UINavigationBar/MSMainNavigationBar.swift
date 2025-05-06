@@ -86,12 +86,9 @@ public final class MSNavigationBar: UINavigationBar {
         let logoImageView = UIImageView(image: ResourceKitAsset.mysecondsLogo.image.withRenderingMode(.alwaysTemplate))
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.tintColor = .neutral400
+        logoImageView.frame = CGRect(x: 0, y: 0, width: 96, height: 32)
 
-        let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 95.8, height: 32))
-        logoImageView.frame = containerView.bounds
-        containerView.addSubview(logoImageView)
-
-        return UIBarButtonItem(customView: containerView)
+        return UIBarButtonItem(customView: logoImageView)
     }
 
     private func setupRightButtonItems(
