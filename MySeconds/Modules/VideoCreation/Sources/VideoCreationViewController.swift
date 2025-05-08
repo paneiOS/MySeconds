@@ -192,17 +192,17 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             .store(in: &self.cancellables)
 
         self.makeButton.publisher(for: .touchDown)
-            .sink { [weak self] _ in
+            .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.startHoldAnimation()
-            }
+            })
             .store(in: &cancellables)
 
         self.makeButton.publisher(for: [.touchUpInside, .touchUpOutside, .touchCancel])
-            .sink { [weak self] _ in
+            .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.endHoldAnimation()
-            }
+            })
             .store(in: &cancellables)
     }
 }
