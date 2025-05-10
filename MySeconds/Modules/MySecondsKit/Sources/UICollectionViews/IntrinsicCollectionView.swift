@@ -14,6 +14,7 @@ public final class IntrinsicCollectionView: UICollectionView {
 
     override public func layoutSubviews() {
         super.layoutSubviews()
+
         invalidateIntrinsicContentSize()
     }
 }

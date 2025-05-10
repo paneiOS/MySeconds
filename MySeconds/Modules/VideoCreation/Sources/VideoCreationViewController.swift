@@ -33,6 +33,8 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             let cellWidth = (screenWidth - totalSpacing) / CGFloat(maximumColumn)
             return .init(width: cellWidth, height: cellWidth)
         }()
+
+        static let contentViewSpacing: CGFloat = 32
     }
 
     private enum Section {
@@ -45,13 +47,7 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
 
     private let totalView: UIView = .init()
 
-    private let contentsSubView: UIStackView = {
-        let stackView: UIStackView = .init()
-        stackView.axis = .vertical
-        stackView.spacing = 32
-        stackView.distribution = .fill
-        return stackView
-    }()
+    private let contentsSubview: UIView = .init()
 
     private let makeButton: UIButton = {
         let button: UIButton = .init()
@@ -129,6 +125,18 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         return collectionView
     }()
 
+    private let segmentedControl: ImageTitleSegmentedControl = {
+        let control: ImageTitleSegmentedControl = .init()
+        control.configure(
+            items: [
+                .init(image: ResourceKitAsset.volumeMute.image, title: "무음"),
+                .init(image: ResourceKitAsset.volume.image, title: "원본"),
+                .init(image: ResourceKitAsset.music.image, title: "BGM123123")
+            ]
+        )
+        return control
+    }()
+
     private var fillLayer: CALayer?
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -146,8 +154,8 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             $0.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
         }
 
-        self.totalView.addSubviews(self.contentsSubView, self.makeButton)
-        self.contentsSubView.snp.makeConstraints {
+        self.totalView.addSubviews(self.contentsSubview, self.makeButton)
+        self.contentsSubview.snp.makeConstraints {
             $0.centerY.leading.trailing.equalToSuperview()
         }
         self.makeButton.snp.makeConstraints {
@@ -165,8 +173,18 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
-        self.contentsSubView.addArrangedSubview(self.titleView)
-        self.contentsSubView.addArrangedSubview(self.collectionView)
+        self.contentsSubview.addSubviews(self.titleView, self.collectionView, self.segmentedControl)
+        self.titleView.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+        }
+        self.collectionView.snp.makeConstraints {
+            $0.top.equalTo(self.titleView.snp.bottom).offset(Constants.contentViewSpacing)
+            $0.leading.trailing.equalToSuperview()
+        }
+        self.segmentedControl.snp.makeConstraints {
+            $0.top.equalTo(self.collectionView.snp.bottom).offset(Constants.contentViewSpacing)
+            $0.centerX.bottom.equalToSuperview()
+        }
 
         self.collectionView.dataSource = self.dataSource
         self.collectionView.delegate = self
@@ -277,14 +295,3 @@ extension VideoCreationViewController: CAAnimationDelegate {
 }
 
 extension VideoCreationViewController: UICollectionViewDelegate {}
-
-private final class IntrinsicCollectionView: UICollectionView {
-    override var intrinsicContentSize: CGSize {
-        contentSize
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        invalidateIntrinsicContentSize()
-    }
-}
