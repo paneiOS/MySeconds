@@ -41,6 +41,7 @@ type_body_length:
   warning: 300  # ⚠️ 타입 몸체가 이 줄 수를 넘으면 경고
   error: 400    # ❗️ 타입 몸체가 이 줄 수를 넘으면 오류
 
+# 사용 중지된 룰: 필요 시 목록에 추가
 disabled_rules:
 
 # Opt-in rules: 기본 비활성화 되어 있으니 직접 켜줘야 함
@@ -48,7 +49,19 @@ opt_in_rules:
   - unused_declarations       # 사용되지 않는 함수/변수/타입 선언에 경고
   - unused_closure_parameter  # 사용되지 않는 클로저 파라미터에 경고
 
+# 제외할 디렉토리/파일
 excluded:
   - .build               # SPM 빌드 캐시 전체
   - Packages             # SPM 매니페스트 디렉토리
   - "**/checkouts/**"    # 체크아웃된 모든 SPM 패키지 코드
+
+
+# 커스텀 룰
+custom_rules:
+  # .sink { ... } 대신 .sink(receiveValue:) 사용 권장
+  sink_receivevalue:
+    name: "UseReceiveValueLabelInSink"
+    included: ".*\\.swift"
+    regex: '\.sink\s*\{'
+    message: "후행클로저 대신 `.sink(receiveValue:)`를 사용해주세요."
+    severity: error

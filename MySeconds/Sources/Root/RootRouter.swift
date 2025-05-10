@@ -42,7 +42,7 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
     func detachLogin() {
         guard let router = loginRouter else { return }
         detachChild(router)
-        viewController.dismiss(viewController: router.viewControllable)
+        viewController.dismiss()
 
         self.loginRouter = nil
     }

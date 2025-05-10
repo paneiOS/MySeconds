@@ -100,12 +100,12 @@ open class SelectButtonsView: UIView {
                     guard let self else { return false }
                     return button !== self.selectedButton
                 }
-                .sink { [weak self] _ in
+                .sink(receiveValue: { [weak self] _ in
                     guard let self else { return }
                     self.selectedButton?.isSelected = false
                     button.isSelected = true
                     self.selectedButton = button
-                }
+                })
                 .store(in: &self.cancellables)
             return button
         }
