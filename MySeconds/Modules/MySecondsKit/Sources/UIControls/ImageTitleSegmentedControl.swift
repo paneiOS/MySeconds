@@ -93,14 +93,17 @@ public final class ImageTitleSegmentedControl: UIControl {
         indicatorColor: UIColor = .white,
         buttonTintColor: UIColor = .neutral600,
         backgroundColor: UIColor = .neutral100,
-        selectedIndex initialIndex: Int = 0
+        initialIndex: Int = 0
     ) {
         self.backgroundColor = backgroundColor
 
         self.buttons.forEach { $0.removeFromSuperview() }
         self.buttons.removeAll()
 
-        self.selectedIndex = initialIndex
+        if initialIndex < items.count {
+            self.selectedIndex = initialIndex
+        }
+
         for (idx, item) in items.enumerated() {
             let button = self.makeSegmentButton(item: item, tintColor: buttonTintColor)
             button.tag = idx

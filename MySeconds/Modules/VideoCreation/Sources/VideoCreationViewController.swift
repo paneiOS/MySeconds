@@ -130,9 +130,10 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         control.configure(
             items: [
                 .init(image: ResourceKitAsset.volumeMute.image, title: "무음"),
-                .init(image: ResourceKitAsset.volume.image, title: "원본"),
-                .init(image: ResourceKitAsset.music.image, title: "BGM123123")
-            ]
+                .init(image: ResourceKitAsset.music.image, title: "BGM"),
+                .init(image: ResourceKitAsset.volume.image, title: "원본")
+            ],
+            initialIndex: 1
         )
         return control
     }()
