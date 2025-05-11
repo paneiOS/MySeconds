@@ -5,7 +5,6 @@
 //  Created by 이정환 on 4/29/25.
 //
 
-import AVFoundation
 import UIKit
 
 public struct VideoClip: Hashable {
@@ -59,22 +58,4 @@ public struct VideoClip: Hashable {
         }
         return folder
     }()
-}
-
-extension VideoClip {
-    func generateThumbnail(for sizeInPoints: CGSize, at time: CMTime = .zero) async -> UIImage? {
-        let asset = AVURLAsset(url: url, options: nil)
-        let generator = AVAssetImageGenerator(asset: asset)
-        generator.appliesPreferredTrackTransform = true
-        generator.maximumSize = CGSize(width: 300, height: 300)
-
-        do {
-            let cgImage = try await generator.image(at: time)
-            return UIImage(cgImage: cgImage.image)
-        } catch {
-            // TODO: - Crashlytics 추가 예정
-            print("썸네일 생성 실패:", error)
-            return nil
-        }
-    }
 }

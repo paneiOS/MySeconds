@@ -21,11 +21,12 @@ protocol VideoCreationPresentableListener: AnyObject {
 }
 
 final class VideoCreationViewController: BaseViewController, VideoCreationPresentable, VideoCreationViewControllable {
-    private enum Constants {
-        static let makeButtonDuration: CGFloat = 1
+    enum Constants {
         private static let maximumColumn: Int = 4
-        static let cellSpacing: CGFloat = 4
         private static let collectionViewInsets: CGFloat = 24.0
+
+        static let makeButtonDuration: CGFloat = 1
+        static let cellSpacing: CGFloat = 4
         static let cellSize: CGSize = {
             let totalSpacing = collectionViewInsets * 2
                 + CGFloat(maximumColumn - 1) * cellSpacing
@@ -33,6 +34,8 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             let cellWidth = (screenWidth - totalSpacing) / CGFloat(maximumColumn)
             return .init(width: cellWidth, height: cellWidth)
         }()
+
+        static let thumbnailSize: CGSize = .init(width: cellSize.width * 2, height: cellSize.height * 2)
 
         static let contentViewSpacing: CGFloat = 32
     }
@@ -119,6 +122,7 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         layout.minimumInteritemSpacing = Constants.cellSpacing
         layout.minimumLineSpacing = Constants.cellSpacing
         let collectionView = IntrinsicCollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.showsVerticalScrollIndicator = false
         collectionView.backgroundColor = .clear
         collectionView.register(CoverClipCell.self, forCellWithReuseIdentifier: CoverClipCell.reuseIdentifier)
         collectionView.register(VideoClipCell.self, forCellWithReuseIdentifier: VideoClipCell.reuseIdentifier)
@@ -157,7 +161,10 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
 
         self.totalView.addSubviews(self.contentsSubview, self.makeButton)
         self.contentsSubview.snp.makeConstraints {
-            $0.centerY.leading.trailing.equalToSuperview()
+            $0.leading.trailing.equalToSuperview()
+            $0.top.greaterThanOrEqualToSuperview()
+            $0.bottom.lessThanOrEqualTo(self.makeButton.snp.top).offset(-32)
+            $0.centerY.equalToSuperview().priority(.low)
         }
         self.makeButton.snp.makeConstraints {
             $0.leading.trailing.equalToSuperview()
