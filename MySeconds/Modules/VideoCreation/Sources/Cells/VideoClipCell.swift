@@ -25,6 +25,8 @@ final class VideoClipCell: UICollectionViewCell {
         return imageView
     }()
 
+    private let durationLabel: UILabel = .init()
+
     private var thumbnailTask: Task<Void, Never>?
 
     override init(frame: CGRect) {
@@ -40,13 +42,19 @@ final class VideoClipCell: UICollectionViewCell {
 
         self.thumbnailTask?.cancel()
         self.thumbnailView.image = nil
+        self.durationLabel.attributedText = nil
     }
 
     private func setupUI() {
-        contentView.addSubview(self.thumbnailView)
+        contentView.addSubviews(self.thumbnailView, self.durationLabel)
 
-        self.thumbnailView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+        self.thumbnailView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+
+        self.durationLabel.snp.makeConstraints {
+            $0.top.leading.greaterThanOrEqualToSuperview()
+            $0.bottom.trailing.equalToSuperview().inset(5)
         }
     }
 
@@ -71,9 +79,21 @@ final class VideoClipCell: UICollectionViewCell {
                 await MainActor.run {
                     self.thumbnailView.image = image
                 }
+
+                let time = try await asset.load(.duration)
+                let seconds = "\(Int(time.seconds.rounded()))S"
+                await MainActor.run {
+                    self.durationLabel.attributedText = .makeAttributedString(
+                        text: seconds,
+                        font: .systemFont(ofSize: 12, weight: .bold),
+                        textColor: .neutral200,
+                        alignment: .center
+                    )
+                }
             } catch {
                 // TODO: - Crashlytics 추가 예정
                 print("썸네일 생성 실패:", error)
+                print("⚠️ duration load failed:", error)
             }
         }
     }

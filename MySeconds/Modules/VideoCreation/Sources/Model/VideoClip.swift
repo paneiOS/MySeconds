@@ -10,15 +10,10 @@ import UIKit
 public struct VideoClip: Hashable {
     public let id: UUID
     public let fileName: String
-    public let duration: TimeInterval
     public var thumbnail: UIImage?
 
     public var url: URL {
         VideoClip.clipsFolder.appendingPathComponent(self.fileName)
-    }
-
-    public var displayText: String {
-        "\(Int(self.duration.rounded()))S"
     }
 
     public init(
@@ -29,7 +24,6 @@ public struct VideoClip: Hashable {
     ) {
         self.id = id
         self.fileName = fileName
-        self.duration = duration
         self.thumbnail = thumbnail
     }
 
@@ -43,10 +37,7 @@ public struct VideoClip: Hashable {
             fatalError("⚠️ Application Support 디렉터리 접근 실패")
         }
 
-        let folder = appSupport.appendingPathComponent(
-            "VideoClips",
-            isDirectory: true
-        )
+        let folder = appSupport.appendingPathComponent("VideoClips", isDirectory: true)
         do {
             try fileManager.createDirectory(
                 at: folder,
