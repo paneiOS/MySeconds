@@ -24,7 +24,6 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
     enum Constants {
         private static let maximumColumn: Int = 4
         private static let collectionViewInsets: CGFloat = 24.0
-
         static let makeButtonDuration: CGFloat = 1
         static let cellSpacing: CGFloat = 4
         static let cellSize: CGSize = {
@@ -36,7 +35,6 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         }()
 
         static let thumbnailSize: CGSize = .init(width: cellSize.width * 2, height: cellSize.height * 2)
-
         static let contentViewSpacing: CGFloat = 32
     }
 
@@ -123,9 +121,13 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         layout.minimumLineSpacing = Constants.cellSpacing
         let collectionView = IntrinsicCollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.showsVerticalScrollIndicator = false
+        collectionView.dragInteractionEnabled = true
         collectionView.backgroundColor = .clear
         collectionView.register(CoverClipCell.self, forCellWithReuseIdentifier: CoverClipCell.reuseIdentifier)
         collectionView.register(VideoClipCell.self, forCellWithReuseIdentifier: VideoClipCell.reuseIdentifier)
+        collectionView.delegate = self
+        collectionView.dragDelegate = self
+        collectionView.dropDelegate = self
         return collectionView
     }()
 
@@ -193,9 +195,7 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             $0.top.equalTo(self.collectionView.snp.bottom).offset(Constants.contentViewSpacing)
             $0.centerX.bottom.equalToSuperview()
         }
-
         self.collectionView.dataSource = self.dataSource
-        self.collectionView.delegate = self
     }
 
     override func bind() {
@@ -303,3 +303,59 @@ extension VideoCreationViewController: CAAnimationDelegate {
 }
 
 extension VideoCreationViewController: UICollectionViewDelegate {}
+
+extension VideoCreationViewController: UICollectionViewDragDelegate {
+    func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: any UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        guard let clip = clips[safe: indexPath.item] else { return [] }
+        switch clip {
+        case let .video(videoClip):
+            let itemProvider = NSItemProvider(object: videoClip.fileName as NSString)
+            let dragItem = UIDragItem(itemProvider: itemProvider)
+            dragItem.localObject = clip
+            return [dragItem]
+        case .cover:
+            return []
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let bounds = collectionView.cellForItem(at: indexPath)?.bounds else { return nil }
+        let params = UIDragPreviewParameters()
+        params.visiblePath = UIBezierPath(roundedRect: bounds, cornerRadius: 8)
+        params.backgroundColor = .clear
+        return params
+    }
+}
+
+extension VideoCreationViewController: UICollectionViewDropDelegate {
+    func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
+        session.localDragSession != nil
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
+        let index = destinationIndexPath?.item ?? self.clips.count
+        if index > 0, index < (self.clips.count - 1) {
+            return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
+        } else {
+            return UICollectionViewDropProposal(operation: .forbidden)
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
+        guard let target = coordinator.destinationIndexPath,
+              target.item > 0,
+              target.item < (self.clips.count - 1) else { return }
+        for item in coordinator.items {
+            guard let source = item.sourceIndexPath else { continue }
+            let clip = self.clips.remove(at: source.item)
+            self.clips.insert(clip, at: target.item)
+
+            var snap = self.dataSource.snapshot()
+            snap.deleteAllItems()
+            snap.appendSections([.main])
+            snap.appendItems(self.clips, toSection: .main)
+            self.dataSource.apply(snap, animatingDifferences: false)
+            coordinator.drop(item.dragItem, toItemAt: target)
+        }
+    }
+}
