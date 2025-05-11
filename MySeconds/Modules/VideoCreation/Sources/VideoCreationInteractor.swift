@@ -41,4 +41,19 @@ extension VideoCreationInteractor {
     func initClips() {
         self.clipsSubject.send(self.component.clips)
     }
+
+    func move(clip: CompositionClip, to index: Int) {
+        var current = self.clipsSubject.value
+        guard let removeIndex = current.firstIndex(of: clip) else { return }
+        let clip = current.remove(at: removeIndex)
+        current.insert(clip, at: index)
+        self.clipsSubject.send(current)
+    }
+
+    func delete(clip: CompositionClip) {
+        var current = self.clipsSubject.value
+        guard let removeIndex = current.firstIndex(of: clip) else { return }
+        current.remove(at: removeIndex)
+        self.clipsSubject.send(current)
+    }
 }

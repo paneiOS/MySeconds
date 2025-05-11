@@ -46,7 +46,7 @@ final class VideoClipCell: UICollectionViewCell {
     }
 
     private func setupUI() {
-        contentView.addSubviews(self.thumbnailView, self.durationLabel)
+        self.contentView.addSubviews(self.thumbnailView, self.durationLabel)
 
         self.thumbnailView.snp.makeConstraints {
             $0.edges.equalToSuperview()
