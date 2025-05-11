@@ -17,7 +17,7 @@ import UtilsKit
 
 protocol VideoCreationPresentableListener: AnyObject {
     func initClips()
-    func move(clip: CompositionClip, to index: Int)
+    func update(clips: [CompositionClip])
     func delete(clip: CompositionClip)
     var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
 }
@@ -416,7 +416,7 @@ extension VideoCreationViewController: UICollectionViewDropDelegate {
             snap.appendItems(self.clips, toSection: .main)
             self.dataSource.apply(snap, animatingDifferences: true)
             coordinator.drop(item.dragItem, toItemAt: destination)
-            self.listener?.move(clip: clip, to: destination.item)
+            self.listener?.update(clips: self.clips)
         }
         self.removeView.isHidden = true
     }
