@@ -37,10 +37,12 @@ public final class MSNavigationBar: UINavigationBar {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .white
+        appearance.shadowColor = .clear
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor.neutral800,
             .font: UIFont.systemFont(ofSize: 16)
         ]
+
         self.standardAppearance = appearance
         self.scrollEdgeAppearance = appearance
         self.compactAppearance = appearance
@@ -53,7 +55,8 @@ public final class MSNavigationBar: UINavigationBar {
         title: String? = nil,
         hasBackButton: Bool = true,
         rightButtons: [MSNavigationRightButton]? = nil,
-        rightButtonSpacing: CGFloat = 0
+        rightButtonSpacing: CGFloat = 0,
+        rightButtonColor: UIColor = .neutral400
     ) {
         let naviItem = UINavigationItem(title: title ?? "")
 
@@ -64,7 +67,8 @@ public final class MSNavigationBar: UINavigationBar {
 
         naviItem.rightBarButtonItems = self.setupRightButtonItems(
             buttons: rightButtons,
-            spacing: rightButtonSpacing
+            spacing: rightButtonSpacing,
+            color: rightButtonColor
         )
 
         self.items = [naviItem]
@@ -93,7 +97,8 @@ public final class MSNavigationBar: UINavigationBar {
 
     private func setupRightButtonItems(
         buttons: [MSNavigationRightButton]?,
-        spacing: CGFloat
+        spacing: CGFloat,
+        color: UIColor
     ) -> [UIBarButtonItem]? {
         guard let buttons, !buttons.isEmpty else { return nil }
 
@@ -106,7 +111,7 @@ public final class MSNavigationBar: UINavigationBar {
         for (image, publisher) in buttons {
             let button = UIButton(type: .custom)
             button.setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
-            button.tintColor = .black
+            button.tintColor = color
 
             button.snp.makeConstraints {
                 $0.size.equalTo(CGSize(width: 40, height: 40))
