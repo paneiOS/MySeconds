@@ -344,6 +344,7 @@ extension VideoCreationViewController: CAAnimationDelegate {
     }
 
     private func longPressDidComplete() {
+        // TODO: - 구현 예정
         print("완료")
     }
 
@@ -355,7 +356,19 @@ extension VideoCreationViewController: CAAnimationDelegate {
     }
 }
 
-extension VideoCreationViewController: UICollectionViewDelegate {}
+extension VideoCreationViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let clip = clips[safe: indexPath.item] else { return }
+        switch clip {
+        case .cover:
+            // TODO: - 구현 예정
+            print("인트로/아웃트로 영상 제작")
+        case .video:
+            // TODO: - 구현 예정
+            print("비디오 재생 화면")
+        }
+    }
+}
 
 extension VideoCreationViewController: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: any UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
