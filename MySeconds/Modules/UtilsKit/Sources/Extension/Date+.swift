@@ -16,7 +16,7 @@ public extension Date {
 private extension DateFormatter {
     static let dateToString: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.dateFormat = "yyyy-MM-dd hh:mm:ss"
         return formatter
     }()
 }

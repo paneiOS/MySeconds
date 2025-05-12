@@ -84,8 +84,8 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         return label
     }()
 
-    private lazy var titleTextField: UITextField = {
-        let textField: UITextField = .init()
+    private lazy var titleTextField: NoDragDropTextField = {
+        let textField: NoDragDropTextField = .init()
         textField.borderStyle = .none
         textField.attributedPlaceholder = .makeAttributedString(
             text: Date().dateToString,
@@ -248,7 +248,7 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
 
         self.collectionView.dataSource = self.dataSource
 
-        self.removeView.addInteraction(UIDropInteraction(delegate: self))
+        self.view.addInteraction(UIDropInteraction(delegate: self))
     }
 
     override func bind() {
@@ -424,7 +424,12 @@ extension VideoCreationViewController: UICollectionViewDropDelegate {
 
 extension VideoCreationViewController: UIDropInteractionDelegate {
     public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
-        UIDropProposal(operation: .move)
+        let locationView = session.location(in: self.view)
+        if self.removeView.frame.contains(locationView) {
+            return UIDropProposal(operation: .move)
+        }
+
+        return UIDropProposal(operation: .forbidden)
     }
 
     public func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
