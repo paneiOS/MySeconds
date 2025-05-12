@@ -8,9 +8,10 @@
 import Combine
 import UIKit
 
+import MySecondsKit
 import ResourceKit
 
-class MSKitThirdViewController: UIViewController {
+class MSKitThirdViewController: MSBaseViewController {
     let label = UILabel()
 
     var isPresent = false
@@ -18,23 +19,17 @@ class MSKitThirdViewController: UIViewController {
     private let navigationBar = MSNavigationBar()
     private let closeButtonTapped = PassthroughSubject<Void, Never>()
 
-    private var cancellables = Set<AnyCancellable>()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.view.backgroundColor = .white
-        self.setupUI()
-        self.bind()
-    }
-
-    func setupUI() {
+    override func setupUI() {
         self.view.addSubviews(self.label)
         self.label.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
         self.label.text = self.isPresent ? "Present View Controller" : "Push View Controller"
 
-        self.navigationController?.setNavigationBarHidden(true, animated: false)
+        self.navigationController?.navigationBar.isTranslucent = true
+        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        self.navigationController?.navigationBar.shadowImage = UIImage()
+
         self.view.addSubview(self.navigationBar)
 
         self.navigationBar.snp.makeConstraints {
@@ -56,7 +51,7 @@ class MSKitThirdViewController: UIViewController {
         )
     }
 
-    func bind() {
+    override func bind() {
         self.closeButtonTapped
             .sink { [weak self] _ in
                 guard let self else { return }

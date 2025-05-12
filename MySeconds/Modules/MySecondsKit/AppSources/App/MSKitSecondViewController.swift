@@ -8,9 +8,10 @@
 import Combine
 import UIKit
 
+import MySecondsKit
 import ResourceKit
 
-class MSKitSecondViewController: UIViewController {
+class MSKitSecondViewController: MSBaseViewController {
     let label = UILabel()
 
     var isPresent = false
@@ -20,16 +21,7 @@ class MSKitSecondViewController: UIViewController {
     private let bookUserButtonTapped = PassthroughSubject<Void, Never>()
     private let closeButtonTapped = PassthroughSubject<Void, Never>()
 
-    private var cancellables = Set<AnyCancellable>()
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        self.view.backgroundColor = .white
-        self.setupUI()
-        self.bind()
-    }
-
-    func setupUI() {
+    override func setupUI() {
         self.view.addSubviews(self.label)
         self.label.snp.makeConstraints {
             $0.center.equalToSuperview()
@@ -68,7 +60,7 @@ class MSKitSecondViewController: UIViewController {
         )
     }
 
-    func bind() {
+    override func bind() {
         self.banButtonTapped
             .sink { [weak self] _ in
                 guard let self else { return }

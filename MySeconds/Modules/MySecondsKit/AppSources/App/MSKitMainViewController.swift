@@ -8,26 +8,17 @@
 import Combine
 import UIKit
 
+import MySecondsKit
 import ResourceKit
 
-public final class MSKitMainViewController: UIViewController {
+final class MSKitMainViewController: MSBaseViewController {
     let label = UILabel()
 
     private let navigationBar = MSNavigationBar()
     private let menuButtonTapped = PassthroughSubject<Void, Never>()
     private let imageButtonTapped = PassthroughSubject<Void, Never>()
 
-    private var cancellables = Set<AnyCancellable>()
-
-    override public func viewDidLoad() {
-        super.viewDidLoad()
-
-        self.view.backgroundColor = .white
-        self.setupUI()
-        self.bind()
-    }
-
-    func setupUI() {
+    override func setupUI() {
         self.view.addSubviews(self.label)
         self.label.snp.makeConstraints {
             $0.center.equalToSuperview()
@@ -59,7 +50,7 @@ public final class MSKitMainViewController: UIViewController {
         )
     }
 
-    func bind() {
+    override func bind() {
         self.menuButtonTapped
             .sink { [weak self] _ in
                 guard let self else { return }
