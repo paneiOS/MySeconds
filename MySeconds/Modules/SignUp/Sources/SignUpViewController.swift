@@ -174,11 +174,11 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
         )
         .map { $0 != nil && $1 != nil }
         .receive(on: DispatchQueue.main)
-        .sink { [weak self] isEnabled in
+        .sink(receiveValue: { [weak self] isEnabled in
             guard let self else { return }
             self.sendButton.isEnabled = isEnabled
             self.sendButton.backgroundColor = isEnabled ? .neutral800 : .neutral400
-        }
+        })
         .store(in: &cancellables)
 
         self.sendButton.publisher(for: .touchUpInside)
