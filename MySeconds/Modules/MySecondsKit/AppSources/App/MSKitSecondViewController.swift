@@ -17,9 +17,10 @@ class MSKitSecondViewController: MSBaseViewController {
     var isPresent = false
 
     private let navigationBar = MSNavigationBar()
-    private let banButtonTapped = PassthroughSubject<Void, Never>()
-    private let bookUserButtonTapped = PassthroughSubject<Void, Never>()
-    private let closeButtonTapped = PassthroughSubject<Void, Never>()
+
+    private let banButton = MSNavigationBarButton(image: ResourceKitAsset.ban.image)
+    private let bookUserButton = MSNavigationBarButton(image: ResourceKitAsset.bookUser.image)
+    private let closeButton = MSNavigationBarButton(image: ResourceKitAsset.close.image)
 
     override func setupUI() {
         self.view.addSubviews(self.label)
@@ -42,26 +43,12 @@ class MSKitSecondViewController: MSBaseViewController {
             showLogo: false,
             title: "Second View",
             hasBackButton: self.isPresent ? false : true,
-            rightButtons: [
-                (
-                    image: ResourceKitAsset.ban.image,
-                    tapPublisher: self.banButtonTapped
-                ),
-                (
-                    image: ResourceKitAsset.bookUser.image,
-                    tapPublisher: self.bookUserButtonTapped
-                )
-            ] + (self.isPresent ? [
-                (
-                    image: ResourceKitAsset.close.image,
-                    tapPublisher: self.closeButtonTapped
-                )
-            ] : [])
+            rightButtons: [self.banButton, self.bookUserButton] + (self.isPresent ? [self.closeButton] : [])
         )
     }
 
     override func bind() {
-        self.banButtonTapped
+        self.banButton.tapPublisher
             .sink { [weak self] _ in
                 guard let self else { return }
                 let thirdViewController = MSKitThirdViewController()
@@ -70,7 +57,7 @@ class MSKitSecondViewController: MSBaseViewController {
             }
             .store(in: &self.cancellables)
 
-        self.bookUserButtonTapped
+        self.bookUserButton.tapPublisher
             .sink { [weak self] _ in
                 guard let self else { return }
                 let thirdViewController = MSKitThirdViewController()
@@ -79,7 +66,7 @@ class MSKitSecondViewController: MSBaseViewController {
             }
             .store(in: &self.cancellables)
 
-        self.closeButtonTapped
+        self.closeButton.tapPublisher
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.dismiss(animated: true)

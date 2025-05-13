@@ -15,8 +15,13 @@ final class MSKitMainViewController: MSBaseViewController {
     let label = UILabel()
 
     private let navigationBar = MSNavigationBar()
-    private let menuButtonTapped = PassthroughSubject<Void, Never>()
-    private let imageButtonTapped = PassthroughSubject<Void, Never>()
+
+    private let imageButton = MSNavigationBarButton(
+        image: ResourceKitAsset.image.image,
+        imageSize: CGSize(width: 5, height: 5),
+        tintColor: .blue
+    )
+    private let menuButton = MSNavigationBarButton(image: ResourceKitAsset.menu.image)
 
     override func setupUI() {
         self.view.addSubviews(self.label)
@@ -37,38 +42,28 @@ final class MSKitMainViewController: MSBaseViewController {
         self.navigationBar.configure(
             showLogo: true,
             hasBackButton: false,
-            rightButtons: [
-                (
-                    image: ResourceKitAsset.image.image,
-                    tapPublisher: self.imageButtonTapped
-                ),
-                (
-                    image: ResourceKitAsset.menu.image,
-                    tapPublisher: self.menuButtonTapped
-                )
-            ]
+            rightButtons: [self.imageButton, self.menuButton]
         )
     }
 
     override func bind() {
-        self.menuButtonTapped
-            .sink { [weak self] _ in
-                guard let self else { return }
-                print("Tap Menu Button")
 
-                let thirdVC = MSKitSecondViewController()
-                thirdVC.isPresent = false
-                self.navigationController?.pushViewController(thirdVC, animated: true)
-            }
-            .store(in: &self.cancellables)
-
-        self.imageButtonTapped
-            .sink { [weak self] _ in
+        self.imageButton.tapPublisher
+            .sink { [weak self] in
                 guard let self else { return }
                 let thirdVC = MSKitSecondViewController()
                 thirdVC.isPresent = true
                 let navigationController = UINavigationController(rootViewController: thirdVC)
                 self.present(navigationController, animated: true)
+            }
+            .store(in: &self.cancellables)
+
+        self.menuButton.tapPublisher
+            .sink { [weak self] in
+                guard let self else { return }
+                let thirdVC = MSKitSecondViewController()
+                thirdVC.isPresent = false
+                self.navigationController?.pushViewController(thirdVC, animated: true)
             }
             .store(in: &self.cancellables)
     }

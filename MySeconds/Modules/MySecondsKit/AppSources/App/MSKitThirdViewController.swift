@@ -17,7 +17,8 @@ class MSKitThirdViewController: MSBaseViewController {
     var isPresent = false
 
     private let navigationBar = MSNavigationBar()
-    private let closeButtonTapped = PassthroughSubject<Void, Never>()
+
+    private let closeButton = MSNavigationBarButton(image: ResourceKitAsset.close.image)
 
     override func setupUI() {
         self.view.addSubviews(self.label)
@@ -43,16 +44,13 @@ class MSKitThirdViewController: MSBaseViewController {
             title: "Third View",
             hasBackButton: self.isPresent ? false : true,
             rightButtons: self.isPresent ? [
-                (
-                    image: ResourceKitAsset.close.image,
-                    tapPublisher: self.closeButtonTapped
-                )
+                self.closeButton
             ] : []
         )
     }
 
     override func bind() {
-        self.closeButtonTapped
+        self.closeButton.tapPublisher
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.dismiss(animated: true)
