@@ -10,6 +10,7 @@ import UIKit
 
 import ModernRIBs
 
+import ResourceKit
 import VideoCreation
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -43,7 +44,27 @@ final class MockVideoCreationDependency: VideoCreationDependency {
     public var clips: [CompositionClip] {
         [
             .cover(self.makeIntroClip()),
-//            .video(self.makeSampleClip(named: "sample", ext: "mp4"))
+            .video(self.makeSampleClip(named: "sample", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample01", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample02", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample03", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample04", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample05", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample06", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample07", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample08", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample09", ext: "mp4")),
+            .video(self.makeSampleClip(named: "sample10", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample11", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample12", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample13", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample14", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample15", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample16", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample17", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample18", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample19", ext: "mp4")),
+//            .video(self.makeSampleClip(named: "sample20", ext: "mp4")),
             .cover(self.makeOutroClip())
         ]
     }
@@ -53,15 +74,12 @@ final class MockVideoCreationListener: VideoCreationListener {}
 
 extension MockVideoCreationDependency {
     func makeSampleClip(named name: String, ext: String) -> VideoClip {
-        #if SWIFT_PACKAGE
-            let bundle = Bundle.module
-        #else
-            let bundle = Bundle.main
-        #endif
+        let bundle = ResourceKitResources.bundle
 
         guard let sourceURL = bundle.url(forResource: name, withExtension: ext) else {
-            fatalError("⚠️ \(name).\(ext) not found in bundle")
+            fatalError("⚠️ \(name).\(ext) not found in ResourceKit bundle")
         }
+
         let fileManager = FileManager.default
         let appSupport = fileManager
             .urls(for: .applicationSupportDirectory, in: .userDomainMask)
