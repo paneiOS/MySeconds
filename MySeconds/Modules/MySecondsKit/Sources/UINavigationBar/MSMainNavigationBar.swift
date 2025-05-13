@@ -10,6 +10,17 @@ import UIKit
 
 import ResourceKit
 
+public enum NavigationLeftItemType {
+    case logo(image: UIImage = ResourceKitAsset.mysecondsLogo.image,
+              size: CGSize = CGSize(width: 96, height: 32))
+    case backButton
+    case text(text: String,
+              fontSize: CGFloat,
+              fontWeight: UIFont.Weight,
+              fontColor: UIColor)
+    case none
+}
+
 public final class MSNavigationBar: UINavigationBar {
     // MARK: - Properties
 
@@ -49,18 +60,14 @@ public final class MSNavigationBar: UINavigationBar {
     // MARK: - Public Methods
 
     public func configure(
-        showLogo: Bool = false,
+        leftItemType: NavigationLeftItemType = .backButton,
         title: String? = nil,
-        hasBackButton: Bool = true,
         rightButtons: [MSNavigationBarButton]? = nil,
         rightButtonSpacing: CGFloat = 0
     ) {
         let naviItem = UINavigationItem(title: title ?? "")
 
-        naviItem.leftBarButtonItem = self.makeLeftBarButtonItem(
-            showLogo: showLogo,
-            hasBackButton: hasBackButton
-        )
+        naviItem.leftBarButtonItem = self.makeLeftBarButtonItem(type: leftItemType)
 
         if let rightButtons {
             naviItem.rightBarButtonItems = self.setupRightButtonItems(
@@ -74,22 +81,42 @@ public final class MSNavigationBar: UINavigationBar {
 
     // MARK: - Private Methods
 
-    private func makeLeftBarButtonItem(showLogo: Bool, hasBackButton: Bool) -> UIBarButtonItem? {
-        if hasBackButton {
+    private func makeLeftBarButtonItem(type: NavigationLeftItemType) -> UIBarButtonItem? {
+        switch type {
+        case let .logo(image, size):
+            self.createLogoImage(image, size)
+        case .backButton:
             self.createBackButton()
-        } else if showLogo {
-            self.createLogoImage()
-        } else {
+        case let .text(text, fontSize, fontWeight, fontColor):
+            self.createLeftTitle(
+                text,
+                fontSize: fontSize,
+                fontWeight: fontWeight,
+                fontColor: fontColor
+            )
+        case .none:
             nil
         }
     }
 
-    private func createLogoImage() -> UIBarButtonItem {
-        let logoImageView = UIImageView(image: ResourceKitAsset.mysecondsLogo.image.withRenderingMode(.alwaysTemplate))
+    private func createLeftTitle(
+        _ text: String,
+        fontSize: CGFloat,
+        fontWeight: UIFont.Weight,
+        fontColor: UIColor
+    ) -> UIBarButtonItem {
+        let label = UILabel()
+        label.text = text
+        label.textColor = fontColor
+        label.font = .systemFont(ofSize: fontSize, weight: fontWeight)
+        return UIBarButtonItem(customView: label)
+    }
+
+    private func createLogoImage(_ image: UIImage, _ size: CGSize) -> UIBarButtonItem {
+        let logoImageView = UIImageView(image: image.withRenderingMode(.alwaysTemplate))
         logoImageView.contentMode = .scaleAspectFit
         logoImageView.tintColor = .neutral400
-        logoImageView.frame = CGRect(x: 0, y: 0, width: 96, height: 32)
-
+        logoImageView.frame = CGRect(origin: .zero, size: size)
         return UIBarButtonItem(customView: logoImageView)
     }
 
@@ -104,7 +131,7 @@ public final class MSNavigationBar: UINavigationBar {
         stackView.spacing = spacing
         stackView.alignment = .center
         stackView.distribution = .equalSpacing
-        
+
         return [UIBarButtonItem(customView: stackView)]
     }
 

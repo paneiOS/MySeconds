@@ -24,7 +24,6 @@ public final class MSNavigationBarButton: UIButton {
             imageSize: imageSize,
             tintColor: tintColor
         )
-        self.backgroundColor = .red
     }
 
     @available(*, unavailable)
@@ -49,7 +48,7 @@ public final class MSNavigationBarButton: UIButton {
         config.contentInsets = .zero
 
         self.configuration = config
-        
+
         self.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             self.tapPublisher.send()
