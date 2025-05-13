@@ -11,8 +11,6 @@ import UIKit
 import ResourceKit
 
 public final class MSNavigationBar: UINavigationBar {
-    public typealias MSNavigationRightButton = (image: UIImage, tapPublisher: PassthroughSubject<Void, Never>)
-
     // MARK: - Properties
 
     public let backButtonTapped = PassthroughSubject<Void, Never>()
@@ -54,9 +52,8 @@ public final class MSNavigationBar: UINavigationBar {
         showLogo: Bool = false,
         title: String? = nil,
         hasBackButton: Bool = true,
-        rightButtons: [MSNavigationRightButton]? = nil,
-        rightButtonSpacing: CGFloat = 0,
-        rightButtonColor: UIColor = .neutral400
+        rightButtons: [MSNavigationBarButton]? = nil,
+        rightButtonSpacing: CGFloat = 0
     ) {
         let naviItem = UINavigationItem(title: title ?? "")
 
@@ -65,11 +62,12 @@ public final class MSNavigationBar: UINavigationBar {
             hasBackButton: hasBackButton
         )
 
-        naviItem.rightBarButtonItems = self.setupRightButtonItems(
-            buttons: rightButtons,
-            spacing: rightButtonSpacing,
-            color: rightButtonColor
-        )
+        if let rightButtons {
+            naviItem.rightBarButtonItems = self.setupRightButtonItems(
+                buttons: rightButtons,
+                spacing: rightButtonSpacing
+            )
+        }
 
         self.items = [naviItem]
     }
@@ -96,36 +94,17 @@ public final class MSNavigationBar: UINavigationBar {
     }
 
     private func setupRightButtonItems(
-        buttons: [MSNavigationRightButton]?,
-        spacing: CGFloat,
-        color: UIColor
+        buttons: [MSNavigationBarButton],
+        spacing: CGFloat
     ) -> [UIBarButtonItem]? {
-        guard let buttons, !buttons.isEmpty else { return nil }
+        guard !buttons.isEmpty else { return nil }
 
-        let stackView = UIStackView()
+        let stackView = UIStackView(arrangedSubviews: buttons)
         stackView.axis = .horizontal
         stackView.spacing = spacing
         stackView.alignment = .center
         stackView.distribution = .equalSpacing
-
-        for (image, publisher) in buttons {
-            let button = UIButton(type: .custom)
-            button.setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
-            button.tintColor = color
-
-            button.snp.makeConstraints {
-                $0.size.equalTo(CGSize(width: 40, height: 40))
-            }
-
-            button.publisher(for: .touchUpInside)
-                .sink { _ in
-                    publisher.send()
-                }
-                .store(in: &self.cancellables)
-
-            stackView.addArrangedSubview(button)
-        }
-
+        
         return [UIBarButtonItem(customView: stackView)]
     }
 
