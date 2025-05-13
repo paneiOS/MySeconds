@@ -7,6 +7,8 @@
 
 import UIKit
 
+import MySecondsKit
+
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
 
@@ -20,7 +22,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = window
 
         let mainVC: UIViewController = MSKitMainViewController()
-        let navigationController = UINavigationController(rootViewController: mainVC)
+        let navigationController = MSNavigationController(rootViewController: mainVC)
 
         self.window?.rootViewController = navigationController
         self.window?.makeKeyAndVisible()

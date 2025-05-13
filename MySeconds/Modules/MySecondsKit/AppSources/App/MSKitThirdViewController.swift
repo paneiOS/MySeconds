@@ -8,57 +8,46 @@
 import Combine
 import UIKit
 
+import BaseRIBsKit
 import MySecondsKit
 import ResourceKit
 
-class MSKitThirdViewController: MSBaseViewController {
+final class MSKitThirdViewController: BaseViewController, NavigationConfigurable {
+
+    private let isPresent: Bool
     let label = UILabel()
 
-    var isPresent = false
+    init(isPresent: Bool) {
+        self.isPresent = isPresent
+        super.init()
+    }
 
-    private let navigationBar = MSNavigationBar()
-
-    private let closeButton = MSNavigationBarButton(image: ResourceKitAsset.close.image)
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func setupUI() {
-        self.view.addSubviews(self.label)
+        view.addSubview(self.label)
+        self.label.text = self.isPresent ? "Present View Controller" : "Push View Controller"
         self.label.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
-        self.label.text = self.isPresent ? "Present View Controller" : "Push View Controller"
+        view.backgroundColor = .white
+    }
 
-        self.navigationController?.navigationBar.isTranslucent = true
-        self.navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
-        self.navigationController?.navigationBar.shadowImage = UIImage()
-
-        self.view.addSubview(self.navigationBar)
-
-        self.navigationBar.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide)
-            $0.leading.trailing.equalToSuperview()
-            $0.height.equalTo(44)
-        }
-
-        self.navigationBar.configure(
-            leftItemType: self.isPresent ? .text(
+    func navigationConfig() -> NavigationConfig {
+        NavigationConfig(
+            title: "Third View",
+            leftButtonType: self.isPresent ? .text(
                 text: "왼쪽 텍스트",
                 fontSize: 25,
                 fontWeight: .bold,
-                fontColor: .black
-            ) : .backButton,
-            title: "Third View",
-            rightButtons: self.isPresent ? [
-                self.closeButton
+                fontColor: .neutral950
+            ) : nil,
+            rightButtonTypes: self.isPresent ? [
+                .custom(image: ResourceKitAsset.close.image, tintColor: .neutral950, action: .dismiss)
             ] : []
         )
-    }
-
-    override func bind() {
-        self.closeButton.publisher(for: .touchUpInside)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                self.dismiss(animated: true)
-            }
-            .store(in: &self.cancellables)
     }
 }

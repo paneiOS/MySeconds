@@ -8,69 +8,60 @@
 import Combine
 import UIKit
 
+import BaseRIBsKit
 import MySecondsKit
 import ResourceKit
 
-class MSKitSecondViewController: MSBaseViewController {
+final class MSKitSecondViewController: BaseViewController, NavigationConfigurable {
+    private let isPresent: Bool
     let label = UILabel()
 
-    var isPresent = false
+    init(isPresent: Bool) {
+        self.isPresent = isPresent
+        super.init()
+    }
 
-    private let navigationBar = MSNavigationBar()
-
-    private let banButton = MSNavigationBarButton(image: ResourceKitAsset.ban.image)
-    private let bookUserButton = MSNavigationBarButton(image: ResourceKitAsset.bookUser.image)
-    private let closeButton = MSNavigationBarButton(image: ResourceKitAsset.close.image)
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
     override func setupUI() {
-        self.view.addSubviews(self.label)
+        view.addSubview(self.label)
+        self.label.text = self.isPresent ? "Present View Controller" : "Push View Controller"
         self.label.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
+        view.backgroundColor = .white
+    }
 
-        self.label.text = self.isPresent ? "Present View Controller" : "Push View Controller"
-
-        self.navigationController?.setNavigationBarHidden(true, animated: false)
-        self.view.addSubview(self.navigationBar)
-
-        self.navigationBar.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide)
-            $0.leading.trailing.equalToSuperview()
-            $0.height.equalTo(44)
-        }
-
-        self.navigationBar.configure(
-            leftItemType: self.isPresent ? .none : .backButton,
-            title: "Second View",
-            rightButtons: [self.banButton, self.bookUserButton]
-                + (self.isPresent ? [self.closeButton] : [])
+    func navigationConfig() -> NavigationConfig {
+        NavigationConfig(
+            title: "Seconds View",
+            leftButtonType: nil,
+            rightButtonTypes: [
+                .custom(
+                    image: ResourceKitAsset.ban.image,
+                    tintColor: .neutral950,
+                    action: .present(MSKitThirdViewController(isPresent: true))
+                ),
+                .custom(
+                    image: ResourceKitAsset.archive.image,
+                    tintColor: .neutral950,
+                    action: .push(MSKitThirdViewController(isPresent: false))
+                )
+            ]
         )
     }
 
-    override func bind() {
-        self.banButton.publisher(for: .touchUpInside)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                let thirdViewController = MSKitThirdViewController()
-                thirdViewController.isPresent = false
-                self.navigationController?.pushViewController(thirdViewController, animated: true)
-            }
-            .store(in: &self.cancellables)
+    private func presentNext() {
+        let thirdVC = MSKitThirdViewController(isPresent: true)
+        let nav = MSNavigationController(rootViewController: thirdVC)
+        self.present(nav, animated: true)
+    }
 
-        self.bookUserButton.publisher(for: .touchUpInside)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                let thirdViewController = MSKitThirdViewController()
-                thirdViewController.isPresent = true
-                self.navigationController?.present(thirdViewController, animated: true)
-            }
-            .store(in: &self.cancellables)
-
-        self.closeButton.publisher(for: .touchUpInside)
-            .sink { [weak self] _ in
-                guard let self else { return }
-                self.dismiss(animated: true)
-            }
-            .store(in: &self.cancellables)
+    private func pushNext() {
+        let thirdVC = MSKitThirdViewController(isPresent: false)
+        self.navigationController?.pushViewController(thirdVC, animated: true)
     }
 }
