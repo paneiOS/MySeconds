@@ -40,10 +40,10 @@ class MSKitSecondViewController: MSBaseViewController {
         }
 
         self.navigationBar.configure(
-            showLogo: false,
+            leftItemType: self.isPresent ? .none : .backButton,
             title: "Second View",
-            hasBackButton: self.isPresent ? false : true,
-            rightButtons: [self.banButton, self.bookUserButton] + (self.isPresent ? [self.closeButton] : [])
+            rightButtons: [self.banButton, self.bookUserButton]
+                + (self.isPresent ? [self.closeButton] : [])
         )
     }
 

@@ -40,8 +40,7 @@ final class MSKitMainViewController: MSBaseViewController {
         }
 
         self.navigationBar.configure(
-            showLogo: true,
-            hasBackButton: false,
+            leftItemType: .logo(),
             rightButtons: [self.imageButton, self.menuButton]
         )
     }

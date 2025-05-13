@@ -40,9 +40,13 @@ class MSKitThirdViewController: MSBaseViewController {
         }
 
         self.navigationBar.configure(
-            showLogo: false,
+            leftItemType: self.isPresent ? .text(
+                text: "왼쪽 텍스트",
+                fontSize: 25,
+                fontWeight: .bold,
+                fontColor: .black
+            ) : .backButton,
             title: "Third View",
-            hasBackButton: self.isPresent ? false : true,
             rightButtons: self.isPresent ? [
                 self.closeButton
             ] : []
