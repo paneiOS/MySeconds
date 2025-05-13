@@ -11,13 +11,17 @@ import UIKit
 import ResourceKit
 
 public enum NavigationLeftItemType {
-    case logo(image: UIImage = ResourceKitAsset.mysecondsLogo.image,
-              size: CGSize = CGSize(width: 96, height: 32))
+    case logo(
+        image: UIImage = ResourceKitAsset.mysecondsLogo.image,
+        size: CGSize = CGSize(width: 96, height: 32)
+    )
     case backButton
-    case text(text: String,
-              fontSize: CGFloat,
-              fontWeight: UIFont.Weight,
-              fontColor: UIColor)
+    case text(
+        text: String,
+        fontSize: CGFloat,
+        fontWeight: UIFont.Weight,
+        fontColor: UIColor
+    )
     case none
 }
 
