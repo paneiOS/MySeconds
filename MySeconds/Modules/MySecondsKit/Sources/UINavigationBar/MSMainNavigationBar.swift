@@ -28,7 +28,6 @@ public enum NavigationLeftItemType {
 public final class MSNavigationBar: UINavigationBar {
     // MARK: - Properties
 
-    public let backButtonTapped = PassthroughSubject<Void, Never>()
     private var cancellables = Set<AnyCancellable>()
     public var backButtonHandler: (() -> Void)?
 

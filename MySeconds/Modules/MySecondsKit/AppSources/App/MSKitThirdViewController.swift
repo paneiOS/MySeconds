@@ -54,7 +54,7 @@ class MSKitThirdViewController: MSBaseViewController {
     }
 
     override func bind() {
-        self.closeButton.tapPublisher
+        self.closeButton.publisher(for: .touchUpInside)
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.dismiss(animated: true)

@@ -46,9 +46,8 @@ final class MSKitMainViewController: MSBaseViewController {
     }
 
     override func bind() {
-
-        self.imageButton.tapPublisher
-            .sink { [weak self] in
+        self.imageButton.publisher(for: .touchUpInside)
+            .sink { [weak self] _ in
                 guard let self else { return }
                 let thirdVC = MSKitSecondViewController()
                 thirdVC.isPresent = true
@@ -57,8 +56,8 @@ final class MSKitMainViewController: MSBaseViewController {
             }
             .store(in: &self.cancellables)
 
-        self.menuButton.tapPublisher
-            .sink { [weak self] in
+        self.menuButton.publisher(for: .touchUpInside)
+            .sink { [weak self] _ in
                 guard let self else { return }
                 let thirdVC = MSKitSecondViewController()
                 thirdVC.isPresent = false

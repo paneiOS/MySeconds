@@ -48,7 +48,7 @@ class MSKitSecondViewController: MSBaseViewController {
     }
 
     override func bind() {
-        self.banButton.tapPublisher
+        self.banButton.publisher(for: .touchUpInside)
             .sink { [weak self] _ in
                 guard let self else { return }
                 let thirdViewController = MSKitThirdViewController()
@@ -57,7 +57,7 @@ class MSKitSecondViewController: MSBaseViewController {
             }
             .store(in: &self.cancellables)
 
-        self.bookUserButton.tapPublisher
+        self.bookUserButton.publisher(for: .touchUpInside)
             .sink { [weak self] _ in
                 guard let self else { return }
                 let thirdViewController = MSKitThirdViewController()
@@ -66,7 +66,7 @@ class MSKitSecondViewController: MSBaseViewController {
             }
             .store(in: &self.cancellables)
 
-        self.closeButton.tapPublisher
+        self.closeButton.publisher(for: .touchUpInside)
             .sink { [weak self] _ in
                 guard let self else { return }
                 self.dismiss(animated: true)
