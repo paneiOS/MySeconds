@@ -32,7 +32,7 @@ public enum NavigationButtonType {
     )
     case custom(
         image: UIImage,
-        imageSize: CGSize = CGSize(width: 24, height: 24),
+        imageSize: CGSize = .init(width: 24, height: 24),
         tintColor: UIColor = .neutral950,
         action: NavigationAction
     )
@@ -42,13 +42,18 @@ public struct NavigationConfig {
     public var title: String?
     public var leftButtonType: NavigationButtonType?
     public var rightButtonTypes: [NavigationButtonType]?
+    public var rightButtonSpacing: CGFloat = 0
 
-    public init(title: String? = nil,
-                leftButtonType: NavigationButtonType? = nil,
-                rightButtonTypes: [NavigationButtonType]? = nil) {
+    public init(
+        title: String? = nil,
+        leftButtonType: NavigationButtonType? = nil,
+        rightButtonTypes: [NavigationButtonType]? = nil,
+        rightButtonSpacing: CGFloat = 0
+    ) {
         self.title = title
         self.leftButtonType = leftButtonType
         self.rightButtonTypes = rightButtonTypes
+        self.rightButtonSpacing = rightButtonSpacing
     }
 }
 
@@ -76,20 +81,21 @@ public final class MSNavigationController: UINavigationController, UINavigationC
         )
 
         appearance.backButtonAppearance.normal.backgroundImage?.withTintColor(.black)
-        appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear, .font: UIFont.systemFont(ofSize: 0.0)]
+        appearance.backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.clear, .font: UIFont.systemFont(ofSize: 0)]
 
         self.navigationBar.tintColor = .black
         self.navigationBar.standardAppearance = appearance
         self.navigationBar.scrollEdgeAppearance = appearance
     }
 
-    public func navigationController(_: UINavigationController,
-                                     willShow viewController: UIViewController,
-                                     animated _: Bool) {
+    public func navigationController(
+        _: UINavigationController,
+        willShow viewController: UIViewController,
+        animated _: Bool
+    ) {
         guard let configurable = viewController as? NavigationConfigurable else { return }
 
         let config = configurable.navigationConfig()
-
         viewController.navigationItem.title = config.title
 
         if let leftType = config.leftButtonType {
@@ -101,7 +107,7 @@ public final class MSNavigationController: UINavigationController, UINavigationC
         if let rightTypes = config.rightButtonTypes {
             let stackView = UIStackView()
             stackView.axis = .horizontal
-            stackView.spacing = 0
+            stackView.spacing = config.rightButtonSpacing
             stackView.alignment = .center
             stackView.distribution = .fill
 
@@ -133,30 +139,7 @@ public final class MSNavigationController: UINavigationController, UINavigationC
                 imageSize: imageSize,
                 tintColor: tintColor
             )
-
-            button.publisher(for: .touchUpInside)
-                .sink { [weak self] _ in
-                    guard let self else { return }
-                    switch action {
-                    case let .push(viewController):
-                        self.pushViewController(viewController, animated: true)
-                    case let .present(viewController, embedInNavigation):
-                        let targetVC: UIViewController = if embedInNavigation {
-                            MSNavigationController(rootViewController: viewController)
-                        } else {
-                            viewController
-                        }
-                        self.present(targetVC, animated: true)
-                    case .dismiss:
-                        self.dismiss(animated: true)
-                    case .pop:
-                        self.popViewController(animated: true)
-                    case let .custom(customAction):
-                        customAction()
-                    }
-                }
-                .store(in: &self.cancellables)
-
+            self.bindAction(button: button, action: action)
             return UIBarButtonItem(customView: button)
         case let .text(text, fontSize, fontWeight, fontColor):
             let label = UILabel()
@@ -164,6 +147,35 @@ public final class MSNavigationController: UINavigationController, UINavigationC
             label.textColor = fontColor
             label.font = .systemFont(ofSize: fontSize, weight: fontWeight)
             return UIBarButtonItem(customView: label)
+        }
+    }
+
+    private func bindAction(button: UIButton, action: NavigationAction) {
+        button.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.handleAction(action)
+            })
+            .store(in: &self.cancellables)
+    }
+
+    private func handleAction(_ action: NavigationAction) {
+        switch action {
+        case let .push(viewController):
+            self.pushViewController(viewController, animated: true)
+        case let .present(viewController, embedInNavigation):
+            let targetVC: UIViewController = if embedInNavigation {
+                MSNavigationController(rootViewController: viewController)
+            } else {
+                viewController
+            }
+            self.present(targetVC, animated: true)
+        case .dismiss:
+            self.dismiss(animated: true)
+        case .pop:
+            self.popViewController(animated: true)
+        case let .custom(customAction):
+            customAction()
         }
     }
 }
