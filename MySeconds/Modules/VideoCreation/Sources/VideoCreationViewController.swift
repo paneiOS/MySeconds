@@ -248,7 +248,7 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             $0.top.leading.trailing.equalToSuperview()
         }
         self.removeBottomLabel.snp.makeConstraints {
-            $0.top.equalTo(self.removeTopLabel).offset(4)
+            $0.top.equalTo(self.removeTopLabel.snp.bottom).offset(4)
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
