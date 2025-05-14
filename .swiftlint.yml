@@ -45,9 +45,12 @@ type_body_length:
 disabled_rules:
 
 # Opt-in rules: 기본 비활성화 되어 있으니 직접 켜줘야 함
-opt_in_rules:
-  - unused_declarations       # 사용되지 않는 함수/변수/타입 선언에 경고
-  - unused_closure_parameter  # 사용되지 않는 클로저 파라미터에 경고
+# Analyzer-only rules (run by `swiftlint analyze`)
+analyzer_rules:
+  opt_in:
+    - unused_declaration        # 사용되지 않는 함수/변수/타입 선언에 경고
+    - unused_closure_parameter  # 사용되지 않는 클로저 파라미터에 경고
+    - unused_import             # 사용되지 않는 import에 경고
 
 # 제외할 디렉토리/파일
 excluded:
