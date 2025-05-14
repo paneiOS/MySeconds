@@ -17,6 +17,8 @@ import UtilsKit
 
 protocol VideoCreationPresentableListener: AnyObject {
     func initClips()
+    func update(clips: [CompositionClip])
+    func delete(clip: CompositionClip)
     var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
 }
 
@@ -24,7 +26,6 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
     enum Constants {
         private static let maximumColumn: Int = 4
         private static let collectionViewInsets: CGFloat = 24.0
-
         static let makeButtonDuration: CGFloat = 1
         static let cellSpacing: CGFloat = 4
         static let cellSize: CGSize = {
@@ -36,7 +37,6 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         }()
 
         static let thumbnailSize: CGSize = .init(width: cellSize.width * 2, height: cellSize.height * 2)
-
         static let contentViewSpacing: CGFloat = 32
     }
 
@@ -84,8 +84,8 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         return label
     }()
 
-    private lazy var titleTextField: UITextField = {
-        let textField: UITextField = .init()
+    private lazy var titleTextField: NoDragDropTextField = {
+        let textField: NoDragDropTextField = .init()
         textField.borderStyle = .none
         textField.attributedPlaceholder = .makeAttributedString(
             text: Date().dateToString,
@@ -123,9 +123,13 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         layout.minimumLineSpacing = Constants.cellSpacing
         let collectionView = IntrinsicCollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.showsVerticalScrollIndicator = false
+        collectionView.dragInteractionEnabled = true
         collectionView.backgroundColor = .clear
         collectionView.register(CoverClipCell.self, forCellWithReuseIdentifier: CoverClipCell.reuseIdentifier)
         collectionView.register(VideoClipCell.self, forCellWithReuseIdentifier: VideoClipCell.reuseIdentifier)
+        collectionView.delegate = self
+        collectionView.dragDelegate = self
+        collectionView.dropDelegate = self
         return collectionView
     }()
 
@@ -142,6 +146,37 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         return control
     }()
 
+    private let removeView: UIView = {
+        let view: UIView = .init()
+        view.backgroundColor = .red50
+        view.isHidden = true
+        return view
+    }()
+
+    private let removeSubview: UIView = .init()
+
+    private let removeTopLabel: UILabel = {
+        let label: UILabel = .init()
+        label.attributedText = .makeAttributedString(
+            text: "이곳에 놓아서 삭제",
+            font: .systemFont(ofSize: 16, weight: .medium),
+            textColor: .red600,
+            alignment: .center
+        )
+        return label
+    }()
+
+    private let removeBottomLabel: UILabel = {
+        let label: UILabel = .init()
+        label.attributedText = .makeAttributedString(
+            text: "\"B컷에도 소중한 이야기가 담겨있어요\"",
+            font: .systemFont(ofSize: 14, weight: .regular),
+            textColor: .neutral600,
+            alignment: .center
+        )
+        return label
+    }()
+
     private var fillLayer: CALayer?
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -152,11 +187,15 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
     override func setupUI() {
         super.setupUI()
 
-        self.view.addSubview(self.totalView)
+        self.view.addSubviews(self.totalView, self.removeView)
         self.totalView.snp.makeConstraints {
             $0.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             $0.leading.trailing.equalToSuperview().inset(24)
             $0.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom)
+        }
+        self.removeView.snp.makeConstraints {
+            $0.leading.trailing.bottom.equalToSuperview()
+            $0.height.equalTo(128)
         }
 
         self.totalView.addSubviews(self.contentsSubview, self.makeButton)
@@ -194,8 +233,22 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             $0.centerX.bottom.equalToSuperview()
         }
 
+        self.removeView.addSubview(self.removeSubview)
+        self.removeSubview.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
+        self.removeSubview.addSubviews(self.removeTopLabel, self.removeBottomLabel)
+        self.removeTopLabel.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+        }
+        self.removeBottomLabel.snp.makeConstraints {
+            $0.top.equalTo(self.removeTopLabel.snp.bottom).offset(4)
+            $0.leading.trailing.bottom.equalToSuperview()
+        }
+
         self.collectionView.dataSource = self.dataSource
-        self.collectionView.delegate = self
+
+        self.view.addInteraction(UIDropInteraction(delegate: self))
     }
 
     override func bind() {
@@ -291,6 +344,7 @@ extension VideoCreationViewController: CAAnimationDelegate {
     }
 
     private func longPressDidComplete() {
+        // TODO: - 구현 예정
         print("완료")
     }
 
@@ -302,4 +356,100 @@ extension VideoCreationViewController: CAAnimationDelegate {
     }
 }
 
-extension VideoCreationViewController: UICollectionViewDelegate {}
+extension VideoCreationViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let clip = clips[safe: indexPath.item] else { return }
+        switch clip {
+        case .cover:
+            // TODO: - 구현 예정
+            print("인트로/아웃트로 영상 제작")
+        case .video:
+            // TODO: - 구현 예정
+            print("비디오 재생 화면")
+        }
+    }
+}
+
+extension VideoCreationViewController: UICollectionViewDragDelegate {
+    func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: any UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        guard let clip = clips[safe: indexPath.item] else { return [] }
+        switch clip {
+        case let .video(videoClip):
+            let itemProvider = NSItemProvider(object: videoClip.fileName as NSString)
+            let dragItem = UIDragItem(itemProvider: itemProvider)
+            dragItem.localObject = clip
+            return [dragItem]
+        case .cover:
+            return []
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dragPreviewParametersForItemAt indexPath: IndexPath) -> UIDragPreviewParameters? {
+        guard let bounds = collectionView.cellForItem(at: indexPath)?.bounds else { return nil }
+        let params = UIDragPreviewParameters()
+        params.visiblePath = UIBezierPath(roundedRect: bounds, cornerRadius: 8)
+        params.backgroundColor = .clear
+        return params
+    }
+}
+
+extension VideoCreationViewController: UICollectionViewDropDelegate {
+    func collectionView(_ collectionView: UICollectionView, canHandle session: UIDropSession) -> Bool {
+        session.localDragSession != nil
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
+        guard let index = destinationIndexPath?.item else {
+            return .init(operation: .cancel)
+        }
+        if index > 0, index < (self.clips.count - 1) {
+            return .init(operation: .move, intent: .insertAtDestinationIndexPath)
+        } else {
+            return .init(operation: .forbidden)
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnter session: UIDropSession) {
+        self.removeView.isHidden = false
+    }
+
+    func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
+        self.removeView.isHidden = true
+    }
+
+    func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
+        guard let destination = coordinator.destinationIndexPath else { return }
+        for item in coordinator.items {
+            guard let src = item.sourceIndexPath else { continue }
+            let clip = self.clips.remove(at: src.item)
+            self.clips.insert(clip, at: destination.item)
+            var snap = self.dataSource.snapshot()
+            snap.deleteAllItems()
+            snap.appendSections([.main])
+            snap.appendItems(self.clips, toSection: .main)
+            self.dataSource.apply(snap, animatingDifferences: true)
+            coordinator.drop(item.dragItem, toItemAt: destination)
+            self.listener?.update(clips: self.clips)
+        }
+        self.removeView.isHidden = true
+    }
+}
+
+extension VideoCreationViewController: UIDropInteractionDelegate {
+    public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: UIDropSession) -> UIDropProposal {
+        let locationView = session.location(in: self.view)
+        if self.removeView.frame.contains(locationView) {
+            return UIDropProposal(operation: .move)
+        }
+
+        return UIDropProposal(operation: .forbidden)
+    }
+
+    public func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
+        if self.removeView.frame.contains(session.location(in: view)) {
+            guard let clip = session.items.first?.localObject as? CompositionClip else { return }
+            self.listener?.delete(clip: clip)
+            self.removeView.isHidden = true
+        }
+    }
+}

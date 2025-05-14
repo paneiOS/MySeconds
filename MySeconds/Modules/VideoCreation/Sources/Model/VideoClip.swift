@@ -29,10 +29,7 @@ public struct VideoClip: Hashable {
 
     private static let clipsFolder: URL = {
         let fileManager = FileManager.default
-        guard let appSupport = fileManager.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first else {
+        guard let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
             // TODO: - Crashlytics 추가 예정
             fatalError("⚠️ Application Support 디렉터리 접근 실패")
         }
