@@ -34,7 +34,7 @@ final class LoginViewController: BaseViewController, LoginPresentable, LoginView
 
     private let topView: UIView = .init()
 
-    private let videoView: UIComponents.Views.VideoView = .init(player: .sampleVideo)
+    private let videoView: VideoView = .init(player: .sampleVideo)
 
     private lazy var googleSignInButton: GIDSignInButton = {
         let button: GIDSignInButton = .init()

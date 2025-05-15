@@ -62,7 +62,8 @@ let project = Project(
                 .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
                 .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
                 .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
-                .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit")
+                .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
+                .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation")
             ],
             settings: .settings(
                 base: [

@@ -139,14 +139,14 @@ public final class MSNavigationController: UINavigationController, UINavigationC
                 imageSize: imageSize,
                 tintColor: tintColor
             )
-            
+
             button.publisher(for: .touchUpInside)
                 .sink(receiveValue: { [weak self] _ in
                     guard let self else { return }
                     self.handleAction(action)
                 })
                 .store(in: &self.cancellables)
-            
+
             return UIBarButtonItem(customView: button)
         case let .text(text, fontSize, fontWeight, fontColor):
             let label = UILabel()
