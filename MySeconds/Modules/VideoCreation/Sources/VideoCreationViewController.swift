@@ -5,6 +5,7 @@
 //  Created by pane on 04/29/2025.
 //
 
+import AVKit
 import Combine
 import UIKit
 
@@ -44,9 +45,7 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         case main
     }
 
-    private var clips: [CompositionClip] = []
-
-    weak var listener: VideoCreationPresentableListener?
+    // MARK: - UI Components
 
     private let totalView: UIView = .init()
 
@@ -177,7 +176,14 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         return label
     }()
 
+    // MARK: - Properties
+
+    weak var listener: VideoCreationPresentableListener?
+    private var pendingPlayer: AVPlayer?
     private var fillLayer: CALayer?
+    private var clips: [CompositionClip] = []
+
+    // MARK: - Override func
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
@@ -363,9 +369,15 @@ extension VideoCreationViewController: UICollectionViewDelegate {
         case .cover:
             // TODO: - 구현 예정
             print("인트로/아웃트로 영상 제작")
-        case .video:
-            // TODO: - 구현 예정
-            print("비디오 재생 화면")
+        case let .video(videoClip):
+            let player = AVPlayer(url: videoClip.url)
+            self.pendingPlayer = player
+            let playerViewController = AVPlayerViewController()
+            playerViewController.player = player
+            playerViewController.modalPresentationStyle = .custom
+            playerViewController.transitioningDelegate = self
+            player.play()
+            self.present(playerViewController, animated: true, completion: nil)
         }
     }
 }
@@ -451,5 +463,28 @@ extension VideoCreationViewController: UIDropInteractionDelegate {
             self.listener?.delete(clip: clip)
             self.removeView.isHidden = true
         }
+    }
+}
+
+extension VideoCreationViewController: UIViewControllerTransitioningDelegate {
+    func animationController(
+        forPresented presented: UIViewController,
+        presenting: UIViewController,
+        source: UIViewController
+    ) -> UIViewControllerAnimatedTransitioning? {
+        guard let idx = collectionView.indexPathsForSelectedItems?.first,
+              let player = pendingPlayer,
+              let container = presenting.view.window,
+              let cell = self.collectionView.cellForItem(at: idx) else {
+            return nil
+        }
+        let origin = cell.contentView.convert(cell.contentView.bounds, to: container)
+        return PlayerZoomTransition(frame: origin, player: player, duration: 0.4)
+    }
+
+    func animationController(
+        forDismissed dismissed: UIViewController
+    ) -> UIViewControllerAnimatedTransitioning? {
+        FadeOutTransition(duration: 0.2)
     }
 }
