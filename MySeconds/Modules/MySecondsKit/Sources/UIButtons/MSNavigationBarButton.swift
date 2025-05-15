@@ -9,6 +9,7 @@ import Combine
 import UIKit
 
 import ResourceKit
+import SnapKit
 
 public final class MSNavigationBarButton: UIButton {
     public init(

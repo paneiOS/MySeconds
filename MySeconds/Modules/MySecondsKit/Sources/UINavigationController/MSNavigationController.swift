@@ -19,6 +19,7 @@ public enum NavigationAction {
     case present(UIViewController, embedInNavigation: Bool = true)
     case dismiss
     case pop
+    case popToRoot
     case custom(() -> Void)
 }
 
@@ -124,7 +125,6 @@ public final class MSNavigationController: UINavigationController, UINavigationC
     }
 
     private func makeBarButton(from type: NavigationButtonType) -> UIBarButtonItem {
-
         switch type {
         case .logo:
             let logoImageView = UIImageView(image: ResourceKitAsset.mysecondsLogo.image.withRenderingMode(.alwaysTemplate))
@@ -139,7 +139,14 @@ public final class MSNavigationController: UINavigationController, UINavigationC
                 imageSize: imageSize,
                 tintColor: tintColor
             )
-            self.bindAction(button: button, action: action)
+            
+            button.publisher(for: .touchUpInside)
+                .sink(receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    self.handleAction(action)
+                })
+                .store(in: &self.cancellables)
+            
             return UIBarButtonItem(customView: button)
         case let .text(text, fontSize, fontWeight, fontColor):
             let label = UILabel()
@@ -148,15 +155,6 @@ public final class MSNavigationController: UINavigationController, UINavigationC
             label.font = .systemFont(ofSize: fontSize, weight: fontWeight)
             return UIBarButtonItem(customView: label)
         }
-    }
-
-    private func bindAction(button: UIButton, action: NavigationAction) {
-        button.publisher(for: .touchUpInside)
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
-                self.handleAction(action)
-            })
-            .store(in: &self.cancellables)
     }
 
     private func handleAction(_ action: NavigationAction) {
@@ -174,6 +172,8 @@ public final class MSNavigationController: UINavigationController, UINavigationC
             self.dismiss(animated: true)
         case .pop:
             self.popViewController(animated: true)
+        case .popToRoot:
+            self.popToRootViewController(animated: true)
         case let .custom(customAction):
             customAction()
         }
