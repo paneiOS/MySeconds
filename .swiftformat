@@ -30,3 +30,6 @@
 
 # 멀티라인 중괄호 유지
 --disable wrapMultilineStatementBraces
+
+# 사용되지 않는 함수 인자 자동 언더스코어 변환 비활성화
+--disable unusedArguments
