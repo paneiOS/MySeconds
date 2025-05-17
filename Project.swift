@@ -58,11 +58,13 @@ let project = Project(
             ],
             dependencies: [
                 .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
-                .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
                 .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
-                .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
+                
+                .project(target: "CoverClipCreation", path: "MySeconds/Modules/CoverClipCreation"),
+                .project(target: "Login", path: "MySeconds/Modules/Login"),
+                .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation")
             ],
             settings: .settings(
