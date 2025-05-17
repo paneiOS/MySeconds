@@ -59,6 +59,12 @@ final class CoverClipCreationViewController: BaseViewControllerWithKeyboard, Cov
         return view
     }()
 
+    private let preview: UIView = .init()
+
+    private let previewTitleLabel: UILabel = .init()
+
+    private let previewDescriptionLabel: UILabel = .init()
+
     private let stackView: UIStackView = {
         let view: UIStackView = .init()
         view.axis = .vertical
@@ -121,11 +127,23 @@ final class CoverClipCreationViewController: BaseViewControllerWithKeyboard, Cov
             $0.centerX.equalToSuperview()
             $0.size.equalTo(Constants.clipViewWidth)
         }
-
         self.stackView.snp.makeConstraints {
             $0.top.equalTo(self.clipView.snp.bottom).offset(22)
             $0.leading.trailing.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview().inset(16)
+        }
+
+        self.clipView.addSubview(self.preview)
+        self.preview.addSubviews(self.previewTitleLabel, self.previewDescriptionLabel)
+        self.preview.snp.makeConstraints {
+            $0.center.equalToSuperview()
+        }
+        self.previewTitleLabel.snp.makeConstraints {
+            $0.top.leading.trailing.equalToSuperview()
+        }
+        self.previewDescriptionLabel.snp.makeConstraints {
+            $0.top.equalTo(self.previewTitleLabel.snp.bottom).offset(2)
+            $0.leading.trailing.bottom.equalToSuperview()
         }
     }
 }
@@ -136,16 +154,12 @@ extension CoverClipCreationViewController {
             text: self.coverClip.position.rawValue,
             font: .systemFont(ofSize: 20, weight: .heavy)
         )
-
-        [
-            ("제목", Date().dateToString),
-            ("설명", "지금은 유럽여행중~")
-        ].forEach {
-            self.stackView.addArrangedSubview(self.makeMultiTextFieldView(title: $0.0, placeholder: $0.1))
+        for (index, item) in [("제목", Date().dateToString), ("설명", "지금은 유럽여행중~")].enumerated() {
+            self.stackView.addArrangedSubview(self.makeMultiTextFieldView(title: item.0, placeholder: item.1, index: index))
         }
     }
 
-    private func makeMultiTextFieldView(title: String, placeholder: String? = nil) -> UIView {
+    private func makeMultiTextFieldView(title: String, placeholder: String, index: Int) -> UIView {
         let view: UIView = .init()
         let label: UILabel = .init()
         label.attributedText = .makeAttributedString(
@@ -155,11 +169,13 @@ extension CoverClipCreationViewController {
         )
         let textField: UITextField = .init()
         textField.attributedPlaceholder = .makeAttributedString(
-            text: placeholder ?? title,
+            text: placeholder,
             font: .systemFont(ofSize: 17, weight: .regular),
             textColor: .neutral400,
             letterSpacingPercentage: -0.43
         )
+        textField.tag = index
+        textField.addTarget(self, action: #selector(self.textFieldDidChange), for: .editingChanged)
         view.addSubviews(label, textField)
         label.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(16)
@@ -171,5 +187,28 @@ extension CoverClipCreationViewController {
             $0.trailing.equalToSuperview().inset(16)
         }
         return view
+    }
+
+    @objc private func textFieldDidChange(_ textField: UITextField) {
+        guard let text = textField.text else {
+            return
+        }
+        switch textField.tag {
+        case 0: self.previewTitleLabel.attributedText = .makeAttributedString(
+                text: text,
+                font: .systemFont(ofSize: 12, weight: .semibold),
+                textColor: .white,
+                letterSpacingPercentage: -0.43,
+                alignment: .center
+            )
+        case 1: self.previewDescriptionLabel.attributedText = .makeAttributedString(
+                text: text,
+                font: .systemFont(ofSize: 10, weight: .semibold),
+                textColor: .white,
+                letterSpacingPercentage: -0.43,
+                alignment: .center
+            )
+        default: break
+        }
     }
 }
