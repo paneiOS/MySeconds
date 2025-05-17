@@ -53,15 +53,4 @@ final class MSKitSecondViewController: BaseViewController, NavigationConfigurabl
             ]
         )
     }
-
-    private func presentNext() {
-        let thirdVC = MSKitThirdViewController(isPresent: true)
-        let nav = MSNavigationController(rootViewController: thirdVC)
-        self.present(nav, animated: true)
-    }
-
-    private func pushNext() {
-        let thirdVC = MSKitThirdViewController(isPresent: false)
-        self.navigationController?.pushViewController(thirdVC, animated: true)
-    }
 }

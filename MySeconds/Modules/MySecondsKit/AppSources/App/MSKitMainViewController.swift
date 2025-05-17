@@ -34,15 +34,4 @@ final class MSKitMainViewController: BaseViewController, NavigationConfigurable 
             ]
         )
     }
-
-    private func presentNext() {
-        let secondVC = MSKitSecondViewController(isPresent: true)
-        let nav = MSNavigationController(rootViewController: secondVC)
-        self.present(nav, animated: true)
-    }
-
-    private func pushNext() {
-        let secondVC = MSKitSecondViewController(isPresent: false)
-        self.navigationController?.pushViewController(secondVC, animated: true)
-    }
 }

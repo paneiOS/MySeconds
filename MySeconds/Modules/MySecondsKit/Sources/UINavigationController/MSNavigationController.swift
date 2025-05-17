@@ -15,11 +15,11 @@ public protocol NavigationConfigurable {
 }
 
 public enum NavigationAction {
-    case push(UIViewController)
-    case present(UIViewController, embedInNavigation: Bool = true)
-    case dismiss
-    case pop
-    case popToRoot
+    case push(UIViewController, animation: Bool = true)
+    case present(UIViewController, embedInNavigation: Bool = true, animation: Bool = true)
+    case dismiss(animation: Bool = true)
+    case pop(animation: Bool = true)
+    case popToRoot(animation: Bool = true)
     case custom(() -> Void)
 }
 
@@ -101,8 +101,6 @@ public final class MSNavigationController: UINavigationController, UINavigationC
 
         if let leftType = config.leftButtonType {
             viewController.navigationItem.leftBarButtonItem = self.makeBarButton(from: leftType)
-        } else {
-            viewController.navigationItem.leftBarButtonItem = nil
         }
 
         if let rightTypes = config.rightButtonTypes {
@@ -119,8 +117,6 @@ public final class MSNavigationController: UINavigationController, UINavigationC
                 }
             }
             viewController.navigationItem.rightBarButtonItems = [UIBarButtonItem(customView: stackView)]
-        } else {
-            viewController.navigationItem.rightBarButtonItems = nil
         }
     }
 
@@ -159,21 +155,21 @@ public final class MSNavigationController: UINavigationController, UINavigationC
 
     private func handleAction(_ action: NavigationAction) {
         switch action {
-        case let .push(viewController):
-            self.pushViewController(viewController, animated: true)
-        case let .present(viewController, embedInNavigation):
+        case let .push(viewController, animation):
+            self.pushViewController(viewController, animated: animation)
+        case let .present(viewController, embedInNavigation, animation):
             let targetVC: UIViewController = if embedInNavigation {
                 MSNavigationController(rootViewController: viewController)
             } else {
                 viewController
             }
-            self.present(targetVC, animated: true)
-        case .dismiss:
-            self.dismiss(animated: true)
-        case .pop:
-            self.popViewController(animated: true)
-        case .popToRoot:
-            self.popToRootViewController(animated: true)
+            self.present(targetVC, animated: animation)
+        case let .dismiss(animation):
+            self.dismiss(animated: animation)
+        case let .pop(animation):
+            self.popViewController(animated: animation)
+        case let .popToRoot(animation):
+            self.popToRootViewController(animated: animation)
         case let .custom(customAction):
             customAction()
         }

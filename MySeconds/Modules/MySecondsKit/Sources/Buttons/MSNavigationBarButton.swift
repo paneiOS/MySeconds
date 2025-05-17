@@ -8,8 +8,9 @@
 import Combine
 import UIKit
 
-import ResourceKit
 import SnapKit
+
+import ResourceKit
 
 public final class MSNavigationBarButton: UIButton {
     public init(
@@ -38,7 +39,7 @@ public final class MSNavigationBarButton: UIButton {
         self.tintColor = tintColor
 
         self.snp.makeConstraints {
-            $0.size.equalTo(CGSize(width: 40, height: 40))
+            $0.size.equalTo(40)
         }
 
         var config = UIButton.Configuration.plain()

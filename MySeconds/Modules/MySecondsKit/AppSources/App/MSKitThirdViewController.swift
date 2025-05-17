@@ -46,7 +46,7 @@ final class MSKitThirdViewController: BaseViewController, NavigationConfigurable
                 fontColor: .neutral950
             ) : nil,
             rightButtonTypes: self.isPresent ? [
-                .custom(image: ResourceKitAsset.close.image, tintColor: .neutral950, action: .dismiss)
+                .custom(image: ResourceKitAsset.close.image, tintColor: .neutral950, action: .dismiss())
             ] : []
         )
     }
