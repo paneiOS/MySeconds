@@ -2,10 +2,12 @@
 //  VideoRecordRouter.swift
 //  MySeconds
 //
-//  Created by chungwussup on 02/18/2025.
+//  Created by chungwussup on 05/19/2025.
 //
 
 import ModernRIBs
+
+import BaseRIBsKit
 
 protocol VideoRecordInteractable: Interactable {
     var router: VideoRecordRouting? { get set }
@@ -14,9 +16,9 @@ protocol VideoRecordInteractable: Interactable {
 
 protocol VideoRecordViewControllable: ViewControllable {}
 
-final class VideoRecordRouter: ViewableRouter<VideoRecordInteractable, VideoRecordViewControllable>, VideoRecordRouting {
+final class VideoRecordRouter: BaseRouter<VideoRecordInteractor, VideoRecordViewController>, VideoRecordRouting {
 
-    override init(interactor: VideoRecordInteractable, viewController: VideoRecordViewControllable) {
+    override init(interactor: VideoRecordInteractor, viewController: VideoRecordViewController) {
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
     }

@@ -2,31 +2,35 @@
 //  VideoRecordBuilder.swift
 //  MySeconds
 //
-//  Created by chungwussup on 02/18/2025.
+//  Created by chungwussup on 05/19/2025.
 //
 
 import ModernRIBs
 
-protocol VideoRecordDependency: Dependency {}
+import BaseRIBsKit
 
-final class VideoRecordComponent: Component<VideoRecordDependency> {}
+public protocol VideoRecordDependency: Dependency {}
+
+public final class VideoRecordComponent: Component<VideoRecordDependency> {}
+
+extension VideoRecordComponent: VideoRecordDependency {}
 
 // MARK: - Builder
 
-protocol VideoRecordBuildable: Buildable {
+public protocol VideoRecordBuildable: Buildable {
     func build(withListener listener: VideoRecordListener) -> VideoRecordRouting
 }
 
-final class VideoRecordBuilder: Builder<VideoRecordDependency>, VideoRecordBuildable {
+public final class VideoRecordBuilder: BaseBuilder<VideoRecordComponent>, VideoRecordBuildable {
 
-    override init(dependency: VideoRecordDependency) {
+    override public init(dependency: VideoRecordComponent) {
         super.init(dependency: dependency)
     }
 
-    func build(withListener listener: VideoRecordListener) -> VideoRecordRouting {
+    public func build(withListener listener: VideoRecordListener) -> VideoRecordRouting {
         let component = VideoRecordComponent(dependency: dependency)
         let viewController = VideoRecordViewController()
-        let interactor = VideoRecordInteractor(presenter: viewController)
+        let interactor = VideoRecordInteractor(presenter: viewController, component: component)
         interactor.listener = listener
         return VideoRecordRouter(interactor: interactor, viewController: viewController)
     }

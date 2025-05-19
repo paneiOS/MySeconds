@@ -61,10 +61,10 @@ let project = Project(
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
                 .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
-                .project(target: "VideoRecord", path: "MySeconds/Modules/VideoRecord"),
                 .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
-                .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation")
+                .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation"),
+                .project(target: "VideoRecord", path: "MySeconds/Modules/VideoRecord")
             ],
             settings: .settings(
                 base: [

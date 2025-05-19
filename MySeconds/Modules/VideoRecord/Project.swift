@@ -2,7 +2,7 @@
 //  Project.swift
 //  MySeconds
 //
-//  Created by chungwussup on 02/18/2025.
+//  Created by chungwussup on 05/19/2025.
 //
 
 import ProjectDescription
@@ -14,7 +14,7 @@ let project = Project(
             name: "VideoRecord",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.videorecord",
+            bundleId: "com.panestudio.VideoRecord",
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],
@@ -30,7 +30,7 @@ let project = Project(
             name: "VideoRecordModuleApp",
             destinations: .iOS,
             product: .app,
-            bundleId: "com.panestudio.VideoRecordModleApp",
+            bundleId: "com.panestudio.myseconds",
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",
