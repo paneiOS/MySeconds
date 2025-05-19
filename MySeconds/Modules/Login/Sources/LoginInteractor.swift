@@ -12,6 +12,7 @@ import FirebaseFirestore
 import GoogleSignIn
 import ModernRIBs
 
+import BaseRIBsKit
 import UtilsKit
 
 public protocol LoginRouting: ViewableRouting {}
@@ -21,9 +22,7 @@ protocol LoginPresentable: Presentable {
 }
 
 public protocol LoginListener: AnyObject {
-    func didCompleteLogin(with result: LoginResult)
-    func didFailLogin(with error: Error)
-    func didRequireAdditionalInfo(with uid: String)
+    func didLogin(with result: LoginResult)
 }
 
 final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInteractable {
@@ -31,16 +30,13 @@ final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInter
     weak var listener: LoginListener?
 
     private let firestore = Firestore.firestore()
-    private let appleSignInService: AppleSignInService
-    private let googleSignInService: GoogleSignInService
+    private let socialLoginService: SocialLoginService
 
     init(
         presenter: LoginPresentable,
-        appleSignInService: AppleSignInService,
-        googleSignInService: GoogleSignInService
+        socialLoginService: SocialLoginService
     ) {
-        self.appleSignInService = appleSignInService
-        self.googleSignInService = googleSignInService
+        self.socialLoginService = socialLoginService
         super.init(presenter: presenter)
         presenter.listener = self
     }
@@ -53,9 +49,9 @@ extension LoginInteractor {
             guard let self else { return }
             if let document {
                 if document.exists {
-                    self.listener?.didCompleteLogin(with: .success)
+                    self.listener?.didLogin(with: .success)
                 } else {
-                    self.listener?.didCompleteLogin(with: .additionalInfoRequired(uid: uid))
+                    self.listener?.didLogin(with: .additionalInfoRequired(uid: uid))
                 }
             } else if let error {
                 printDebug(error)
@@ -66,20 +62,20 @@ extension LoginInteractor {
     private func checkAdditionalInfo(for document: DocumentSnapshot, uid: String) {
         if let birthDate = document.data()?["birthDate"] as? String,
            !birthDate.isEmpty {
-            self.listener?.didCompleteLogin(with: .success)
+            self.listener?.didLogin(with: .success)
         } else {
-            self.listener?.didCompleteLogin(with: .additionalInfoRequired(uid: uid))
+            self.listener?.didLogin(with: .additionalInfoRequired(uid: uid))
         }
     }
 }
 
 extension LoginInteractor: LoginPresentableListener {
     func appleLogin() {
-        self.appleSignInService.signIn(delegate: self)
+        self.socialLoginService.signIn(type: .apple, presentView: nil, delegate: self)
     }
 
     func googleLogin(with viewController: UIViewController) {
-        self.googleSignInService.signIn(viewController: viewController, delegate: self)
+        self.socialLoginService.signIn(type: .google, presentView: viewController, delegate: self)
     }
 }
 
@@ -89,6 +85,6 @@ extension LoginInteractor: SocialLoginDelegate {
     }
 
     func didFailLogin(with error: LoginError) {
-        self.listener?.didFailLogin(with: error)
+        self.listener?.didLogin(with: .failure(error))
     }
 }

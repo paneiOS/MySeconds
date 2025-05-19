@@ -19,8 +19,11 @@ let project = Project(
             sources: ["Sources/**"],
             resources: [],
             dependencies: [
-                .package(product: "ModernRIBs", type: .runtime),
-                .package(product: "SnapKit", type: .runtime)
+                .external(name: "SnapKit"),
+                .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
+                .project(target: "MySecondsKit", path: "../MySecondsKit"),
+                .project(target: "ResourceKit", path: "../ResourceKit"),
+                .project(target: "UtilsKit", path: "../UtilsKit")
             ]
         ),
         .target(

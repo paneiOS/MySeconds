@@ -12,16 +12,17 @@ import AuthenticationServices
 import GoogleSignIn
 import SnapKit
 
+import BaseRIBsKit
 import MySecondsKit
 import ResourceKit
-import UtilsKit
 
 protocol LoginPresentableListener: AnyObject {
     func appleLogin()
     func googleLogin(with viewController: UIViewController)
 }
 
-final class LoginViewController: UIViewController, LoginPresentable, LoginViewControllable {
+final class LoginViewController: BaseViewController, LoginPresentable, LoginViewControllable {
+
     // MARK: - UI Components
 
     private lazy var totalView: UIStackView = {
@@ -33,7 +34,7 @@ final class LoginViewController: UIViewController, LoginPresentable, LoginViewCo
 
     private let topView: UIView = .init()
 
-    private let videoView: UIComponents.Views.VideoView = .init(player: .sampleVideo)
+    private let videoView: VideoView = .init(player: .sampleVideo)
 
     private lazy var googleSignInButton: GIDSignInButton = {
         let button: GIDSignInButton = .init()
@@ -64,8 +65,8 @@ final class LoginViewController: UIViewController, LoginPresentable, LoginViewCo
     private func makeUI() {
         view.backgroundColor = .white
         view.addSubview(self.totalView)
-        [self.topView, self.appleSignInButton, self.googleSignInButton].forEach {
-            self.totalView.addArrangedSubview($0)
+        for item in [self.topView, self.appleSignInButton, self.googleSignInButton] {
+            self.totalView.addArrangedSubview(item)
         }
         self.totalView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide.snp.top)
