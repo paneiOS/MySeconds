@@ -129,8 +129,12 @@ final class CameraManager: NSObject, CameraManagerProtocol {
     func toggleDuration() {
         guard self.isAuthorized else { return }
         let options: [TimeInterval] = [3, 4, 5]
-        if let next = options.first(where: { $0 != maxRecordingTime }) {
-            self.maxRecordingTime = next
+
+        if let currentIndex = options.firstIndex(of: maxRecordingTime) {
+            let nextIndex = (currentIndex + 1) % options.count
+            self.maxRecordingTime = options[nextIndex]
+        } else {
+            self.maxRecordingTime = options.first ?? 3
         }
     }
 
