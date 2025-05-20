@@ -14,8 +14,7 @@ class CameraPermissionView: UIView {
     private var cancellables = Set<AnyCancellable>()
 
     private let cameraImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.image = ResourceKitAsset.cameraOff.image
+        let imageView = UIImageView(image: ResourceKitAsset.cameraOff.image)
         imageView.tintColor = .neutral400
         imageView.contentMode = .scaleAspectFit
         return imageView
@@ -26,7 +25,7 @@ class CameraPermissionView: UIView {
         label.attributedText = .makeAttributedString(
             text: "카메라 접근 권한이 필요해요",
             font: .systemFont(ofSize: 16, weight: .medium),
-            textColor: .neutral600,
+            textColor: .init(red: 82/255, green: 82/255, blue: 82/255, alpha: 1),
             alignment: .center
         )
         return label
@@ -37,7 +36,7 @@ class CameraPermissionView: UIView {
         label.attributedText = .makeAttributedString(
             text: "설정 → Myseconds에서\n카메라를 허용해주세요",
             font: .systemFont(ofSize: 14, weight: .medium),
-            textColor: .neutral600,
+            textColor: .init(red: 82/255, green: 82/255, blue: 82/255, alpha: 1),
             alignment: .center
         )
         label.numberOfLines = 0
@@ -72,10 +71,12 @@ class CameraPermissionView: UIView {
         self.backgroundColor = .white
 
         let stackView: UIStackView = {
-            let stackView = UIStackView(arrangedSubviews: [cameraImageView,
-                                                           titleLabel,
-                                                           descriptionLabel,
-                                                           openSettinButton])
+            let stackView = UIStackView(arrangedSubviews: [
+                cameraImageView,
+                titleLabel,
+                descriptionLabel,
+                openSettinButton
+            ])
             stackView.axis = .vertical
             stackView.spacing = 32
             stackView.alignment = .center
