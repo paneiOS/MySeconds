@@ -14,11 +14,10 @@ public struct CoverClip {
     }
 
     var position: Position
-    var title: String
-    var description: String
-//    var font: String
+    var title: NSAttributedString?
+    var description: NSAttributedString?
 
-    public init(position: Position, title: String, description: String) {
+    public init(position: Position, title: NSAttributedString?, description: NSAttributedString?) {
         self.position = position
         self.title = title
         self.description = description

@@ -42,6 +42,6 @@ final class MockCoverClipCreationListener: CoverClipCreationListener {}
 
 final class MockCoverClipCreationDependency: CoverClipCreationDependency {
     var coverClip: CoverClip {
-        .init(position: .intro, title: "", description: "")
+        .init(position: .intro, title: nil, description: nil)
     }
 }
