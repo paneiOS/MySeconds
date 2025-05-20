@@ -12,6 +12,13 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",
+                    "UIAppFonts": [
+                        "Fonts/DungGeunMo.ttf",
+                        "Fonts/Inklipquid.otf",
+                        "Fonts/Samulnori-Medium.otf",
+                        "Fonts/ParkDaHyun.ttf",
+                        "Fonts/YClover-Regular.otf"
+                    ],
                     "UIApplicationSceneManifest": [
                         "UIApplicationSupportsMultipleScenes": false,
                         "UISceneConfigurations": [
