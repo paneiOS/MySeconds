@@ -25,7 +25,7 @@ class CameraPermissionView: UIView {
         label.attributedText = .makeAttributedString(
             text: "카메라 접근 권한이 필요해요",
             font: .systemFont(ofSize: 16, weight: .medium),
-            textColor: .init(red: 82/255, green: 82/255, blue: 82/255, alpha: 1),
+            textColor: .init(red: 82 / 255, green: 82 / 255, blue: 82 / 255, alpha: 1),
             alignment: .center
         )
         return label
@@ -36,7 +36,7 @@ class CameraPermissionView: UIView {
         label.attributedText = .makeAttributedString(
             text: "설정 → Myseconds에서\n카메라를 허용해주세요",
             font: .systemFont(ofSize: 14, weight: .medium),
-            textColor: .init(red: 82/255, green: 82/255, blue: 82/255, alpha: 1),
+            textColor: .init(red: 82 / 255, green: 82 / 255, blue: 82 / 255, alpha: 1),
             alignment: .center
         )
         label.numberOfLines = 0
