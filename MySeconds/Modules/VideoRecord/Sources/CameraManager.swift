@@ -12,35 +12,49 @@ enum CameraError: Error {
     case authorizationDenied
     case noDevice
     case unableToAddInput
+    case sessionConfigurationFailed
 }
 
+// MARK: - Delegate
+
 protocol CameraManagerDelegate: AnyObject {
-    func cameraService(_ service: CameraManagerProtocol, didStartRecording url: URL)
-    func cameraService(_ service: CameraManagerProtocol, didFinishRecording url: URL, error: Error?)
-    func cameraServiceDidFailAuthorization(_ service: CameraManagerProtocol)
+    func cameraManager(_ manager: CameraManager, didStartRecording url: URL)
+    func cameraManager(_ manager: CameraManager, didFinishRecording url: URL, error: Error?)
+    func cameraManagerDidFailAuthorization(_ manager: CameraManager)
 }
+
+// MARK: - Protocol
 
 protocol CameraManagerProtocol: AnyObject {
     var delegate: CameraManagerDelegate? { get set }
     var isAuthorized: Bool { get }
-    func previewConfigure(in view: UIView, cornerRadius: CGFloat)
+    var currentAspectRatioText: String { get }
+    var recordingDurationText: String { get }
+    var isRecording: Bool { get }
+
+    func configurePreview(in view: UIView, cornerRadius: CGFloat)
     func requestAuthorizationAndStart()
     func toggleRecording()
     func toggleAspectRatio()
     func toggleDuration()
     func switchCamera()
     func updatePreviewLayout()
-    var currentAspectRatioText: String { get }
-    var recordingDurationText: String { get }
-    var isRecording: Bool { get }
 }
 
-final class CameraManager: NSObject, CameraManagerProtocol {
+final class CameraManager: NSObject {
     enum AspectRatio: String, CaseIterable {
         case oneToOne = "1:1"
         case fourToThree = "4:3"
+
         mutating func toggle() {
             self = (self == .oneToOne) ? .fourToThree : .oneToOne
+        }
+
+        var preset: AVCaptureSession.Preset {
+            switch self {
+            case .oneToOne: .high
+            case .fourToThree: .vga640x480
+            }
         }
     }
 
@@ -51,8 +65,11 @@ final class CameraManager: NSObject, CameraManagerProtocol {
     var recordingDurationText: String { "\(Int(self.maxRecordingTime))초" }
     var isRecording: Bool { self.movieOutput.isRecording }
 
+    // MARK: Private Properties
+
     private var aspectRatio: AspectRatio = .oneToOne
     private var maxRecordingTime: TimeInterval = 3
+    private let durationOptions: [TimeInterval] = [3, 4, 5]
 
     private let session = AVCaptureSession()
     private let movieOutput = AVCaptureMovieFileOutput()
@@ -60,126 +77,131 @@ final class CameraManager: NSObject, CameraManagerProtocol {
     private weak var previewContainer: UIView?
     private var recordingTask: Task<Void, Never>?
 
-    func previewConfigure(in view: UIView, cornerRadius: CGFloat) {
+    override init() {
+        super.init()
+        self.session.beginConfiguration()
+        self.session.sessionPreset = self.aspectRatio.preset
+
+        guard self.session.canAddOutput(self.movieOutput) else {
+            self.session.commitConfiguration()
+            print("movie output add fail")
+            return
+        }
+
+        self.session.addOutput(self.movieOutput)
+        self.session.commitConfiguration()
+    }
+}
+
+extension CameraManager: CameraManagerProtocol {
+    func configurePreview(in view: UIView, cornerRadius: CGFloat) {
         self.previewContainer = view
         let layer = AVCaptureVideoPreviewLayer(session: session)
         layer.videoGravity = .resizeAspectFill
         layer.cornerRadius = cornerRadius
         layer.masksToBounds = true
-        view.layer.addSublayer(layer)
-        self.previewLayer = layer
+
+        DispatchQueue.main.async {
+            view.layer.insertSublayer(layer, at: 0)
+            self.previewLayer = layer
+            self.updatePreviewLayout()
+        }
     }
 
     func requestAuthorizationAndStart() {
-        Task {
+        Task { @MainActor in
             do {
-                try await checkPermission()
+                try await requestPermission()
                 self.isAuthorized = true
-                try await startSession()
+                try await configureCameraInput()
 
-                Task.detached { [weak self] in
-                    guard let self else { return }
+                DispatchQueue.global(qos: .background).async {
                     self.session.startRunning()
                 }
+
             } catch {
-                await MainActor.run {
-                    self.delegate?.cameraServiceDidFailAuthorization(self)
-                }
+                self.delegate?.cameraManagerDidFailAuthorization(self)
             }
         }
     }
 
     func toggleRecording() {
         guard self.isAuthorized else { return }
-
-        if self.movieOutput.isRecording {
-            self.movieOutput.stopRecording()
-            self.recordingTask?.cancel()
+        if self.isRecording {
+            stopRecording()
         } else {
-            let fileURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("mov")
-
-            self.movieOutput.startRecording(to: fileURL, recordingDelegate: self)
-
-            self.recordingTask?.cancel()
-            self.recordingTask = Task { [weak self] in
-                guard let self else { return }
-                let duration = UInt64(self.maxRecordingTime * 1_000_000_000)
-
-                do {
-                    try await Task.sleep(nanoseconds: duration)
-                } catch {
-                    return
-                }
-
-                await MainActor.run {
-                    self.movieOutput.stopRecording()
-                }
-            }
+            startRecording()
         }
     }
 
     func toggleAspectRatio() {
         guard self.isAuthorized else { return }
         self.aspectRatio.toggle()
+        reconfigureSessionPreset()
         self.updatePreviewLayout()
     }
 
     func toggleDuration() {
-        guard self.isAuthorized else { return }
-        let options: [TimeInterval] = [3, 4, 5]
-
-        if let currentIndex = options.firstIndex(of: maxRecordingTime) {
-            let nextIndex = (currentIndex + 1) % options.count
-            self.maxRecordingTime = options[nextIndex]
-        } else {
-            self.maxRecordingTime = options.first ?? 3
+        guard let idx = durationOptions.firstIndex(of: maxRecordingTime) else {
+            self.maxRecordingTime = self.durationOptions.first ?? self.maxRecordingTime
+            return
         }
+        self.maxRecordingTime = self.durationOptions[(idx + 1) % self.durationOptions.count]
     }
 
     func switchCamera() {
-        guard self.isAuthorized,
-              let currentInput = session.inputs.first as? AVCaptureDeviceInput
-        else { return }
-
-        let newPosition: AVCaptureDevice.Position = (currentInput.device.position == .back) ? .front : .back
-
-        do {
-            guard let newDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition) else { return }
-            let newInput = try AVCaptureDeviceInput(device: newDevice)
-
-            self.session.beginConfiguration()
-            self.session.removeInput(currentInput)
-            if self.session.canAddInput(newInput) {
-                self.session.addInput(newInput)
-            } else {
-                self.session.addInput(currentInput)
-            }
-            self.session.commitConfiguration()
-        } catch {
-            print("Camera switch failed:", error)
+        guard self.isAuthorized else { return }
+        Task {
+            await switchCameraInput()
         }
     }
 
     func updatePreviewLayout() {
         guard let container = previewContainer,
-              let layer = previewLayer
-        else { return }
+              let layer = previewLayer else { return }
 
         let width = container.bounds.width
-        let height = (aspectRatio == .oneToOne) ? width : width * 4 / 3
-        layer.frame = CGRect(
-            x: 0,
-            y: (container.bounds.height - height) / 2,
-            width: width,
-            height: height
-        )
+        let height = width * (aspectRatio == .oneToOne ? 1 : 4 / 3)
+        DispatchQueue.main.async {
+            layer.frame = CGRect(
+                x: 0,
+                y: (container.bounds.height - height) / 2,
+                width: width,
+                height: height
+            )
+        }
     }
 }
 
+// MARK: - Recording
+
 private extension CameraManager {
-    func checkPermission() async throws {
+    func startRecording() {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("mov")
+        self.movieOutput.startRecording(to: url, recordingDelegate: self)
+
+        self.recordingTask?.cancel()
+        self.recordingTask = Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await Task.sleep(nanoseconds: UInt64(self.maxRecordingTime * 1_000_000_000))
+                await MainActor.run { self.movieOutput.stopRecording() }
+            } catch {}
+        }
+    }
+
+    func stopRecording() {
+        self.movieOutput.stopRecording()
+        self.recordingTask?.cancel()
+    }
+}
+
+// MARK: - Session Configuration
+
+private extension CameraManager {
+    func requestPermission() async throws {
         try await withCheckedThrowingContinuation { cont in
             AVCaptureDevice.requestAccess(for: .video) { granted in
                 if granted {
@@ -191,7 +213,7 @@ private extension CameraManager {
         }
     }
 
-    func startSession() async throws {
+    func configureCameraInput() async throws {
         try await withCheckedThrowingContinuation { cont in
             DispatchQueue.global(qos: .userInitiated).async {
                 self.session.beginConfiguration()
@@ -199,21 +221,14 @@ private extension CameraManager {
 
                 do {
                     guard let device = AVCaptureDevice.default(
-                        .builtInWideAngleCamera,
-                        for: .video,
-                        position: .back
-                    ) else {
-                        throw CameraError.noDevice
-                    }
+                        .builtInWideAngleCamera, for: .video, position: .back
+                    ) else { throw CameraError.noDevice }
+
                     let input = try AVCaptureDeviceInput(device: device)
                     guard self.session.canAddInput(input) else {
                         throw CameraError.unableToAddInput
                     }
                     self.session.addInput(input)
-
-                    if self.session.canAddOutput(self.movieOutput) {
-                        self.session.addOutput(self.movieOutput)
-                    }
                     cont.resume()
                 } catch {
                     cont.resume(throwing: error)
@@ -221,7 +236,39 @@ private extension CameraManager {
             }
         }
     }
+
+    func reconfigureSessionPreset() {
+        self.session.beginConfiguration()
+        self.session.sessionPreset = self.aspectRatio.preset
+        self.session.commitConfiguration()
+    }
+
+    func switchCameraInput() async {
+        guard let current = session.inputs.first as? AVCaptureDeviceInput else { return }
+        let newPos: AVCaptureDevice.Position = (current.device.position == .back) ? .front : .back
+
+        do {
+            guard let newDev = AVCaptureDevice.default(
+                .builtInWideAngleCamera, for: .video, position: newPos
+            ) else { throw CameraError.noDevice }
+
+            let newInput = try AVCaptureDeviceInput(device: newDev)
+
+            self.session.beginConfiguration()
+            self.session.removeInput(current)
+            if self.session.canAddInput(newInput) {
+                self.session.addInput(newInput)
+            } else {
+                self.session.addInput(current)
+            }
+            self.session.commitConfiguration()
+        } catch {
+            print("Camera switch error:", error)
+        }
+    }
 }
+
+// MARK: - AVCaptureFileOutputRecordingDelegate
 
 extension CameraManager: AVCaptureFileOutputRecordingDelegate {
     func fileOutput(
@@ -229,7 +276,7 @@ extension CameraManager: AVCaptureFileOutputRecordingDelegate {
         didStartRecordingTo url: URL,
         from connections: [AVCaptureConnection]
     ) {
-        self.delegate?.cameraService(self, didStartRecording: url)
+        self.delegate?.cameraManager(self, didStartRecording: url)
     }
 
     func fileOutput(
@@ -238,6 +285,66 @@ extension CameraManager: AVCaptureFileOutputRecordingDelegate {
         from connections: [AVCaptureConnection],
         error: Error?
     ) {
-        self.delegate?.cameraService(self, didFinishRecording: url, error: error)
+        Task {
+            do {
+                let cropped = try await VideoCropper.cropSquare(inputURL: url)
+                self.delegate?.cameraManager(self, didFinishRecording: cropped, error: error)
+            } catch {
+                self.delegate?.cameraManager(self, didFinishRecording: url, error: error)
+            }
+        }
     }
+}
+
+// MARK: - VideoCropper
+
+enum VideoCropper {
+    static func cropSquare(inputURL: URL) async throws -> URL {
+        let asset = AVURLAsset(url: inputURL)
+        let duration = try await asset.load(.duration)
+        guard let track = try await asset.loadTracks(withMediaType: .video).first else {
+            throw CameraError.noDevice
+        }
+        let transform = try await track.load(.preferredTransform)
+        let size = try await track.load(.naturalSize).applying(transform).abs
+
+        let square = min(size.width, size.height)
+        let xOff = (size.width - square) / 2
+        let yOff = (size.height - square) / 2
+
+        let composition = AVMutableVideoComposition()
+        composition.renderSize = CGSize(width: square, height: square)
+        composition.frameDuration = CMTime(value: 1, timescale: 30)
+
+        let instruction = AVMutableVideoCompositionInstruction()
+        instruction.timeRange = .init(start: .zero, duration: duration)
+
+        let layerInst = AVMutableVideoCompositionLayerInstruction(assetTrack: track)
+        let move = CGAffineTransform(translationX: -xOff, y: -yOff)
+        layerInst.setTransform(transform.concatenating(move), at: .zero)
+        instruction.layerInstructions = [layerInst]
+        composition.instructions = [instruction]
+
+        guard let exporter = AVAssetExportSession(
+            asset: asset, presetName: AVAssetExportPresetHighestQuality
+        ) else { throw CameraError.sessionConfigurationFailed }
+
+        let outURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("mov")
+        exporter.outputURL = outURL
+        exporter.outputFileType = .mov
+        exporter.videoComposition = composition
+
+        if #available(iOS 18, *) {
+            try await exporter.export(to: outURL, as: .mov)
+        } else {
+            await exporter.export()
+        }
+        return outURL
+    }
+}
+
+private extension CGSize {
+    var abs: CGSize { .init(width: Swift.abs(width), height: Swift.abs(height)) }
 }
