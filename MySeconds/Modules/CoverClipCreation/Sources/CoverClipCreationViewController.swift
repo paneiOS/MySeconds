@@ -19,7 +19,7 @@ protocol CoverClipCreationPresentableListener: AnyObject {
     func addButtonTapped(with coverClip: CoverClip)
 }
 
-final class CoverClipCreationViewController: BaseViewControllerWithKeyboard, CoverClipCreationPresentable, CoverClipCreationViewControllable {
+final class CoverClipCreationViewController: BaseViewController, CoverClipCreationPresentable, CoverClipCreationViewControllable, KeyboardAdjustable {
     private enum Constants {
         static let clipViewWidth: CGFloat = ceil(UIScreen.main.bounds.width * 160.0 / 393.0)
     }
@@ -141,6 +141,8 @@ final class CoverClipCreationViewController: BaseViewControllerWithKeyboard, Cov
         }
     }
 
+    var adjustableSnapConstraint: Constraint?
+
     // MARK: - init
 
     init(component: CoverClipCreationComponent) {
@@ -245,6 +247,8 @@ final class CoverClipCreationViewController: BaseViewControllerWithKeyboard, Cov
                 self.listener?.addButtonTapped(with: coverClip)
             })
             .store(in: &self.cancellables)
+
+        self.bindKeyboard()
     }
 }
 
@@ -275,6 +279,8 @@ extension CoverClipCreationViewController {
             textColor: .neutral400,
             letterSpacingPercentage: -0.43
         )
+        textField.returnKeyType = .done
+        textField.delegate = self
         textField.tag = index
         textField.addTarget(self, action: #selector(self.textFieldDidChange), for: .editingChanged)
         view.addSubviews(label, textField)
@@ -380,5 +386,12 @@ extension CoverClipCreationViewController: UICollectionViewDataSource {
 extension CoverClipCreationViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         self.selectedFont = self.representForFont(index: indexPath.item)
+    }
+}
+
+extension CoverClipCreationViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
     }
 }
