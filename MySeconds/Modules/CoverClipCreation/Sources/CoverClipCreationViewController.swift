@@ -19,7 +19,7 @@ protocol CoverClipCreationPresentableListener: AnyObject {
     func addButtonTapped(with coverClip: CoverClip)
 }
 
-final class CoverClipCreationViewController: BaseViewController, CoverClipCreationPresentable, CoverClipCreationViewControllable, KeyboardAdjustable {
+final class CoverClipCreationViewController: BaseBottomSheetViewController, CoverClipCreationPresentable, CoverClipCreationViewControllable, KeyboardAdjustable {
     private enum Constants {
         static let clipViewWidth: CGFloat = ceil(UIScreen.main.bounds.width * 160.0 / 393.0)
     }
@@ -35,40 +35,6 @@ final class CoverClipCreationViewController: BaseViewController, CoverClipCreati
             static let weight: UIFont.Weight = .semibold
         }
     }
-
-    // MARK: - UI Components
-
-    private let dimmedView: UIView = {
-        let view: UIView = .init()
-        view.backgroundColor = .clear.withAlphaComponent(0.5)
-        return view
-    }()
-
-    private let contentsView: UIView = {
-        let view: UIView = .init()
-        view.layer.cornerRadius = 10
-        view.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        view.backgroundColor = .white
-        return view
-    }()
-
-    private let contentsSubview: UIView = .init()
-
-    private let headerView: UIView = .init()
-
-    private let headerLabel: UILabel = .init()
-
-    private let closeButton: UIButton = {
-        let button: UIButton = .init()
-        let image: UIImage = ResourceKitAsset.close.image.resized(to: .init(width: 20, height: 20))
-            .withRenderingMode(.alwaysTemplate)
-        button.setImage(image, for: .normal)
-        button.backgroundColor = .init(red: 127 / 255, green: 127 / 255, blue: 127 / 255, alpha: 0.2)
-        button.tintColor = .init(red: 61 / 255, green: 61 / 255, blue: 61 / 255, alpha: 0.5)
-        button.layer.cornerRadius = 15
-        button.layer.masksToBounds = true
-        return button
-    }()
 
     private let clipView: UIView = {
         let view: UIView = .init()
@@ -141,7 +107,9 @@ final class CoverClipCreationViewController: BaseViewController, CoverClipCreati
         }
     }
 
-    var adjustableSnapConstraint: Constraint?
+    var adjustableConstraint: NSLayoutConstraint? {
+        adjustableSnapConstraint?.layoutConstraints.first
+    }
 
     // MARK: - init
 
@@ -164,30 +132,7 @@ final class CoverClipCreationViewController: BaseViewController, CoverClipCreati
     override func setupUI() {
         super.setupUI()
 
-        self.view.addSubview(self.dimmedView)
-        self.dimmedView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
-        self.dimmedView.addSubview(self.contentsView)
-        self.contentsView.snp.makeConstraints {
-            $0.leading.trailing.equalToSuperview()
-            self.adjustableSnapConstraint = $0.bottom.equalToSuperview().constraint
-        }
-
-        self.contentsView.addSubview(self.contentsSubview)
-        self.contentsSubview.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(14)
-            $0.leading.trailing.equalToSuperview().inset(16)
-            $0.bottom.equalToSuperview().inset(50)
-        }
-        self.contentsSubview.addSubviews(self.headerLabel, self.closeButton, self.clipView, self.stackView, self.fontLabel, self.fontCollectionView, self.addButton)
-        self.headerLabel.snp.makeConstraints {
-            $0.top.leading.equalToSuperview()
-        }
-        self.closeButton.snp.makeConstraints {
-            $0.top.trailing.equalToSuperview()
-            $0.size.equalTo(30)
-        }
+        self.sheetContainerView.addSubviews(self.clipView, self.stackView, self.fontLabel, self.fontCollectionView, self.addButton)
         self.clipView.snp.makeConstraints {
             $0.top.equalTo(self.closeButton.snp.bottom).offset(12)
             $0.centerX.equalToSuperview()

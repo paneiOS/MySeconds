@@ -8,10 +8,8 @@
 import Combine
 import UIKit
 
-import SnapKit
-
 public protocol KeyboardAdjustable: AnyObject {
-    var adjustableSnapConstraint: Constraint? { get set }
+    var adjustableConstraint: NSLayoutConstraint? { get }
     var cancellables: Set<AnyCancellable> { get set }
     func bindKeyboard()
 }
@@ -24,7 +22,7 @@ public extension KeyboardAdjustable where Self: UIViewController {
             .map(\.cgRectValue.height)
             .sink(receiveValue: { [weak self] height in
                 guard let self,
-                      let constraint = self.adjustableSnapConstraint?.layoutConstraints.first else {
+                      let constraint = self.adjustableConstraint else {
                     return
                 }
                 UIView.animate(withDuration: 0.25) {
@@ -38,7 +36,7 @@ public extension KeyboardAdjustable where Self: UIViewController {
             .publisher(for: UIResponder.keyboardWillHideNotification)
             .sink(receiveValue: { [weak self] _ in
                 guard let self,
-                      let constraint = self.adjustableSnapConstraint?.layoutConstraints.first else {
+                      let constraint = self.adjustableConstraint else {
                     return
                 }
                 UIView.animate(withDuration: 0.25) {
