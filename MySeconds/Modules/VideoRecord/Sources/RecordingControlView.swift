@@ -94,7 +94,7 @@ final class RecordControlView: UIView {
     private let albumCountLabel: UILabel = {
         let label = UILabel()
         label.attributedText = .makeAttributedString(
-            text: "0 / 15",
+            text: "0",
             font: .systemFont(ofSize: 14, weight: .medium),
             textColor: .neutral500
         )
@@ -107,6 +107,8 @@ final class RecordControlView: UIView {
 
     private var cancellables = Set<AnyCancellable>()
     private var progressLayer: CAShapeLayer?
+
+    private var maxAlbumCount: Int = 15
 
     var recordDuration: TimeInterval = 0 {
         didSet {
@@ -137,16 +139,13 @@ final class RecordControlView: UIView {
 
     private func setupUI() {
         backgroundColor = .white
-        
-        addSubviews(self.albumStack, self.buttonStack, self.recordView)
-        self.recordView.addSubview(self.recordButton)
-        
+
         self.albumStack = self.makeStack(
             arrangedSubviews: [self.albumButton, self.albumCountLabel],
             axis: .vertical,
             spacing: Constants.stackSpacing
         )
-        
+
         self.albumButton.snp.makeConstraints {
             $0.size.equalTo(Constants.recordViewSize)
         }
@@ -162,7 +161,10 @@ final class RecordControlView: UIView {
             axis: .horizontal,
             spacing: Constants.stackSpacing
         )
-        
+
+        addSubviews(self.albumStack, self.buttonStack, self.recordView)
+        self.recordView.addSubview(self.recordButton)
+
         self.recordButton.snp.makeConstraints {
             $0.center.equalToSuperview()
             $0.size.equalTo(Constants.recordButtonSize)
@@ -180,7 +182,8 @@ final class RecordControlView: UIView {
             $0.center.equalToSuperview()
             $0.size.equalTo(Constants.recordViewSize)
         }
-        
+
+        self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
         self.setTimerButtonText(seconds: "3초")
     }
 
@@ -192,7 +195,7 @@ final class RecordControlView: UIView {
             (cameraFlipButton, flipTapSubject),
             (albumButton, albumTapSubject)
         ]
-        
+
         for (button, subject) in actions {
             button
                 .publisher(for: .touchUpInside)
@@ -283,13 +286,17 @@ final class RecordControlView: UIView {
         self.ratioButton.setTitle(next, for: .normal)
     }
 
-    func updateAlbum(thumbnail: UIImage?, count: Int) {
-        self.albumButton.setImage(thumbnail, for: .normal)
-        self.albumCountLabel.text = "\(count) / 15"
-    }
-
     func setRecordingState(_ isRecording: Bool) {
         self.albumStack.isHidden = isRecording
         self.buttonStack.isHidden = isRecording
+    }
+
+    func updateAlbum(thumbnail: UIImage?, count: Int) {
+        self.albumButton.setImage(thumbnail, for: .normal)
+        self.albumCountLabel.text = "\(count) / \(self.maxAlbumCount)"
+
+        if count == self.maxAlbumCount {
+            self.albumCountLabel.textColor = .red500
+        }
     }
 }
