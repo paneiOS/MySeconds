@@ -21,8 +21,8 @@ public final class TooltipView: UIView {
 
     private let bubbleLayer = CAShapeLayer()
 
-    /// Initializes the tooltip with the given text.
-    /// - Parameter text: The message to display inside the tooltip bubble.
+    /// 주어진 텍스트로 툴팁을 초기화.
+    /// - Parameter text: 말풍선 안에 표시할 메시지
     public init(text: String) {
         super.init(frame: .zero)
         self.commonInit()

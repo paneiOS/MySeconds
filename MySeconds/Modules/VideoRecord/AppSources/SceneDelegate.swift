@@ -56,7 +56,7 @@ final class MockVideoRecordDependency: VideoRecordDependency {
         return makeThumbnail(from: url)
     }
 
-    var initialAlbumCount: Int = 15
+    var initialAlbumCount: Int = 10
 }
 
 final class MockVideoRecordListener: VideoRecordListener {}

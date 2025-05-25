@@ -316,6 +316,9 @@ final class RecordControlView: UIView {
                 item.isEnabled = false
                 item.alpha = 0.5
             }
+
+            self.progressLayer?.opacity = 0.5
+
             self.tooltipView.isHidden = false
             self.tooltipView.alpha = 1
             bringSubviewToFront(self.tooltipView)
@@ -324,6 +327,9 @@ final class RecordControlView: UIView {
                 item.isEnabled = true
                 item.alpha = 1
             }
+
+            self.progressLayer?.opacity = 1.0
+
             self.tooltipView.alpha = 0
             self.tooltipView.isHidden = true
         }
