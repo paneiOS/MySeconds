@@ -102,6 +102,10 @@ final class RecordControlView: UIView {
         return label
     }()
 
+    private let tooltipView = TooltipView(
+        text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
+    )
+
     private var albumStack: UIStackView!
     private var rightVStack: UIStackView!
     private var buttonStack: UIStackView!
@@ -140,7 +144,7 @@ final class RecordControlView: UIView {
 
     private func setupUI() {
         backgroundColor = .white
-        
+
         self.albumStack = self.makeStack(
             arrangedSubviews: [self.albumButton, self.albumCountLabel],
             axis: .vertical,
@@ -163,7 +167,7 @@ final class RecordControlView: UIView {
             spacing: Constants.stackSpacing
         )
 
-        addSubviews(self.albumStack, self.buttonStack, self.recordView)
+        addSubviews(self.albumStack, self.buttonStack, self.recordView, self.tooltipView)
         self.recordView.addSubview(self.recordButton)
 
         self.recordButton.snp.makeConstraints {
@@ -186,6 +190,14 @@ final class RecordControlView: UIView {
 
         self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
         self.setTimerButtonText(seconds: "3초")
+
+        self.tooltipView.snp.makeConstraints { make in
+            make.centerX.equalTo(self.recordView)
+            make.bottom.equalTo(self.recordView.snp.top).offset(-8)
+        }
+
+        self.tooltipView.isHidden = true
+        self.tooltipView.alpha = 0
     }
 
     private func bind() {
@@ -304,11 +316,16 @@ final class RecordControlView: UIView {
                 item.isEnabled = false
                 item.alpha = 0.5
             }
+            self.tooltipView.isHidden = false
+            self.tooltipView.alpha = 1
+            bringSubviewToFront(self.tooltipView)
         } else {
             for item in [self.recordButton, self.ratioButton, self.timerButton, self.cameraFlipButton] {
                 item.isEnabled = true
                 item.alpha = 1
             }
+            self.tooltipView.alpha = 0
+            self.tooltipView.isHidden = true
         }
     }
 }
