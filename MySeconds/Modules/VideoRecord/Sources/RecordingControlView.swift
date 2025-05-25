@@ -10,6 +10,7 @@ import UIKit
 
 import SnapKit
 
+import MySecondsKit
 import ResourceKit
 
 final class RecordControlView: UIView {
@@ -139,7 +140,7 @@ final class RecordControlView: UIView {
 
     private func setupUI() {
         backgroundColor = .white
-
+        
         self.albumStack = self.makeStack(
             arrangedSubviews: [self.albumButton, self.albumCountLabel],
             axis: .vertical,
@@ -295,8 +296,19 @@ final class RecordControlView: UIView {
         self.albumButton.setImage(thumbnail, for: .normal)
         self.albumCountLabel.text = "\(count) / \(self.maxAlbumCount)"
 
-        if count == self.maxAlbumCount {
+        self.albumCountLabel.textColor = .neutral500
+
+        if count >= self.maxAlbumCount {
             self.albumCountLabel.textColor = .red500
+            for item in [self.recordButton, self.ratioButton, self.timerButton, self.cameraFlipButton] {
+                item.isEnabled = false
+                item.alpha = 0.5
+            }
+        } else {
+            for item in [self.recordButton, self.ratioButton, self.timerButton, self.cameraFlipButton] {
+                item.isEnabled = true
+                item.alpha = 1
+            }
         }
     }
 }

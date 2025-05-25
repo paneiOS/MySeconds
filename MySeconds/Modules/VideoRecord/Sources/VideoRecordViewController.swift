@@ -14,7 +14,12 @@ import SnapKit
 import MySecondsKit
 import ResourceKit
 
-protocol VideoRecordPresentableListener: AnyObject {}
+protocol VideoRecordPresentableListener: AnyObject {
+    var thumbnailPublisher: AnyPublisher<UIImage?, Never> { get }
+    var albumCountPublisher: AnyPublisher<Int, Never> { get }
+
+    func initAlbum()
+}
 
 final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
 
@@ -75,6 +80,22 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 print("Tap Album Button")
             })
             .store(in: &cancellables)
+
+        viewDidLoadPublisher
+            .sink(receiveValue: { [weak self] _ in
+                self?.listener?.initAlbum()
+            })
+            .store(in: &cancellables)
+
+        if let listener {
+            listener.thumbnailPublisher
+                .combineLatest(listener.albumCountPublisher)
+                .receive(on: DispatchQueue.main)
+                .sink(receiveValue: { [weak self] thumbnail, count in
+                    self?.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
+                })
+                .store(in: &cancellables)
+        }
     }
 
     func navigationConfig() -> NavigationConfig {
@@ -93,5 +114,11 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 )
             ]
         )
+    }
+}
+
+extension VideoRecordViewController {
+    func setAlbum(thumbnail: UIImage?, count: Int) {
+        self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
     }
 }
