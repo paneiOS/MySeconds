@@ -7,8 +7,6 @@
 
 import ModernRIBs
 
-import BaseRIBsKit
-
 protocol SignUpInteractable: Interactable {
     var router: SignUpRouting? { get set }
     var listener: SignUpListener? { get set }
@@ -16,7 +14,7 @@ protocol SignUpInteractable: Interactable {
 
 protocol SignUpViewControllable: ViewControllable {}
 
-final class SignUpRouter: BaseRouter<SignUpInteractor, SignUpViewController>, SignUpRouting {
+final class SignUpRouter: ViewableRouter<SignUpInteractor, SignUpViewController>, SignUpRouting {
 
     override init(interactor: SignUpInteractor, viewController: SignUpViewController) {
         super.init(interactor: interactor, viewController: viewController)

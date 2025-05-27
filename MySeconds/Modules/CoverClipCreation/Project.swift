@@ -23,6 +23,7 @@ let project = Project(
                 .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
                 .project(target: "MySecondsKit", path: "../MySecondsKit"),
                 .project(target: "ResourceKit", path: "../ResourceKit"),
+                .project(target: "SharedModels", path: "../../Core/SharedModels"),
                 .project(target: "UtilsKit", path: "../UtilsKit")
             ]
         ),

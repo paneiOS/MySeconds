@@ -21,8 +21,10 @@ let project = Project(
             dependencies: [
                 .external(name: "SnapKit"),
                 .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
+                .project(target: "CoverClipCreation", path: "../CoverClipCreation"),
                 .project(target: "MySecondsKit", path: "../MySecondsKit"),
                 .project(target: "ResourceKit", path: "../ResourceKit"),
+                .project(target: "SharedModels", path: "../../Core/SharedModels"),
                 .project(target: "UtilsKit", path: "../UtilsKit")
             ]
         ),

@@ -8,8 +8,6 @@
 import GoogleSignIn
 import ModernRIBs
 
-import BaseRIBsKit
-
 protocol LoginInteractable: Interactable {
     var router: LoginRouting? { get set }
     var listener: LoginListener? { get set }
@@ -17,7 +15,7 @@ protocol LoginInteractable: Interactable {
 
 protocol LoginViewControllable: ViewControllable {}
 
-final class LoginRouter: BaseRouter<LoginInteractor, LoginViewController>, LoginRouting {
+final class LoginRouter: Router<LoginInteractor, LoginViewController>, LoginRouting {
 
     override init(interactor: LoginInteractor, viewController: LoginViewController) {
         super.init(interactor: interactor, viewController: viewController)
