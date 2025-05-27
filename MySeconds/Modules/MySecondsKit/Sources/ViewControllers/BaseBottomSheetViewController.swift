@@ -5,6 +5,7 @@
 //  Created by 이정환 on 5/22/25.
 //
 
+import Combine
 import UIKit
 
 import SnapKit
@@ -12,6 +13,10 @@ import SnapKit
 import BaseRIBsKit
 import ResourceKit
 import UtilsKit
+
+public protocol BaseBottomSheetPresentable: AnyObject {
+    var closeTappedPublisher: AnyPublisher<Bool, Never> { get }
+}
 
 open class BaseBottomSheetViewController: BaseViewController {
     // MARK: - UI Components
@@ -51,10 +56,28 @@ open class BaseBottomSheetViewController: BaseViewController {
     public let contentContainer = UIView()
 
     // MARK: - Properties
-    
+
     public var adjustableSnapConstraint: Constraint?
 
+    private let closeTappedSubject = PassthroughSubject<Bool, Never>()
+
+    private var baseCancellables = Set<AnyCancellable>()
+
     // MARK: – Override func
+
+    override open func viewDidLoad() {
+        super.viewDidLoad()
+
+        self.contentsView.transform = CGAffineTransform(translationX: 0, y: self.view.bounds.height)
+    }
+
+    override open func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        UIView.animate(withDuration: 0.3, animations: {
+            self.contentsView.transform = .identity
+        })
+    }
 
     override open func setupUI() {
         super.setupUI()
@@ -85,5 +108,26 @@ open class BaseBottomSheetViewController: BaseViewController {
             $0.top.trailing.equalToSuperview()
             $0.size.equalTo(30)
         }
+    }
+
+    override open func bind() {
+        super.bind()
+
+        self.closeButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                UIView.animate(withDuration: 0.3, animations: {
+                    self.contentsView.transform = CGAffineTransform(translationX: 0, y: self.view.bounds.height)
+                }, completion: { _ in
+                    self.closeTappedSubject.send(true)
+                })
+            })
+            .store(in: &self.baseCancellables)
+    }
+}
+
+extension BaseBottomSheetViewController: BaseBottomSheetPresentable {
+    public var closeTappedPublisher: AnyPublisher<Bool, Never> {
+        self.closeTappedSubject.eraseToAnyPublisher()
     }
 }
