@@ -22,4 +22,10 @@ final class {{ name }}Router: BaseRouter<{{ name }}Interactor, {{ name }}ViewCon
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
     }
+
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
+    }
 }
