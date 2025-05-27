@@ -12,11 +12,12 @@ import SnapKit
 import BaseRIBsKit
 import MySecondsKit
 import ResourceKit
+import SharedModels
 import UtilsKit
 
 protocol CoverClipCreationPresentableListener: AnyObject {
     func closeButtonTapped()
-    func addButtonTapped(with coverClip: CoverClip)
+    func addButtonTapped(with coverClip: VideoCoverClip)
 }
 
 final class CoverClipCreationViewController: BaseBottomSheetViewController, CoverClipCreationPresentable, CoverClipCreationViewControllable, KeyboardAdjustable {
@@ -100,7 +101,7 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
     // MARK: - Properties
 
     weak var listener: CoverClipCreationPresentableListener?
-    private var coverClip: CoverClip
+    private var videoCoverClip: VideoCoverClip
     private var selectedFont: FontRepresentable = UIFont.systemFont(ofSize: Preview.Title.size, weight: Preview.Title.weight) {
         didSet {
             self.updateTextField(represent: self.selectedFont)
@@ -114,7 +115,7 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
     // MARK: - init
 
     init(component: CoverClipCreationComponent) {
-        self.coverClip = component.coverClip
+        self.videoCoverClip = component.videoCoverClip
         super.init()
 
         self.drawCoverClip()
@@ -174,7 +175,9 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
     }
 
     override func bind() {
-        self.closeButton.publisher(for: .touchUpInside)
+        super.bind()
+
+        self.closeTappedPublisher
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.listener?.closeButtonTapped()
@@ -184,12 +187,12 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
         self.addButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-                let coverClip: CoverClip = .init(
-                    position: self.coverClip.position,
+                let videoCoverClip: VideoCoverClip = .init(
                     title: self.previewTitleLabel.attributedText,
-                    description: self.previewDescriptionLabel.attributedText
+                    description: self.previewDescriptionLabel.attributedText,
+                    type: self.videoCoverClip.type
                 )
-                self.listener?.addButtonTapped(with: coverClip)
+                self.listener?.addButtonTapped(with: videoCoverClip)
             })
             .store(in: &self.cancellables)
 
@@ -200,7 +203,7 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
 extension CoverClipCreationViewController {
     private func drawCoverClip() {
         self.headerLabel.attributedText = .makeAttributedString(
-            text: self.coverClip.position.rawValue,
+            text: self.videoCoverClip.type.rawValue,
             font: .systemFont(ofSize: 20, weight: .heavy)
         )
         let placeholders = [("제목", Date().dateToString), ("설명", "지금은 여행중~")]

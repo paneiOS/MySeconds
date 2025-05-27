@@ -8,6 +8,7 @@
 import ModernRIBs
 
 import BaseRIBsKit
+import SharedModels
 
 public protocol CoverClipCreationRouting: ViewableRouting {}
 
@@ -15,7 +16,9 @@ protocol CoverClipCreationPresentable: Presentable {
     var listener: CoverClipCreationPresentableListener? { get set }
 }
 
-public protocol CoverClipCreationListener: AnyObject {}
+public protocol CoverClipCreationListener: AnyObject {
+    func closeCoverClipCreation()
+}
 
 final class CoverClipCreationInteractor: PresentableInteractor<CoverClipCreationPresentable>, CoverClipCreationInteractable {
 
@@ -30,14 +33,12 @@ final class CoverClipCreationInteractor: PresentableInteractor<CoverClipCreation
 
 extension CoverClipCreationInteractor: CoverClipCreationPresentableListener {
     func closeButtonTapped() {
-        // MARK: - 닫기 구현
-
-        print("닫기 버튼 탭")
+        self.listener?.closeCoverClipCreation()
     }
 
-    func addButtonTapped(with coverClip: CoverClip) {
+    func addButtonTapped(with videoCoverClip: VideoCoverClip) {
         // MARK: - 추가 버튼 구현
 
-        print("추가 버튼 탭", coverClip)
+        print("추가 버튼 탭", videoCoverClip)
     }
 }

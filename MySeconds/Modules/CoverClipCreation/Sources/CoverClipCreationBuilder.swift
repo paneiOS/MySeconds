@@ -7,32 +7,39 @@
 
 import ModernRIBs
 
-import BaseRIBsKit
+import SharedModels
 
-public protocol CoverClipCreationDependency: Dependency {
-    var coverClip: CoverClip { get }
-}
+public protocol CoverClipCreationDependency: Dependency {}
 
 public final class CoverClipCreationComponent: Component<CoverClipCreationDependency> {
-    public var coverClip: CoverClip { dependency.coverClip }
-}
+    public let videoCoverClip: VideoCoverClip
 
-extension CoverClipCreationComponent: CoverClipCreationDependency {}
+    public init(dependency: CoverClipCreationDependency, videoCoverClip: VideoCoverClip) {
+        self.videoCoverClip = videoCoverClip
+        super.init(dependency: dependency)
+    }
+}
 
 // MARK: - Builder
 
 public protocol CoverClipCreationBuildable: Buildable {
-    func build(withListener listener: CoverClipCreationListener) -> CoverClipCreationRouting
+    func build(withListener listener: CoverClipCreationListener, videoCoverClip: VideoCoverClip) -> CoverClipCreationRouting
 }
 
-public final class CoverClipCreationBuilder: BaseBuilder<CoverClipCreationComponent>, CoverClipCreationBuildable {
+public final class CoverClipCreationBuilder: Builder<CoverClipCreationDependency>, CoverClipCreationBuildable {
 
-    override public init(dependency: CoverClipCreationComponent) {
+    override public init(dependency: CoverClipCreationDependency) {
         super.init(dependency: dependency)
     }
 
-    public func build(withListener listener: CoverClipCreationListener) -> CoverClipCreationRouting {
-        let component = CoverClipCreationComponent(dependency: dependency)
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
+    }
+
+    public func build(withListener listener: CoverClipCreationListener, videoCoverClip: VideoCoverClip) -> CoverClipCreationRouting {
+        let component = CoverClipCreationComponent(dependency: dependency, videoCoverClip: videoCoverClip)
         let viewController = CoverClipCreationViewController(component: component)
         let interactor = CoverClipCreationInteractor(presenter: viewController, component: component)
         interactor.listener = listener

@@ -10,11 +10,17 @@ import UIKit
 import ModernRIBs
 
 public extension ViewControllable {
-    func present(viewController: ViewControllable, animated: Bool = true, completion: (() -> Void)? = nil) {
-        uiviewController.present(viewController.uiviewController, animated: animated, completion: completion)
+    func present(
+        child viewController: ViewControllable,
+        modalPresentationStyle: UIModalPresentationStyle = .fullScreen,
+        animated: Bool = true,
+        completion: (() -> Void)? = nil
+    ) {
+        viewController.uiviewController.modalPresentationStyle = modalPresentationStyle
+        self.uiviewController.present(viewController.uiviewController, animated: animated, completion: completion)
     }
 
     func dismiss(animated: Bool = true, completion: (() -> Void)? = nil) {
-        uiviewController.dismiss(animated: animated, completion: completion)
+        self.uiviewController.dismiss(animated: animated, completion: completion)
     }
 }

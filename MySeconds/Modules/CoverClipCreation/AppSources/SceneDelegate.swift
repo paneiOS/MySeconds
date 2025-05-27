@@ -10,6 +10,8 @@ import UIKit
 import ModernRIBs
 
 import CoverClipCreation
+import SharedModels
+import UtilsKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -25,12 +27,9 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        let coverClipCreationBuilder = CoverClipCreationBuilder(
-            dependency: .init(
-                dependency: MockCoverClipCreationDependency()
-            )
-        )
-        let coverClipCreationRouter = coverClipCreationBuilder.build(withListener: self.mockListener)
+        let depndency: MockCoverClipCreationDependency = .init()
+        let coverClipCreationBuilder = CoverClipCreationBuilder(dependency: depndency)
+        let coverClipCreationRouter = coverClipCreationBuilder.build(withListener: self.mockListener, videoCoverClip: depndency.coverClip)
         self.router = coverClipCreationRouter
 
         self.window?.rootViewController = coverClipCreationRouter.viewControllable.uiviewController
@@ -38,10 +37,14 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 }
 
-final class MockCoverClipCreationListener: CoverClipCreationListener {}
+final class MockCoverClipCreationListener: CoverClipCreationListener {
+    func closeCoverClipCreation() {
+        printDebug("closeCoverClipCreation")
+    }
+}
 
 final class MockCoverClipCreationDependency: CoverClipCreationDependency {
-    var coverClip: CoverClip {
-        .init(position: .intro, title: nil, description: nil)
+    var coverClip: VideoCoverClip {
+        .init(title: nil, description: nil, type: .intro)
     }
 }
