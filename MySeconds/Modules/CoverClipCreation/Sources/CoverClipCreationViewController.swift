@@ -178,6 +178,7 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
             .store(in: &self.cancellables)
 
         self.listener?.coverTypePublisher
+            .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] coverType in
                 guard let self else { return }
                 self.clipCoverType = coverType
