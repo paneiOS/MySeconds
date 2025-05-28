@@ -15,7 +15,7 @@ protocol LoginInteractable: Interactable {
 
 protocol LoginViewControllable: ViewControllable {}
 
-final class LoginRouter: Router<LoginInteractor, LoginViewController>, LoginRouting {
+final class LoginRouter: ViewableRouter<LoginInteractor, LoginViewController>, LoginRouting {
 
     override init(interactor: LoginInteractor, viewController: LoginViewController) {
         super.init(interactor: interactor, viewController: viewController)
