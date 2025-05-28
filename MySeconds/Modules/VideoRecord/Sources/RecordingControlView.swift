@@ -62,7 +62,17 @@ final class RecordControlView: UIView {
     private let ratioButton = RecordControlButton(type: .ratio)
     private let timerButton = RecordControlButton(type: .timer)
     private let cameraFlipButton = RecordControlButton(type: .flip)
-    private let albumButton = RecordControlButton(type: .album)
+
+    private let albumButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .neutral100
+        button.imageView?.contentMode = .scaleAspectFill
+        button.clipsToBounds = true
+        button.layer.cornerRadius = 8
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.neutral200.cgColor
+        return button
+    }()
 
     private let albumCountLabel: UILabel = {
         let label = UILabel()

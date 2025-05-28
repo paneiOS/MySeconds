@@ -13,7 +13,7 @@ import ResourceKit
 
 final class RecordControlButton: UIButton {
     enum ButtonType {
-        case record, ratio, timer, flip, album
+        case record, ratio, timer, flip
 
         var buttonSize: CGFloat {
             switch self {
@@ -21,15 +21,11 @@ final class RecordControlButton: UIButton {
                 54
             case .ratio, .timer, .flip:
                 48
-            case .album:
-                64
             }
         }
 
         var buttonRadius: CGFloat {
             switch self {
-            case .album:
-                8
             default:
                 self.buttonSize / 2
             }
@@ -74,11 +70,6 @@ final class RecordControlButton: UIButton {
             backgroundColor = .neutral100
             setImage(ResourceKitAsset.refreshCcw.image, for: .normal)
             tintColor = .neutral950
-            self.setupLayerBorder()
-        case .album:
-            backgroundColor = .neutral100
-            imageView?.contentMode = .scaleAspectFill
-            clipsToBounds = true
             self.setupLayerBorder()
         }
     }
