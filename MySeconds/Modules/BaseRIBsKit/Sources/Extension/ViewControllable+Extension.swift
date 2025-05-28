@@ -12,11 +12,9 @@ import ModernRIBs
 public extension ViewControllable {
     func present(
         child viewController: ViewControllable,
-        modalPresentationStyle: UIModalPresentationStyle = .fullScreen,
         animated: Bool = true,
         completion: (() -> Void)? = nil
     ) {
-        viewController.uiviewController.modalPresentationStyle = modalPresentationStyle
         self.uiviewController.present(viewController.uiviewController, animated: animated, completion: completion)
     }
 

@@ -82,6 +82,7 @@ open class BaseBottomSheetViewController: BaseViewController {
     override open func setupUI() {
         super.setupUI()
 
+        self.view.backgroundColor = .clear
         self.view.addSubview(self.dimmedView)
         self.dimmedView.snp.makeConstraints {
             $0.edges.equalToSuperview()
@@ -116,6 +117,7 @@ open class BaseBottomSheetViewController: BaseViewController {
         self.closeButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
+                self.dimmedView.backgroundColor = .clear
                 UIView.animate(withDuration: 0.3, animations: {
                     self.contentsView.transform = CGAffineTransform(translationX: 0, y: self.view.bounds.height)
                 }, completion: { _ in

@@ -41,6 +41,7 @@ final class VideoCreationRouter: ViewableRouter<VideoCreationInteractable, Video
         guard self.coverClipCreationRouter == nil else { return }
         let router = self.component.coverClipCreationBuilder.build(withListener: self.interactor, videoCoverClip: videoCoverClip)
         self.coverClipCreationRouter = router
+        router.viewControllable.uiviewController.modalPresentationStyle = .overFullScreen
         self.viewControllable.present(child: router.viewControllable, animated: false)
         self.attachChild(router)
     }
