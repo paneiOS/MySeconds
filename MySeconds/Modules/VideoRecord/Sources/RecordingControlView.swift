@@ -92,9 +92,29 @@ final class RecordControlView: UIView {
         text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
     )
 
-    private var albumStack: UIStackView!
-    private var rightVStack: UIStackView!
-    private var buttonStack: UIStackView!
+    private let albumStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = Constants.stackSpacing
+        return stack
+    }()
+
+    private let rightVStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = Constants.stackSpacing
+        return stack
+    }()
+
+    private let buttonStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.alignment = .center
+        stack.spacing = Constants.stackSpacing
+        return stack
+    }()
 
     private var cancellables = Set<AnyCancellable>()
     private var progressLayer: CAShapeLayer?
@@ -129,27 +149,21 @@ final class RecordControlView: UIView {
     private func setupUI() {
         backgroundColor = .white
 
-        self.albumStack = self.makeStack(
-            arrangedSubviews: [self.albumButton, self.albumCountLabel],
-            axis: .vertical,
-            spacing: Constants.stackSpacing
-        )
+        for item in [self.albumButton, self.albumCountLabel] {
+            self.albumStack.addArrangedSubview(item)
+        }
 
         self.albumButton.snp.makeConstraints {
             $0.size.equalTo(Constants.recordViewSize)
         }
 
-        self.rightVStack = self.makeStack(
-            arrangedSubviews: [self.ratioButton, self.cameraFlipButton],
-            axis: .vertical,
-            spacing: Constants.stackSpacing
-        )
+        for item in [self.ratioButton, self.cameraFlipButton] {
+            self.rightVStack.addArrangedSubview(item)
+        }
 
-        self.buttonStack = self.makeStack(
-            arrangedSubviews: [self.timerButton, self.rightVStack],
-            axis: .horizontal,
-            spacing: Constants.stackSpacing
-        )
+        for item in [self.timerButton, self.rightVStack] {
+            self.buttonStack.addArrangedSubview(item)
+        }
 
         addSubviews(self.albumStack, self.buttonStack, self.recordView, self.tooltipView)
         self.recordView.addSubview(self.recordButton)
@@ -200,18 +214,6 @@ final class RecordControlView: UIView {
                 .subscribe(subject)
                 .store(in: &self.cancellables)
         }
-    }
-
-    private func makeStack(
-        arrangedSubviews: [UIView],
-        axis: NSLayoutConstraint.Axis,
-        spacing: CGFloat
-    ) -> UIStackView {
-        let stack = UIStackView(arrangedSubviews: arrangedSubviews)
-        stack.axis = axis
-        stack.alignment = .center
-        stack.spacing = spacing
-        return stack
     }
 
     private func setupProgressLayer(duration: TimeInterval) {
