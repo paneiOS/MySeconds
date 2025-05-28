@@ -58,25 +58,11 @@ final class RecordControlView: UIView {
         return view
     }()
 
-    private let recordButton = RecordControlButton(
-        type: .record
-    )
-
-    private let ratioButton = RecordControlButton(
-        type: .ratio
-    )
-
-    private let timerButton = RecordControlButton(
-        type: .timer
-    )
-
-    private let cameraFlipButton = RecordControlButton(
-        type: .flip
-    )
-
-    private let albumButton = RecordControlButton(
-        type: .album
-    )
+    private let recordButton = RecordControlButton(type: .record)
+    private let ratioButton = RecordControlButton(type: .ratio)
+    private let timerButton = RecordControlButton(type: .timer)
+    private let cameraFlipButton = RecordControlButton(type: .flip)
+    private let albumButton = RecordControlButton(type: .album)
 
     private let albumCountLabel: UILabel = {
         let label = UILabel()
