@@ -36,7 +36,7 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
         let loginRouter = self.component.loginBuilder.build(withListener: interactor)
         attachChild(loginRouter)
         self.viewControllable.uiviewController.modalPresentationStyle = .fullScreen
-        self.viewControllable.present(viewController: loginRouter.viewControllable, animated: true)
+        self.viewControllable.present(child: loginRouter.viewControllable, animated: true)
     }
 
     func detachLogin() {
