@@ -40,7 +40,7 @@ public final class CoverClipCreationBuilder: Builder<CoverClipCreationDependency
 
     public func build(withListener listener: CoverClipCreationListener, videoCoverClip: VideoCoverClip) -> CoverClipCreationRouting {
         let component = CoverClipCreationComponent(dependency: dependency, videoCoverClip: videoCoverClip)
-        let viewController = CoverClipCreationViewController(component: component)
+        let viewController = CoverClipCreationViewController()
         let interactor = CoverClipCreationInteractor(presenter: viewController, component: component)
         interactor.listener = listener
         return CoverClipCreationRouter(interactor: interactor, viewController: viewController)

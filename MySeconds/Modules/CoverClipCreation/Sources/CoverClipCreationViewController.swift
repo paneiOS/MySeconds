@@ -5,6 +5,7 @@
 //  Created by pane on 05/15/2025.
 //
 
+import Combine
 import UIKit
 
 import SnapKit
@@ -16,8 +17,10 @@ import SharedModels
 import UtilsKit
 
 protocol CoverClipCreationPresentableListener: AnyObject {
+    func initCoverClipCreation()
     func closeButtonTapped()
     func addButtonTapped(with coverClip: VideoCoverClip)
+    var coverTypePublisher: AnyPublisher<VideoCoverClip.CoverType, Never> { get }
 }
 
 final class CoverClipCreationViewController: BaseBottomSheetViewController, CoverClipCreationPresentable, CoverClipCreationViewControllable, KeyboardAdjustable {
@@ -101,7 +104,7 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
     // MARK: - Properties
 
     weak var listener: CoverClipCreationPresentableListener?
-    private var videoCoverClip: VideoCoverClip
+    private var clipCoverType: VideoCoverClip.CoverType?
     private var selectedFont: FontRepresentable = UIFont.systemFont(ofSize: Preview.Title.size, weight: Preview.Title.weight) {
         didSet {
             self.updateTextField(represent: self.selectedFont)
@@ -112,16 +115,16 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
         adjustableSnapConstraint?.layoutConstraints.first
     }
 
-    // MARK: - init
-
-    init(component: CoverClipCreationComponent) {
-        self.videoCoverClip = component.videoCoverClip
-        super.init()
-
-        self.drawCoverClip()
-    }
-
-    required init?(coder _: NSCoder) { nil }
+//    // MARK: - init
+//
+//    init(component: CoverClipCreationComponent) {
+//        self.videoCoverClip = component.videoCoverClip
+//        super.init()
+//
+//        self.drawCoverClip()
+//    }
+//
+//    required init?(coder _: NSCoder) { nil }
 
     // MARK: - Override func
 
@@ -177,6 +180,29 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
     override func bind() {
         super.bind()
 
+        self.viewDidLoadPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.initCoverClipCreation()
+            })
+            .store(in: &self.cancellables)
+
+        self.listener?.coverTypePublisher
+            .sink(receiveValue: { [weak self] coverType in
+                guard let self else { return }
+                self.clipCoverType = coverType
+                self.headerLabel.attributedText = .makeAttributedString(
+                    text: coverType.rawValue,
+                    font: .systemFont(ofSize: 20, weight: .heavy)
+                )
+                let placeholders = [("제목", Date().dateToString), ("설명", "지금은 여행중~")]
+                for (index, item) in placeholders.enumerated() {
+                    self.stackView.addArrangedSubview(self.makeMultiTextFieldView(title: item.0, placeholder: item.1, index: index))
+                }
+            })
+            .store(in: &self.cancellables)
+
         self.closeTappedPublisher
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
@@ -186,11 +212,11 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
 
         self.addButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
+                guard let self, let clipCoverType else { return }
                 let videoCoverClip: VideoCoverClip = .init(
                     title: self.previewTitleLabel.attributedText,
                     description: self.previewDescriptionLabel.attributedText,
-                    type: self.videoCoverClip.type
+                    type: clipCoverType
                 )
                 self.listener?.addButtonTapped(with: videoCoverClip)
             })
@@ -201,17 +227,6 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
 }
 
 extension CoverClipCreationViewController {
-    private func drawCoverClip() {
-        self.headerLabel.attributedText = .makeAttributedString(
-            text: self.videoCoverClip.type.rawValue,
-            font: .systemFont(ofSize: 20, weight: .heavy)
-        )
-        let placeholders = [("제목", Date().dateToString), ("설명", "지금은 여행중~")]
-        for (index, item) in placeholders.enumerated() {
-            self.stackView.addArrangedSubview(self.makeMultiTextFieldView(title: item.0, placeholder: item.1, index: index))
-        }
-    }
-
     private func makeMultiTextFieldView(title: String, placeholder: String, index: Int) -> UIView {
         let view: UIView = .init()
         let label: UILabel = .init()
