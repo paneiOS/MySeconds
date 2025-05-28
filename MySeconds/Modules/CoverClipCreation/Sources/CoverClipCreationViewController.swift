@@ -115,17 +115,6 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
         adjustableSnapConstraint?.layoutConstraints.first
     }
 
-//    // MARK: - init
-//
-//    init(component: CoverClipCreationComponent) {
-//        self.videoCoverClip = component.videoCoverClip
-//        super.init()
-//
-//        self.drawCoverClip()
-//    }
-//
-//    required init?(coder _: NSCoder) { nil }
-
     // MARK: - Override func
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
