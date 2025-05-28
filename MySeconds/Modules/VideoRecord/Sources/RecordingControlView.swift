@@ -16,15 +16,13 @@ import ResourceKit
 final class RecordControlView: UIView {
 
     private enum Constants {
-        static let buttonSize: CGFloat = 48
         static let recordButtonSize: CGFloat = 54
         static let recordViewSize: CGFloat = 64
+        static let recordCornerRadius: CGFloat = 32
         static let horizontalInset: CGFloat = 24
         static let verticalInset: CGFloat = 16
         static let stackSpacing: CGFloat = 4
-        static let albumCornerRadius: CGFloat = 8
-        static let recordCornerRadius: CGFloat = 32
-        static let recordButtonCornerRadius: CGFloat = 27
+        static let maxAlbumCount: Int = 15
     }
 
     private let recordTapSubject = PassthroughSubject<Void, Never>()
@@ -61,35 +59,23 @@ final class RecordControlView: UIView {
     }()
 
     private let recordButton = RecordControlButton(
-        type: .record,
-        size: Constants.recordButtonSize,
-        cornerRadius: Constants.recordButtonCornerRadius
+        type: .record
     )
 
     private let ratioButton = RecordControlButton(
-        type: .ratio,
-        size: Constants.buttonSize,
-        cornerRadius: Constants.buttonSize / 2
+        type: .ratio
     )
 
     private let timerButton = RecordControlButton(
-        type: .timer,
-        size: Constants.buttonSize,
-        cornerRadius: Constants.buttonSize / 2
+        type: .timer
     )
 
     private let cameraFlipButton = RecordControlButton(
-        type: .flip,
-        size: Constants.buttonSize,
-        cornerRadius: Constants.buttonSize / 2
+        type: .flip
     )
 
     private let albumButton = RecordControlButton(
-        type: .album,
-        size: Constants.recordViewSize,
-        cornerRadius: Constants.albumCornerRadius,
-        borderColor: UIColor.neutral200,
-        borderWidth: 1
+        type: .album
     )
 
     private let albumCountLabel: UILabel = {
@@ -112,8 +98,6 @@ final class RecordControlView: UIView {
 
     private var cancellables = Set<AnyCancellable>()
     private var progressLayer: CAShapeLayer?
-
-    private var maxAlbumCount: Int = 15
 
     var recordDuration: TimeInterval = 0 {
         didSet {
@@ -188,12 +172,12 @@ final class RecordControlView: UIView {
             $0.size.equalTo(Constants.recordViewSize)
         }
 
-        self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
+        self.albumCountLabel.text = "0 / \(Constants.maxAlbumCount)"
         self.setTimerButtonText(seconds: "3초")
 
-        self.tooltipView.snp.makeConstraints { make in
-            make.centerX.equalTo(self.recordView)
-            make.bottom.equalTo(self.recordView.snp.top).offset(-8)
+        self.tooltipView.snp.makeConstraints {
+            $0.centerX.equalTo(self.recordView)
+            $0.bottom.equalTo(self.recordView.snp.top).offset(-8)
         }
 
         self.tooltipView.isHidden = true
@@ -306,11 +290,11 @@ final class RecordControlView: UIView {
 
     func updateAlbum(thumbnail: UIImage?, count: Int) {
         self.albumButton.setImage(thumbnail, for: .normal)
-        self.albumCountLabel.text = "\(count) / \(self.maxAlbumCount)"
+        self.albumCountLabel.text = "\(count) / \(Constants.maxAlbumCount)"
 
         self.albumCountLabel.textColor = .neutral500
 
-        if count >= self.maxAlbumCount {
+        if count >= Constants.maxAlbumCount {
             self.albumCountLabel.textColor = .red500
             for item in [self.recordButton, self.ratioButton, self.timerButton, self.cameraFlipButton] {
                 item.isEnabled = false

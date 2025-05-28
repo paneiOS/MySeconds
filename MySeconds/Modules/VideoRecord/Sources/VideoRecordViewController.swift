@@ -39,6 +39,13 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     }
 
     override func bind() {
+        self.viewDidLoadPublisher
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.initAlbum()
+            })
+            .store(in: &cancellables)
+
         self.recordControlView.recordTapPublisher
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
@@ -81,18 +88,13 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        viewDidLoadPublisher
-            .sink(receiveValue: { [weak self] _ in
-                self?.listener?.initAlbum()
-            })
-            .store(in: &cancellables)
-
         if let listener {
             listener.thumbnailPublisher
                 .combineLatest(listener.albumCountPublisher)
                 .receive(on: DispatchQueue.main)
                 .sink(receiveValue: { [weak self] thumbnail, count in
-                    self?.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
+                    guard let self else { return }
+                    self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
                 })
                 .store(in: &cancellables)
         }
