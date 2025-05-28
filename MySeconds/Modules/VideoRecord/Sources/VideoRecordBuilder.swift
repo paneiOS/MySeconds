@@ -8,10 +8,22 @@
 import ModernRIBs
 
 import BaseRIBsKit
+import UIKit
 
-public protocol VideoRecordDependency: Dependency {}
+public protocol VideoRecordDependency: Dependency {
+    var initialAlbumThumbnail: UIImage? { get }
+    var initialAlbumCount: Int { get }
+}
 
-public final class VideoRecordComponent: Component<VideoRecordDependency> {}
+public final class VideoRecordComponent: Component<VideoRecordDependency> {
+    public var initialAlbumThumbnail: UIImage? {
+        dependency.initialAlbumThumbnail
+    }
+
+    public var initialAlbumCount: Int {
+        dependency.initialAlbumCount
+    }
+}
 
 extension VideoRecordComponent: VideoRecordDependency {}
 
