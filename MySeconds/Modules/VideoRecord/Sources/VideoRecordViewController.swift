@@ -56,6 +56,12 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 // TODO: 녹화 기능
                 print("녹화")
                 self.recordControlView.recordDuration = self.maxRecordingTime
+
+                // TODO: 녹화중 임시 처리
+                self.recordControlView.setRecordingState(true)
+                DispatchQueue.main.asyncAfter(deadline: .now() + self.maxRecordingTime) {
+                    self.recordControlView.setRecordingState(false)
+                }
             })
             .store(in: &cancellables)
 

@@ -284,6 +284,7 @@ final class RecordControlView: UIView {
     func setRecordingState(_ isRecording: Bool) {
         self.albumStack.isHidden = isRecording
         self.buttonStack.isHidden = isRecording
+        self.recordButton.isEnabled = !isRecording
     }
 
     func updateAlbum(thumbnail: UIImage?, count: Int) {
