@@ -27,6 +27,10 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     private let recordControlView = RecordControlView()
 
+    // TODO: 테스트를 위한 녹화 타이머 프로퍼티 녹화 기능 추가시 제거 예정
+    private var maxRecordingTime: TimeInterval = 3
+    private let durationOptions: [TimeInterval] = [1, 2, 3]
+
     override func setupUI() {
         self.view.backgroundColor = .white
         self.view.addSubviews(self.recordControlView)
@@ -51,7 +55,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 guard let self else { return }
                 // TODO: 녹화 기능
                 print("녹화")
-                self.recordControlView.recordDuration = 3
+                self.recordControlView.recordDuration = self.maxRecordingTime
             })
             .store(in: &cancellables)
 
@@ -76,7 +80,8 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 // TODO: 타이머 변경 기능
-                self.recordControlView.setTimerButtonText(seconds: "4초")
+                self.toggleDuration()
+                self.recordControlView.setTimerButtonText(seconds: "\(Int(self.maxRecordingTime))초")
                 print("타이머 변경")
             })
             .store(in: &cancellables)
@@ -116,6 +121,15 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 )
             ]
         )
+    }
+
+    // TODO: 테스트를 위한 녹화 타이머 변경 메서드, 녹화 기능 추가시 제거 예정
+    private func toggleDuration() {
+        guard let idx = durationOptions.firstIndex(of: maxRecordingTime) else {
+            self.maxRecordingTime = self.durationOptions.first ?? self.maxRecordingTime
+            return
+        }
+        self.maxRecordingTime = self.durationOptions[(idx + 1) % self.durationOptions.count]
     }
 }
 
