@@ -35,10 +35,10 @@ public final class TooltipView: UIView {
     }
 
     private func commonInit() {
-        backgroundColor = .clear
-        isHidden = true
-        layer.addSublayer(self.bubbleLayer)
-        addSubview(self.textLabel)
+        self.backgroundColor = .clear
+        self.isHidden = true
+        self.layer.addSublayer(self.bubbleLayer)
+        self.addSubview(self.textLabel)
 
         self.textLabel.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview().inset(8)
