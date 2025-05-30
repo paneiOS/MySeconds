@@ -191,7 +191,6 @@ final class RecordControlView: UIView {
         }
 
         self.tooltipView.isHidden = true
-        self.tooltipView.alpha = 0
     }
 
     private func bind() {
@@ -301,9 +300,7 @@ final class RecordControlView: UIView {
             }
 
             self.progressLayer?.opacity = 0.5
-
             self.tooltipView.isHidden = false
-            self.tooltipView.alpha = 1
             bringSubviewToFront(self.tooltipView)
         } else {
             for item in [self.recordButton, self.ratioButton, self.timerButton, self.cameraFlipButton] {
@@ -312,8 +309,6 @@ final class RecordControlView: UIView {
             }
 
             self.progressLayer?.opacity = 1.0
-
-            self.tooltipView.alpha = 0
             self.tooltipView.isHidden = true
         }
     }

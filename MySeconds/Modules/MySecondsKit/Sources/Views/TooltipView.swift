@@ -36,6 +36,7 @@ public final class TooltipView: UIView {
 
     private func commonInit() {
         backgroundColor = .clear
+        isHidden = true
         layer.addSublayer(self.bubbleLayer)
         addSubview(self.textLabel)
 
@@ -43,9 +44,6 @@ public final class TooltipView: UIView {
             $0.top.leading.trailing.equalToSuperview().inset(8)
             $0.bottom.equalToSuperview().inset(16)
         }
-
-        alpha = 0
-        isHidden = true
     }
 
     override public func layoutSubviews() {
