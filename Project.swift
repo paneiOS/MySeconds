@@ -12,6 +12,13 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",
+                    "UIAppFonts": [
+                        "Fonts/DungGeunMo.ttf",
+                        "Fonts/Inklipquid.otf",
+                        "Fonts/Samulnori-Medium.otf",
+                        "Fonts/ParkDaHyun.ttf",
+                        "Fonts/YClover-Regular.otf"
+                    ],
                     "UIApplicationSceneManifest": [
                         "UIApplicationSupportsMultipleScenes": false,
                         "UISceneConfigurations": [
@@ -57,12 +64,15 @@ let project = Project(
                 )
             ],
             dependencies: [
+                .project(target: "SharedModels", path: "MySeconds/Core/SharedModels"),
                 .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
-                .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
                 .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
-                .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
+                
+                .project(target: "CoverClipCreation", path: "MySeconds/Modules/CoverClipCreation"),
+                .project(target: "Login", path: "MySeconds/Modules/Login"),
+                .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation")
             ],
             settings: .settings(
