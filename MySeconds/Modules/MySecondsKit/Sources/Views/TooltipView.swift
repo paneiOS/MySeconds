@@ -36,8 +36,6 @@ public final class TooltipView: UIView {
 
     private func commonInit() {
         backgroundColor = .clear
-        clipsToBounds = false
-
         layer.addSublayer(self.bubbleLayer)
         addSubview(self.textLabel)
 
