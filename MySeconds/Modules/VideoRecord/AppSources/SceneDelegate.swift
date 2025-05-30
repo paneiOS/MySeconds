@@ -12,7 +12,6 @@ import ModernRIBs
 
 import MySecondsKit
 import ResourceKit
-import VideoCreation
 import VideoRecord
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
