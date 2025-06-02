@@ -18,12 +18,6 @@ public final class VideoCreationComponent: Component<VideoCreationDependency> {
     public var clips: [CompositionClip] { dependency.clips }
 }
 
-extension VideoCreationComponent: CoverClipCreationDependency {
-    public var coverClipCreationBuilder: CoverClipCreationBuildable {
-        CoverClipCreationBuilder(dependency: self)
-    }
-}
-
 // MARK: - Builder
 
 public protocol VideoCreationBuildable: Buildable {
