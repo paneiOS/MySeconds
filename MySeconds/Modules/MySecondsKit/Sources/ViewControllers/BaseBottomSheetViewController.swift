@@ -41,16 +41,24 @@ open class BaseBottomSheetViewController: BaseViewController {
 
     public let headerLabel = UILabel()
 
-    public let closeButton: UIButton = {
-        let button: UIButton = .init()
-        let image: UIImage = ResourceKitAsset.close.image.resized(to: .init(width: 20, height: 20))
+    let closeButton: UIControl = .init()
+
+    public let closeButtonView: UIView = {
+        let view: UIView = .init()
+        let closeImage = ResourceKitAsset.close.image.resized(to: .init(width: 20, height: 20))
             .withRenderingMode(.alwaysTemplate)
-        button.setImage(image, for: .normal)
-        button.backgroundColor = .init(red: 127 / 255, green: 127 / 255, blue: 127 / 255, alpha: 0.2)
-        button.tintColor = .init(red: 61 / 255, green: 61 / 255, blue: 61 / 255, alpha: 0.5)
-        button.layer.cornerRadius = 15
-        button.layer.masksToBounds = true
-        return button
+        let imageView: UIImageView = .init(image: closeImage)
+        imageView.contentMode = .center
+        imageView.layer.cornerRadius = 15
+        imageView.layer.masksToBounds = true
+        imageView.backgroundColor = .init(red: 127 / 255, green: 127 / 255, blue: 127 / 255, alpha: 0.2)
+        imageView.tintColor = .init(red: 61 / 255, green: 61 / 255, blue: 61 / 255, alpha: 0.5)
+
+        view.addSubviews(imageView)
+        imageView.snp.makeConstraints {
+            $0.edges.equalToSuperview().inset(14)
+        }
+        return view
     }()
 
     public let contentContainer = UIView()
@@ -94,20 +102,29 @@ open class BaseBottomSheetViewController: BaseViewController {
             self.adjustableSnapConstraint = $0.bottom.equalToSuperview().constraint
         }
 
-        self.contentsView.addSubview(self.sheetContainerView)
+        self.contentsView.addSubviews(self.headerView, self.sheetContainerView)
+        self.headerView.snp.makeConstraints {
+            $0.leading.equalToSuperview().inset(16)
+            $0.top.trailing.equalToSuperview()
+            $0.height.equalTo(58)
+        }
+        self.headerView.addSubviews(self.headerLabel, self.closeButtonView)
+        self.headerLabel.snp.makeConstraints {
+            $0.top.leading.bottom.equalToSuperview()
+        }
+        self.closeButtonView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview()
+            $0.trailing.equalToSuperview().inset(2)
+            $0.size.equalTo(58)
+        }
+        self.closeButtonView.addSubview(self.closeButton)
+        self.closeButton.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
         self.sheetContainerView.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(14)
+            $0.top.equalTo(self.headerView.snp.bottom)
             $0.leading.trailing.equalToSuperview().inset(16)
             $0.bottom.equalToSuperview().inset(50)
-        }
-
-        self.sheetContainerView.addSubviews(self.headerLabel, self.closeButton)
-        self.headerLabel.snp.makeConstraints {
-            $0.top.leading.equalToSuperview()
-        }
-        self.closeButton.snp.makeConstraints {
-            $0.top.trailing.equalToSuperview()
-            $0.size.equalTo(30)
         }
     }
 

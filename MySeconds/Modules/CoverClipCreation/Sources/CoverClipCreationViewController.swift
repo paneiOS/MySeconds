@@ -17,10 +17,10 @@ import SharedModels
 import UtilsKit
 
 protocol CoverClipCreationPresentableListener: AnyObject {
+    var coverTypePublisher: AnyPublisher<VideoCoverClip.CoverType, Never> { get }
     func initCoverClipCreation()
     func closeButtonTapped()
     func addButtonTapped(with coverClip: VideoCoverClip)
-    var coverTypePublisher: AnyPublisher<VideoCoverClip.CoverType, Never> { get }
 }
 
 final class CoverClipCreationViewController: BaseBottomSheetViewController, CoverClipCreationPresentable, CoverClipCreationViewControllable, KeyboardAdjustable {
@@ -127,7 +127,7 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
 
         self.sheetContainerView.addSubviews(self.clipView, self.stackView, self.fontLabel, self.fontCollectionView, self.addButton)
         self.clipView.snp.makeConstraints {
-            $0.top.equalTo(self.closeButton.snp.bottom).offset(12)
+            $0.top.equalTo(self.headerView.snp.bottom).offset(12)
             $0.centerX.equalToSuperview()
             $0.size.equalTo(Constants.clipViewWidth)
         }

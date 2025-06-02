@@ -26,11 +26,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        let signUpBuilder = SignUpBuilder(
-            dependency: .init(
-                dependency: MockSignUpDependency()
-            )
-        )
+        let signUpBuilder = SignUpBuilder(dependency: MockSignUpDependency())
         let signUpRouter = signUpBuilder.build(withListener: self.mockListener)
         self.router = signUpRouter
 
