@@ -62,7 +62,6 @@ let project = Project(
                 ]
             ),
             sources: ["AppSources/**"],
-            resources: [.folderReference(path: "../ResourceKit/Resources/Fonts")],
             scripts: [
                 .pre(
                     script: """

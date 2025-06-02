@@ -10,7 +10,10 @@ let project = Project(
             bundleId: "com.panestudio.resourcekit",
             infoPlist: .default,
             sources: ["Sources/**"],
-            resources: ["Resources/**"],
+            resources: [
+                .folderReference(path: "Resources/BGMs"),
+                .glob(pattern: "Resources/**", excluding: ["Resources/BGMs/**"])
+            ],
             scripts: [
                 .pre(
                     script: """
