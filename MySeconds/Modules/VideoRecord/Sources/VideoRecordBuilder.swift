@@ -5,10 +5,11 @@
 //  Created by chungwussup on 05/19/2025.
 //
 
+import UIKit
+
 import ModernRIBs
 
 import BaseRIBsKit
-import UIKit
 
 public protocol VideoRecordDependency: Dependency {
     var initialAlbumThumbnail: UIImage? { get }

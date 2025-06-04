@@ -22,7 +22,6 @@ final class RecordControlView: UIView {
         static let horizontalInset: CGFloat = 24
         static let verticalInset: CGFloat = 16
         static let stackSpacing: CGFloat = 4
-        static let maxAlbumCount: Int = 15
     }
 
     private let recordTapSubject = PassthroughSubject<Void, Never>()
@@ -62,7 +61,8 @@ final class RecordControlView: UIView {
     private let ratioButton = RecordControlButton(type: .ratio)
     private let timerButton = RecordControlButton(type: .timer)
     private let cameraFlipButton = RecordControlButton(type: .flip)
-
+    private let maxAlbumCount: Int
+    
     private let albumButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .neutral100
@@ -123,8 +123,10 @@ final class RecordControlView: UIView {
         }
     }
 
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(count maxAlbumCount: Int) {
+        self.maxAlbumCount = maxAlbumCount
+        
+        super.init(frame: .zero)
         self.setupUI()
         self.bind()
     }
@@ -182,15 +184,13 @@ final class RecordControlView: UIView {
             $0.size.equalTo(Constants.recordViewSize)
         }
 
-        self.albumCountLabel.text = "0 / \(Constants.maxAlbumCount)"
+        self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
         self.setTimerButtonText(seconds: "3초")
 
         self.tooltipView.snp.makeConstraints {
             $0.centerX.equalTo(self.recordView)
             $0.bottom.equalTo(self.recordView.snp.top).offset(-8)
         }
-
-        self.tooltipView.isHidden = true
     }
 
     private func bind() {
@@ -288,11 +288,11 @@ final class RecordControlView: UIView {
 
     func updateAlbum(thumbnail: UIImage?, count: Int) {
         self.albumButton.setImage(thumbnail, for: .normal)
-        self.albumCountLabel.text = "\(count) / \(Constants.maxAlbumCount)"
+        self.albumCountLabel.text = "\(count) / \(self.maxAlbumCount)"
 
         self.albumCountLabel.textColor = .neutral500
 
-        if count >= Constants.maxAlbumCount {
+        if count >= self.maxAlbumCount {
             self.albumCountLabel.textColor = .red500
             for item in [self.recordButton, self.ratioButton, self.timerButton, self.cameraFlipButton] {
                 item.isEnabled = false

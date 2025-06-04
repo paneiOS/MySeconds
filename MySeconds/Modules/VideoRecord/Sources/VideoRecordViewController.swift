@@ -25,7 +25,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     weak var listener: VideoRecordPresentableListener?
 
-    private let recordControlView = RecordControlView()
+    private let recordControlView = RecordControlView(count: 15)
 
     // TODO: 테스트를 위한 녹화 타이머 프로퍼티 녹화 기능 추가시 제거 예정
     private var maxRecordingTime: TimeInterval = 3
