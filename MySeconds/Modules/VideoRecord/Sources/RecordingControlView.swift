@@ -62,7 +62,7 @@ final class RecordControlView: UIView {
     private let timerButton = RecordControlButton(type: .timer)
     private let cameraFlipButton = RecordControlButton(type: .flip)
     private let maxAlbumCount: Int
-    
+
     private let albumButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .neutral100
@@ -84,9 +84,13 @@ final class RecordControlView: UIView {
         return label
     }()
 
-    private let tooltipView = TooltipView(
-        text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
-    )
+    private let tooltipView: TooltipView = {
+        let view = TooltipView(
+            text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
+        )
+        view.isHidden = true
+        return view
+    }()
 
     private let albumStack: UIStackView = {
         let stack = UIStackView()
@@ -125,7 +129,7 @@ final class RecordControlView: UIView {
 
     init(count maxAlbumCount: Int) {
         self.maxAlbumCount = maxAlbumCount
-        
+
         super.init(frame: .zero)
         self.setupUI()
         self.bind()
