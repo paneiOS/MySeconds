@@ -19,6 +19,9 @@ protocol VideoRecordPresentableListener: AnyObject {
     var albumCountPublisher: AnyPublisher<Int, Never> { get }
 
     func initAlbum()
+
+    // TODO: Sample App 테스트 위한 메서드
+    func recordDidFinish()
 }
 
 final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
@@ -60,6 +63,10 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 // TODO: 녹화중 임시 처리
                 self.recordControlView.setRecordingState(true)
                 DispatchQueue.main.asyncAfter(deadline: .now() + self.maxRecordingTime) {
+
+                    // TODO: 샘플앱 카운트 업데이트 위한 메서드 추후 제거
+                    self.listener?.recordDidFinish()
+
                     self.recordControlView.setRecordingState(false)
                 }
             })

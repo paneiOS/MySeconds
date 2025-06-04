@@ -38,6 +38,16 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     weak var router: VideoRecordRouting?
     weak var listener: VideoRecordListener?
 
+    // TODO: 테스트를 위한 프로퍼티
+    private let sampleColors: [UIColor] = [
+        .black,
+        .red,
+        .blue,
+        .green,
+        .yellow,
+        .purple
+    ]
+
     init(presenter: VideoRecordPresentable, component: VideoRecordComponent) {
         self.component = component
         super.init(presenter: presenter)
@@ -52,5 +62,30 @@ extension VideoRecordInteractor {
 
         self.thumbnailSubject.send(thumb)
         self.albumCountSubject.send(cnt)
+    }
+}
+
+extension VideoRecordInteractor {
+
+    func recordDidFinish() {
+        let currentCount = self.albumCountSubject.value
+        let newCount = currentCount + 1
+        self.albumCountSubject.send(newCount)
+
+        let colorIndex = newCount % self.sampleColors.count
+        let chosenColor = self.sampleColors[colorIndex]
+
+        let thumbnailSize = CGSize(width: 64, height: 64)
+        let colorImage = self.makeImage(with: chosenColor, size: thumbnailSize)
+
+        self.thumbnailSubject.send(colorImage)
+    }
+
+    private func makeImage(with color: UIColor, size: CGSize) -> UIImage {
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { ctx in
+            color.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+        }
     }
 }
