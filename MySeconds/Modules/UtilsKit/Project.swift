@@ -15,6 +15,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.panestudio.utilskit",
+            deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
             scripts: [
