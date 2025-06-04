@@ -5,18 +5,27 @@
 //  Created by pane on 05/28/2025.
 //
 
+import AVFoundation
+
 import ModernRIBs
 
 import BaseRIBsKit
+import ResourceKit
 
-public protocol BGMSelectDependency: Dependency {}
+public protocol BGMSelectDependency: Dependency {
+    var bgmDirectoryURL: URL { get }
+}
 
-public final class BGMSelectComponent: Component<BGMSelectDependency> {}
+public final class BGMSelectComponent: Component<BGMSelectDependency> {
+    var bgmDirectoryURL: URL {
+        dependency.bgmDirectoryURL
+    }
+}
 
 // MARK: - Builder
 
 public protocol BGMSelectBuildable: Buildable {
-    func build(withListener listener: BGMSelectListener) -> BGMSelectRouting
+    func build(withListener listener: BGMSelectListener) async -> BGMSelectRouting
 }
 
 public final class BGMSelectBuilder: Builder<BGMSelectDependency>, BGMSelectBuildable {
