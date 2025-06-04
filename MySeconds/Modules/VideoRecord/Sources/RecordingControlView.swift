@@ -58,7 +58,7 @@ final class RecordControlView: UIView {
     }()
 
     private let recordButton = RecordControlButton(type: .record)
-    let ratioButton = RecordControlButton(type: .ratio)
+    private let ratioButton = RecordControlButton(type: .ratio)
     private let timerButton = RecordControlButton(type: .timer)
     private let cameraFlipButton = RecordControlButton(type: .flip)
     private let maxAlbumCount: Int
@@ -189,7 +189,6 @@ final class RecordControlView: UIView {
         }
 
         self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
-        self.setTimerButtonText(seconds: "3초")
 
         self.tooltipView.snp.makeConstraints {
             $0.centerX.equalTo(self.recordView)
@@ -279,9 +278,8 @@ final class RecordControlView: UIView {
         self.timerButton.setAttributedTitle(attributed, for: .normal)
     }
 
-    func setRatioButtonText() {
-        let next = (ratioButton.currentTitle == "1:1") ? "4:3" : "1:1"
-        self.ratioButton.setTitle(next, for: .normal)
+    func setRatioButtonText(text: String) {
+        self.ratioButton.setTitle(text, for: .normal)
     }
 
     func setRecordingState(_ isRecording: Bool) {
@@ -291,8 +289,6 @@ final class RecordControlView: UIView {
     }
 
     func updateAlbum(thumbnail: UIImage?, count: Int) {
-        print("updateAlbum Check")
-
         self.albumButton.setImage(thumbnail, for: .normal)
         self.albumCountLabel.text = "\(count) / \(self.maxAlbumCount)"
 

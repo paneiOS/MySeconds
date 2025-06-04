@@ -48,14 +48,14 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 final class MockVideoRecordDependency: VideoRecordDependency {
     var initialAlbumThumbnail: UIImage? {
 
-        guard let url = ResourceKitResources.bundle.url(forResource: "sample01", withExtension: "mp4") else {
+        guard let url = ResourceKitResources.bundle.url(forResource: "sample012", withExtension: "mp4") else {
             print("⚠️ sample01.mp4 를 번들에서 찾을 수 없습니다.")
             return nil
         }
         return makeThumbnail(from: url)
     }
 
-    var initialAlbumCount: Int = 1
+    var initialAlbumCount: Int = 0
 }
 
 final class MockVideoRecordListener: VideoRecordListener {}
