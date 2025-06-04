@@ -5,11 +5,13 @@
 //  Created by pane on 05/28/2025.
 //
 
+import AVFoundation
 import UIKit
 
 import ModernRIBs
 
 import BGMSelect
+import ResourceKit
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -25,7 +27,16 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        let builder = BGMSelectBuilder(dependency: MockBGMSelectDependency())
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("AVAudioSession 설정 실패:", error)
+        }
+
+        let bundle = ResourceKitResources.bundle
+        guard let bgmsDir = bundle.url(forResource: "BGMs", withExtension: nil) else { return }
+        let builder = BGMSelectBuilder(dependency: MockBGMSelectDependency(bgmDirectoryURL: bgmsDir))
         let router = builder.build(withListener: self.mockListener)
         self.router = router
 
@@ -34,6 +45,12 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 }
 
-final class MockBGMSelectDependency: BGMSelectDependency {}
+final class MockBGMSelectDependency: BGMSelectDependency {
+    var bgmDirectoryURL: URL
+
+    init(bgmDirectoryURL: URL) {
+        self.bgmDirectoryURL = bgmDirectoryURL
+    }
+}
 
 final class MockBGMSelectListener: BGMSelectListener {}
