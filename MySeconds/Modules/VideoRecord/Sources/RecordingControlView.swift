@@ -296,19 +296,20 @@ final class RecordControlView: UIView {
 
         if count >= self.maxAlbumCount {
             self.albumCountLabel.textColor = .red500
-            for item in [self.recordButton, self.ratioButton, self.timerButton, self.cameraFlipButton] {
-                item.isEnabled = false
-                item.alpha = 0.5
-            }
 
+            self.buttonStack.isUserInteractionEnabled = false
+            self.buttonStack.alpha = 0.5
+            self.recordButton.isUserInteractionEnabled = false
+            self.recordButton.alpha = 0.5
+            
             self.progressLayer?.opacity = 0.5
             self.tooltipView.isHidden = false
             bringSubviewToFront(self.tooltipView)
         } else {
-            for item in [self.recordButton, self.ratioButton, self.timerButton, self.cameraFlipButton] {
-                item.isEnabled = true
-                item.alpha = 1
-            }
+            self.buttonStack.isUserInteractionEnabled = true
+            self.buttonStack.alpha = 1.0
+            self.recordButton.isUserInteractionEnabled = true
+            self.recordButton.alpha = 1.0
 
             self.progressLayer?.opacity = 1.0
             self.tooltipView.isHidden = true
