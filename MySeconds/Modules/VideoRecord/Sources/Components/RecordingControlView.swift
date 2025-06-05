@@ -301,7 +301,7 @@ final class RecordControlView: UIView {
             self.buttonStack.alpha = 0.5
             self.recordButton.isUserInteractionEnabled = false
             self.recordButton.alpha = 0.5
-            
+
             self.progressLayer?.opacity = 0.5
             self.tooltipView.isHidden = false
             bringSubviewToFront(self.tooltipView)
