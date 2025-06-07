@@ -33,6 +33,12 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     weak var listener: VideoRecordPresentableListener?
 
+    let timerButtonTextPublisher = PassthroughSubject<String, Never>()
+    let ratioButtonTextPublisher = PassthroughSubject<String, Never>()
+    let isRecordingPublisher = PassthroughSubject<Bool, Never>()
+    let recordDurationPublisher = PassthroughSubject<TimeInterval, Never>()
+    let albumPublisher = PassthroughSubject<(UIImage?, Int), Never>()
+
     private let recordControlView = RecordControlView(count: 15)
 
     override func setupUI() {
@@ -88,26 +94,46 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.listener?.didTapAlbum()
             })
             .store(in: &cancellables)
-    }
 
-    func setTimerButtonText(seconds: String) {
-        self.recordControlView.setTimerButtonText(seconds: seconds)
-    }
+        self.timerButtonTextPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] text in
+                guard let self else { return }
+                self.recordControlView.setTimerButtonText(seconds: text)
+            })
+            .store(in: &cancellables)
 
-    func setRatioButtonText(text: String) {
-        self.recordControlView.setRatioButtonText(text: text)
-    }
+        self.ratioButtonTextPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] text in
+                guard let self else { return }
+                self.recordControlView.setRatioButtonText(text: text)
+            })
+            .store(in: &cancellables)
 
-    func setRecordingState(_ isRecording: Bool) {
-        self.recordControlView.setRecordingState(isRecording)
-    }
+        self.isRecordingPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] isRecording in
+                guard let self else { return }
+                self.recordControlView.setRecordingState(isRecording)
+            })
+            .store(in: &cancellables)
 
-    func setRecordDuration(_ duration: TimeInterval) {
-        self.recordControlView.recordDuration = duration
-    }
+        self.recordDurationPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] duration in
+                guard let self else { return }
+                self.recordControlView.recordDuration = duration
+            })
+            .store(in: &cancellables)
 
-    func updateAlbum(thumbnail: UIImage?, count: Int) {
-        self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
+        self.albumPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] thumb, count in
+                guard let self else { return }
+                self.recordControlView.updateAlbum(thumbnail: thumb, count: count)
+            })
+            .store(in: &cancellables)
     }
 
     func handleFlip() {

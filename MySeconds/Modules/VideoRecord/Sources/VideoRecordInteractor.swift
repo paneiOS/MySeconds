@@ -17,11 +17,12 @@ public protocol VideoRecordRouting: ViewableRouting {}
 protocol VideoRecordPresentable: Presentable {
     var listener: VideoRecordPresentableListener? { get set }
 
-    func setTimerButtonText(seconds: String)
-    func setRatioButtonText(text: String)
-    func setRecordingState(_ isRecording: Bool)
-    func setRecordDuration(_ duration: TimeInterval)
-    func updateAlbum(thumbnail: UIImage?, count: Int)
+    var timerButtonTextPublisher: PassthroughSubject<String, Never> { get }
+    var ratioButtonTextPublisher: PassthroughSubject<String, Never> { get }
+    var isRecordingPublisher: PassthroughSubject<Bool, Never> { get }
+    var recordDurationPublisher: PassthroughSubject<TimeInterval, Never> { get }
+    var albumPublisher: PassthroughSubject<(UIImage?, Int), Never> { get }
+
     func handleFlip()
     func handleAlbumTap()
 }
@@ -74,7 +75,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] thumbnail, count in
                 guard let self else { return }
-                self.presenter.updateAlbum(thumbnail: thumbnail, count: count)
+                self.presenter.albumPublisher.send((thumbnail, count))
             })
             .store(in: &self.cancellables)
     }
@@ -88,34 +89,34 @@ extension VideoRecordInteractor {
         self.thumbnailSubject.send(thumb)
         self.albumCountSubject.send(cnt)
 
-        self.presenter.setTimerButtonText(seconds: "\(Int(self.maxRecordingTime))초")
-        self.presenter.setRatioButtonText(text: self.videoRatios[self.currentRatioIndex])
+        let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
+        self.presenter.timerButtonTextPublisher.send(maxRecordingTime)
+        self.presenter.ratioButtonTextPublisher.send(self.videoRatios[self.currentRatioIndex])
     }
 }
 
 extension VideoRecordInteractor {
     func didTapRecord() {
-        self.presenter.setRecordDuration(self.maxRecordingTime)
-        self.presenter.setRecordingState(true)
+        self.presenter.recordDurationPublisher.send(self.maxRecordingTime)
+        self.presenter.isRecordingPublisher.send(true)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + self.maxRecordingTime) { [weak self] in
             guard let self else { return }
 
             self.recordDidFinish()
-            self.presenter.setRecordingState(false)
+            self.presenter.isRecordingPublisher.send(false)
         }
     }
 
     func didTapFlip() {
-        self.presenter.handleFlip()
+        
     }
 
     func didTapRatio() {
         let nextIndex = (currentRatioIndex + 1) % self.videoRatios.count
         self.currentRatioIndex = nextIndex
         let newRatioText = self.videoRatios[nextIndex]
-
-        self.presenter.setRatioButtonText(text: newRatioText)
+        self.presenter.ratioButtonTextPublisher.send(newRatioText)
     }
 
     func didTapTimer() {
@@ -124,8 +125,10 @@ extension VideoRecordInteractor {
         } else {
             self.maxRecordingTime = self.durationOptions.first ?? self.maxRecordingTime
         }
+        
+        let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
 
-        self.presenter.setTimerButtonText(seconds: "\(Int(self.maxRecordingTime))초")
+        self.presenter.timerButtonTextPublisher.send(maxRecordingTime)
     }
 
     func didTapAlbum() {
