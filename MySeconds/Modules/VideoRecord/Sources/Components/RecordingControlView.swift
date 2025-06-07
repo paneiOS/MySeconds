@@ -81,7 +81,6 @@ final class RecordControlView: UIView {
         let view = TooltipView(
             text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
         )
-        view.isHidden = true
         return view
     }()
 

@@ -11,12 +11,12 @@ import SnapKit
 
 public final class TooltipView: UIView {
     private let textLabel: UILabel = {
-        let lbl = UILabel()
-        lbl.numberOfLines = 0
-        lbl.font = .systemFont(ofSize: 12, weight: .medium)
-        lbl.textColor = .white
-        lbl.textAlignment = .center
-        return lbl
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.textColor = .white
+        label.textAlignment = .center
+        return label
     }()
 
     private let bubbleLayer = CAShapeLayer()
@@ -27,6 +27,7 @@ public final class TooltipView: UIView {
         super.init(frame: .zero)
         self.commonInit()
         self.textLabel.text = text
+        self.isHidden = true
     }
 
     @available(*, unavailable)
