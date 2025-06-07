@@ -17,7 +17,7 @@ final class RecordControlView: UIView {
 
     private enum Constants {
         static let recordButtonSize: CGFloat = 54
-        static let recordViewSize: CGFloat = 64
+        static let progressSize: CGFloat = 64
         static let recordCornerRadius: CGFloat = 32
         static let horizontalInset: CGFloat = 24
         static let verticalInset: CGFloat = 16
@@ -49,13 +49,6 @@ final class RecordControlView: UIView {
     var albumTapPublisher: AnyPublisher<Void, Never> {
         self.albumTapSubject.eraseToAnyPublisher()
     }
-
-    private let recordView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .white
-        view.layer.cornerRadius = Constants.recordCornerRadius
-        return view
-    }()
 
     private let recordButton = RecordControlButton(type: .record)
     private let ratioButton = RecordControlButton(type: .ratio)
@@ -156,7 +149,7 @@ final class RecordControlView: UIView {
         }
 
         self.albumButton.snp.makeConstraints {
-            $0.size.equalTo(Constants.recordViewSize)
+            $0.size.equalTo(Constants.recordButtonSize)
         }
 
         for item in [self.ratioButton, self.cameraFlipButton] {
@@ -167,8 +160,7 @@ final class RecordControlView: UIView {
             self.buttonStack.addArrangedSubview(item)
         }
 
-        addSubviews(self.albumStack, self.buttonStack, self.recordView, self.tooltipView)
-        self.recordView.addSubview(self.recordButton)
+        addSubviews(self.albumStack, self.buttonStack, self.recordButton, self.tooltipView)
 
         self.recordButton.snp.makeConstraints {
             $0.center.equalToSuperview()
@@ -183,16 +175,12 @@ final class RecordControlView: UIView {
             $0.trailing.equalToSuperview().inset(Constants.horizontalInset)
             $0.top.bottom.equalToSuperview().inset(Constants.verticalInset)
         }
-        self.recordView.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.size.equalTo(Constants.recordViewSize)
-        }
 
         self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
 
         self.tooltipView.snp.makeConstraints {
-            $0.centerX.equalTo(self.recordView)
-            $0.bottom.equalTo(self.recordView.snp.top).offset(-8)
+            $0.centerX.equalTo(self.recordButton)
+            $0.bottom.equalTo(self.recordButton.snp.top).offset(-8)
         }
     }
 
@@ -216,7 +204,19 @@ final class RecordControlView: UIView {
 
     private func setupProgressLayer(duration: TimeInterval) {
         self.progressLayer?.removeFromSuperlayer()
-        let radius = Constants.recordViewSize / 2
+
+        let buttonSize = Constants.recordButtonSize
+        let progressSize = Constants.progressSize
+        let padding = (progressSize - buttonSize) / 2
+
+        let layerFrame = CGRect(
+            x: -padding,
+            y: -padding,
+            width: progressSize,
+            height: progressSize
+        )
+
+        let radius = progressSize / 2
         let center = CGPoint(x: radius, y: radius)
         let path = UIBezierPath(
             arcCenter: center,
@@ -225,14 +225,17 @@ final class RecordControlView: UIView {
             endAngle: 3 * .pi / 2,
             clockwise: true
         )
-        let layer = CAShapeLayer()
-        layer.path = path.cgPath
-        layer.fillColor = UIColor.clear.cgColor
-        layer.strokeColor = UIColor.neutral950.cgColor
-        layer.lineWidth = 3
-        layer.lineCap = .round
-        self.recordView.layer.addSublayer(layer)
-        self.progressLayer = layer
+
+        let shape = CAShapeLayer()
+        shape.frame = layerFrame
+        shape.path = path.cgPath
+        shape.fillColor = UIColor.clear.cgColor
+        shape.strokeColor = UIColor.neutral950.cgColor
+        shape.lineWidth = 3
+        shape.lineCap = .round
+
+        self.recordButton.layer.addSublayer(shape)
+        self.progressLayer = shape
 
         guard duration > 0 else { return }
         CATransaction.begin()
@@ -246,7 +249,7 @@ final class RecordControlView: UIView {
         animation.duration = duration
         animation.fillMode = .forwards
         animation.isRemovedOnCompletion = false
-        layer.add(animation, forKey: "progress")
+        shape.add(animation, forKey: "progress")
         CATransaction.commit()
     }
 
