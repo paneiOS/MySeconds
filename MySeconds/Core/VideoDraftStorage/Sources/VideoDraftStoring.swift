@@ -13,6 +13,7 @@ public protocol VideoDraftStoring {
     func loadAll() throws -> [VideoDraft]
     func delete(id: UUID) throws
     func exists(id: UUID) -> Bool
+    func deleteAll() throws
 }
 
 enum VideoDraftStorageError: Error {

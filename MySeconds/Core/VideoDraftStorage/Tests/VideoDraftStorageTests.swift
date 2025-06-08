@@ -87,4 +87,34 @@ final class VideoDraftStorageTests: XCTestCase {
         try storage.save(draft)
         XCTAssertTrue(storage.exists(id: draft.id))
     }
+
+    func test_전체삭제에_성공한다() throws {
+        guard let storage else {
+            XCTFail("저장소가 생성되지 않았습니다.")
+            return
+        }
+
+        let draft1 = VideoDraft(
+            id: UUID(),
+            createdAt: Date(),
+            duration: 2.0,
+            thumbnailImageData: Data([0x01]),
+            videoData: Data([0xFF])
+        )
+        let draft2 = VideoDraft(
+            id: UUID(),
+            createdAt: Date(),
+            duration: 3.0,
+            thumbnailImageData: Data([0x02]),
+            videoData: Data([0xEE])
+        )
+        try storage.save(draft1)
+        try storage.save(draft2)
+        XCTAssertTrue(storage.exists(id: draft1.id))
+        XCTAssertTrue(storage.exists(id: draft2.id))
+
+        try storage.deleteAll()
+        XCTAssertFalse(storage.exists(id: draft1.id))
+        XCTAssertFalse(storage.exists(id: draft2.id))
+    }
 }

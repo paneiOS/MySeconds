@@ -92,4 +92,11 @@ extension VideoDraftStorage: VideoDraftStoring {
             )
         }
     }
+
+    public func deleteAll() throws {
+        let contents = try FileManager.default.contentsOfDirectory(at: self.baseDirectoryURL, includingPropertiesForKeys: nil)
+        for item in contents {
+            try FileManager.default.removeItem(at: item)
+        }
+    }
 }
