@@ -137,7 +137,7 @@ public final class TooltipView: UIView {
         }
     }
 
-    public func hide(_ parentView: UIView, animated: Bool = true) {
+    public func hide(animated: Bool = true) {
         guard !isHidden else { return }
 
         if animated {
@@ -151,9 +151,13 @@ public final class TooltipView: UIView {
                 completion: { [weak self] _ in
                     guard let self else { return }
                     self.removeFromSuperview()
+                    self.isHidden = true
+                    self.transform = .identity
+                    self.alpha = 1
                 }
             )
         } else {
+            self.removeFromSuperview()
             self.isHidden = true
             self.transform = .identity
             self.alpha = 1
