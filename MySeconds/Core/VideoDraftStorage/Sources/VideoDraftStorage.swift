@@ -7,96 +7,75 @@
 
 import Foundation
 
-public final class VideoDraftStorage {
-    private let baseDirectoryURL: URL
+public final class VideoDraftStorage: VideoDraftStoring {
+    public enum Error: Swift.Error {
+        case directoryNotFound
+        case fileNotFound
+        case corruptedData
+    }
 
-    public init(directoryName: String) throws {
-        guard let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
-            throw VideoDraftStorageError.directoryNotFound
+    private var fileManager: FileManager = .default
+    private let videoDraftsFileURL: URL
+    public let baseDirectoryURL: URL
+
+    public init(directoryName: String = "VideoDrafts") throws {
+        guard let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            throw Error.directoryNotFound
         }
         self.baseDirectoryURL = base.appendingPathComponent(directoryName, isDirectory: true)
-        try FileManager.default.createDirectory(at: self.baseDirectoryURL, withIntermediateDirectories: true)
+        self.videoDraftsFileURL = self.baseDirectoryURL.appendingPathComponent("VideoDrafts.json")
+        try self.fileManager.createDirectory(at: self.baseDirectoryURL, withIntermediateDirectories: true)
     }
 
-    private func draftDirectory(for id: UUID) -> URL {
-        self.baseDirectoryURL.appendingPathComponent(id.uuidString, isDirectory: true)
-    }
+    // MARK: - Public
 
-    private func metadataURL(for id: UUID) -> URL {
-        self.draftDirectory(for: id).appendingPathComponent("draft.json")
-    }
-
-    private func videoURL(for id: UUID) -> URL {
-        self.draftDirectory(for: id).appendingPathComponent("video.mp4")
-    }
-}
-
-extension VideoDraftStorage: VideoDraftStoring {
-    public func save(_ draft: VideoDraft) throws {
-        let folderURL = self.draftDirectory(for: draft.id)
-        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
-
-        let metadata = try JSONEncoder().encode(draft)
-        try metadata.write(to: self.metadataURL(for: draft.id))
-        try draft.videoData.write(to: self.videoURL(for: draft.id))
-    }
-
-    public func load(id: UUID) throws -> VideoDraft {
-        let metadataURL = metadataURL(for: id)
-        let videoURL = videoURL(for: id)
-        guard FileManager.default.fileExists(atPath: metadataURL.path),
-              FileManager.default.fileExists(atPath: videoURL.path) else {
-            throw VideoDraftStorageError.fileNotFound
+    public func saveVideoDraft(sourceURL: URL, fileName: String) throws -> URL {
+        guard self.fileManager.fileExists(atPath: sourceURL.path) else {
+            throw Error.fileNotFound
         }
-
-        let metadata = try Data(contentsOf: metadataURL)
-        let draft = try JSONDecoder().decode(VideoDraft.self, from: metadata)
-        return try VideoDraft(
-            id: draft.id,
-            createdAt: draft.createdAt,
-            duration: draft.duration,
-            thumbnailImageData: draft.thumbnailImageData,
-            videoData: Data(contentsOf: videoURL)
-        )
+        let filePath = self.videoFileURLPath(fileName: fileName)
+        try self.fileManager.copyItem(at: sourceURL, to: filePath)
+        try? self.fileManager.removeItem(at: sourceURL)
+        return filePath
     }
 
-    public func exists(id: UUID) -> Bool {
-        FileManager.default.fileExists(atPath: self.metadataURL(for: id).path) &&
-            FileManager.default.fileExists(atPath: self.videoURL(for: id).path)
+    public func loadVideo(fileName: String) throws -> URL {
+        let videoURL = self.videoFileURLPath(fileName: fileName)
+        guard self.fileManager.fileExists(atPath: videoURL.path) else {
+            throw Error.fileNotFound
+        }
+        return videoURL
     }
 
-    public func delete(id: UUID) throws {
-        try FileManager.default.removeItem(at: self.draftDirectory(for: id))
+    public func loadAll<T: Decodable>(type: T.Type) throws -> [T] {
+        let videoDraftsFileURL = self.videoDraftsFileURL
+        guard self.fileManager.fileExists(atPath: videoDraftsFileURL.path) else { return [] }
+        let data = try Data(contentsOf: videoDraftsFileURL)
+        return try JSONDecoder().decode([T].self, from: data)
     }
 
-    public func loadAll() throws -> [VideoDraft] {
-        let folderURLs = try FileManager.default.contentsOfDirectory(at: self.baseDirectoryURL, includingPropertiesForKeys: nil)
-        return try folderURLs.compactMap { folderURL in
-            let id = UUID(uuidString: folderURL.lastPathComponent)
-            guard let id else { return nil }
-            let metadataURL = metadataURL(for: id)
-            let videoURL = videoURL(for: id)
-
-            guard FileManager.default.fileExists(atPath: metadataURL.path),
-                  FileManager.default.fileExists(atPath: videoURL.path) else {
-                return nil
-            }
-            let metadata = try Data(contentsOf: metadataURL)
-            let draft = try JSONDecoder().decode(VideoDraft.self, from: metadata)
-            return try VideoDraft(
-                id: draft.id,
-                createdAt: draft.createdAt,
-                duration: draft.duration,
-                thumbnailImageData: draft.thumbnailImageData,
-                videoData: Data(contentsOf: videoURL)
-            )
+    public func deleteVideo(fileName: String) throws {
+        let fileURL = self.videoFileURLPath(fileName: fileName)
+        if self.fileManager.fileExists(atPath: fileURL.path) {
+            try self.fileManager.removeItem(at: fileURL)
         }
     }
 
     public func deleteAll() throws {
-        let contents = try FileManager.default.contentsOfDirectory(at: self.baseDirectoryURL, includingPropertiesForKeys: nil)
-        for item in contents {
-            try FileManager.default.removeItem(at: item)
+        if self.fileManager.fileExists(atPath: self.baseDirectoryURL.path) {
+            try self.fileManager.removeItem(at: self.baseDirectoryURL)
         }
+        try self.fileManager.createDirectory(at: self.baseDirectoryURL, withIntermediateDirectories: true)
+    }
+
+    // MARK: - Private
+
+    public func updateBackup(_ items: [some Encodable]) throws {
+        let data = try JSONEncoder().encode(items)
+        try data.write(to: self.videoDraftsFileURL)
+    }
+
+    private func videoFileURLPath(fileName: String) -> URL {
+        self.baseDirectoryURL.appendingPathComponent(fileName + ".mp4")
     }
 }

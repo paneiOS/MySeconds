@@ -8,15 +8,11 @@
 import Foundation
 
 public protocol VideoDraftStoring {
-    func save(_ draft: VideoDraft) throws
-    func load(id: UUID) throws -> VideoDraft
-    func loadAll() throws -> [VideoDraft]
-    func delete(id: UUID) throws
-    func exists(id: UUID) -> Bool
+    var baseDirectoryURL: URL { get }
+    func saveVideoDraft(sourceURL: URL, fileName: String) throws -> URL
+    func loadVideo(fileName: String) throws -> URL
+    func loadAll<T: Decodable>(type: T.Type) throws -> [T]
+    func deleteVideo(fileName: String) throws
     func deleteAll() throws
-}
-
-enum VideoDraftStorageError: Error {
-    case directoryNotFound
-    case fileNotFound
+    func updateBackup<T: Encodable>(_ items: [T]) throws
 }

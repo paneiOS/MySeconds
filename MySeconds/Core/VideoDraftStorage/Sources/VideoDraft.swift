@@ -13,24 +13,21 @@ public struct VideoDraft: Codable, Equatable {
     public let id: UUID
     public let createdAt: Date
     public let duration: Double
-    public let thumbnailImageData: Data
-    public let videoData: Data
+    public let thumbnail: Data
 
     public init(
         id: UUID = .init(),
         createdAt: Date = .init(),
         duration: Double,
-        thumbnailImageData: Data,
-        videoData: Data
+        thumbnail: Data,
     ) {
         self.id = id
         self.createdAt = createdAt
         self.duration = duration
-        self.thumbnailImageData = thumbnailImageData
-        self.videoData = videoData
+        self.thumbnail = thumbnail
     }
 
-    var createdAtStr: String {
-        self.createdAt.formattedString(format: "yyyyMMdd_HHmmssSSS")
+    public var fileBaseName: String {
+        self.createdAt.formattedString(format: "yyyyMMdd_HHmmssSSS") + "_" + self.id.uuidString
     }
 }

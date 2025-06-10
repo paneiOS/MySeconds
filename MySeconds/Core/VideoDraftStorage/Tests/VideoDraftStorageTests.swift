@@ -23,6 +23,75 @@ final class VideoDraftStorageTests: XCTestCase {
         self.storage = nil
     }
 
+    func test_영상초안_저장하면_복사되어_URL이_반환된다() throws {
+        guard let storage else {
+            XCTFail("저장소가 생성되지 않았습니다.")
+            return
+        }
+
+        let videoData = Data([0x00, 0x11, 0x22])
+        let tempURL = try createTempVideoFile(with: videoData)
+        let fileName = "testVideo"
+
+        let savedURL = try storage.saveVideoDraft(sourceURL: tempURL, fileName: fileName)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: savedURL.path))
+    }
+
+    func test_파일명으로_영상로드하면_정상적인_URL이_반환된다() throws {
+        guard let storage else {
+            XCTFail("저장소가 생성되지 않았습니다.")
+            return
+        }
+
+        let videoData = Data([0x01, 0x02, 0x03])
+        let tempURL = try createTempVideoFile(with: videoData)
+        let fileName = "testLoad"
+
+        _ = try storage.saveVideoDraft(sourceURL: tempURL, fileName: fileName)
+        let loadedURL = try storage.loadVideo(fileName: fileName)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: loadedURL.path))
+    }
+
+    func test_파일명으로_영상삭제하면_파일이_제거된다() throws {
+        guard let storage else {
+            XCTFail("저장소가 생성되지 않았습니다.")
+            return
+        }
+
+        let videoData = Data([0xAA, 0xBB])
+        let tempURL = try createTempVideoFile(with: videoData)
+        let fileName = "testDelete"
+
+        _ = try storage.saveVideoDraft(sourceURL: tempURL, fileName: fileName)
+        try storage.deleteVideo(fileName: fileName)
+
+        XCTAssertThrowsError(try storage.loadVideo(fileName: fileName)) { error in
+            guard case VideoDraftStorage.Error.fileNotFound = error else {
+                XCTFail("예상된 에러가 아닙니다. error: \(error)")
+                return
+            }
+        }
+    }
+
+    func test_전체삭제하면_디렉토리의_모든파일이_삭제된다() throws {
+        guard let storage else {
+            XCTFail("저장소가 생성되지 않았습니다.")
+            return
+        }
+
+        let data1 = try createTempVideoFile(with: Data([0x11]))
+        let data2 = try createTempVideoFile(with: Data([0x22]))
+        _ = try storage.saveVideoDraft(sourceURL: data1, fileName: "one")
+        _ = try storage.saveVideoDraft(sourceURL: data2, fileName: "two")
+
+        try storage.deleteAll()
+
+        let allFiles = try FileManager.default.contentsOfDirectory(atPath: storage.baseDirectoryURL.path)
+        XCTAssertTrue(allFiles.isEmpty)
+    }
+}
+
+extension VideoDraftStorageTests {
     private func deleteTestDirectory() throws {
         guard let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
         let dir = base.appendingPathComponent(self.directoryName, isDirectory: true)
@@ -31,90 +100,10 @@ final class VideoDraftStorageTests: XCTestCase {
         }
     }
 
-    func test_임시영상_저장에_성공한다() throws {
-        guard let storage else {
-            XCTFail("저장소가 생성되지 않았습니다.")
-            return
-        }
-
-        let draft = VideoDraft(
-            id: UUID(),
-            createdAt: Date(),
-            duration: 3.0,
-            thumbnailImageData: Data([0x01, 0x02]),
-            videoData: Data([0x00, 0x11, 0x22])
-        )
-
-        XCTAssertNoThrow(try storage.save(draft))
-    }
-
-    func test_임시영상_불러오기에_성공한다() throws {
-        guard let storage else {
-            XCTFail("저장소가 생성되지 않았습니다.")
-            return
-        }
-
-        let draft = VideoDraft(
-            id: UUID(),
-            createdAt: Date(),
-            duration: 3.0,
-            thumbnailImageData: Data([0x01, 0x02]),
-            videoData: Data([0xAB, 0xCD])
-        )
-
-        try storage.save(draft)
-        let loadedDraft = try storage.load(id: draft.id)
-
-        XCTAssertEqual(loadedDraft.id, draft.id)
-        XCTAssertEqual(loadedDraft.thumbnailImageData, draft.thumbnailImageData)
-        XCTAssertEqual(loadedDraft.videoData, draft.videoData)
-    }
-
-    func test_임시영상_존재확인에_성공한다() throws {
-        guard let storage else {
-            XCTFail("저장소가 생성되지 않았습니다.")
-            return
-        }
-
-        let draft = VideoDraft(
-            id: UUID(),
-            createdAt: Date(),
-            duration: 3.0,
-            thumbnailImageData: Data(),
-            videoData: Data()
-        )
-
-        try storage.save(draft)
-        XCTAssertTrue(storage.exists(id: draft.id))
-    }
-
-    func test_전체삭제에_성공한다() throws {
-        guard let storage else {
-            XCTFail("저장소가 생성되지 않았습니다.")
-            return
-        }
-
-        let draft1 = VideoDraft(
-            id: UUID(),
-            createdAt: Date(),
-            duration: 2.0,
-            thumbnailImageData: Data([0x01]),
-            videoData: Data([0xFF])
-        )
-        let draft2 = VideoDraft(
-            id: UUID(),
-            createdAt: Date(),
-            duration: 3.0,
-            thumbnailImageData: Data([0x02]),
-            videoData: Data([0xEE])
-        )
-        try storage.save(draft1)
-        try storage.save(draft2)
-        XCTAssertTrue(storage.exists(id: draft1.id))
-        XCTAssertTrue(storage.exists(id: draft2.id))
-
-        try storage.deleteAll()
-        XCTAssertFalse(storage.exists(id: draft1.id))
-        XCTAssertFalse(storage.exists(id: draft2.id))
+    private func createTempVideoFile(with data: Data) throws -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent(UUID().uuidString).appendingPathExtension("mp4")
+        try data.write(to: fileURL)
+        return fileURL
     }
 }
