@@ -51,48 +51,48 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     }
 
     override func bind() {
-        self.viewDidLoadPublisher
-            .sink(receiveValue: { [weak self] _ in
+        self.bindViewEvents()
+        self.bindStateBindings()
+    }
+
+    private func bindViewEvents() {
+        let viewEvents: [(AnyPublisher<Void, Never>, () -> Void)] = [
+            (viewDidLoadPublisher, { [weak self] in
                 guard let self else { return }
                 self.listener?.initAlbum()
-            })
-            .store(in: &cancellables)
-
-        self.recordControlView.recordTapPublisher
-            .sink(receiveValue: { [weak self] in
+            }),
+            (self.recordControlView.recordTapPublisher, { [weak self] in
                 guard let self else { return }
                 self.listener?.didTapRecord()
-            })
-            .store(in: &cancellables)
-
-        self.recordControlView.flipTapPublisher
-            .sink(receiveValue: { [weak self] in
+            }),
+            (self.recordControlView.flipTapPublisher, { [weak self] in
                 guard let self else { return }
                 self.listener?.didTapFlip()
-            })
-            .store(in: &cancellables)
-
-        self.recordControlView.ratioTapPublisher
-            .sink(receiveValue: { [weak self] in
+            }),
+            (self.recordControlView.ratioTapPublisher, { [weak self] in
                 guard let self else { return }
                 self.listener?.didTapRatio()
-            })
-            .store(in: &cancellables)
-
-        self.recordControlView.timerTapPublisher
-            .sink(receiveValue: { [weak self] in
+            }),
+            (self.recordControlView.timerTapPublisher, { [weak self] in
                 guard let self else { return }
                 self.listener?.didTapTimer()
-            })
-            .store(in: &cancellables)
-
-        self.recordControlView.albumTapPublisher
-            .sink(receiveValue: { [weak self] in
+            }),
+            (self.recordControlView.albumTapPublisher, { [weak self] in
                 guard let self else { return }
                 self.listener?.didTapAlbum()
             })
-            .store(in: &cancellables)
+        ]
 
+        for (publisher, action) in viewEvents {
+            publisher
+                .sink(receiveValue: { _ in
+                    action()
+                })
+                .store(in: &cancellables)
+        }
+    }
+
+    private func bindStateBindings() {
         self.listener?.timerButtonTextPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] text in
@@ -127,9 +127,9 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
         self.listener?.albumPublisher
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] thumb, count in
+            .sink(receiveValue: { [weak self] thumbnail, count in
                 guard let self else { return }
-                self.recordControlView.updateAlbum(thumbnail: thumb, count: count)
+                self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
             })
             .store(in: &cancellables)
     }
