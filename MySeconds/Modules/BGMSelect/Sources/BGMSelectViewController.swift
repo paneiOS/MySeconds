@@ -48,7 +48,7 @@ final class BGMSelectViewController: BaseBottomSheetViewController, BGMSelectPre
     // MARK: - Properties
 
     weak var listener: BGMSelectPresentableListener?
-    var bgmList: [BGM] = []
+    private var bgmList: [BGM] = []
     private var playingIndexPath: IndexPath?
 
     // MARK: - Override func
@@ -61,7 +61,6 @@ final class BGMSelectViewController: BaseBottomSheetViewController, BGMSelectPre
             font: .systemFont(ofSize: 20, weight: .bold),
             letterSpacingPercentage: -0.45
         )
-
         self.sheetContainerView.addSubview(self.collectionView)
         self.collectionView.snp.makeConstraints {
             $0.edges.equalToSuperview()
