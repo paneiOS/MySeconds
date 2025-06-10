@@ -11,6 +11,7 @@ import UIKit
 import ModernRIBs
 
 import ResourceKit
+import SharedModels
 import VideoCreation
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -27,11 +28,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        let videoCreationBuilder = VideoCreationBuilder(
-            dependency: .init(
-                dependency: MockVideoCreationDependency()
-            )
-        )
+        let videoCreationBuilder = VideoCreationBuilder(dependency: MockVideoCreationDependency())
         let videoCreationRouter = videoCreationBuilder.build(withListener: self.mockListener)
         self.router = videoCreationRouter
 
@@ -110,11 +107,43 @@ extension MockVideoCreationDependency {
         return VideoClip(fileName: filename, duration: durationInSeconds)
     }
 
-    func makeIntroClip() -> CoverClip {
-        .init(title: "인트로", date: Date(), type: .intro)
+    func makeIntroClip() -> VideoCoverClip {
+        .init(
+            title: .makeAttributedString(
+                text: "샘플 인트로",
+                font: .systemFont(ofSize: 12.0, weight: .semibold),
+                textColor: .white,
+                letterSpacingPercentage: -0.43,
+                alignment: .center
+            ),
+            description: .makeAttributedString(
+                text: Date().dateToString,
+                font: .systemFont(ofSize: 10.0, weight: .semibold),
+                textColor: .white,
+                letterSpacingPercentage: -0.43,
+                alignment: .center
+            ),
+            type: .intro
+        )
     }
 
-    func makeOutroClip() -> CoverClip {
-        .init(title: "인트로", date: Date(), type: .outro)
+    func makeOutroClip() -> VideoCoverClip {
+        .init(
+            title: .makeAttributedString(
+                text: "샘플 아웃트로",
+                font: .systemFont(ofSize: 12.0, weight: .semibold),
+                textColor: .white,
+                letterSpacingPercentage: -0.43,
+                alignment: .center
+            ),
+            description: .makeAttributedString(
+                text: Date().dateToString,
+                font: .systemFont(ofSize: 10.0, weight: .semibold),
+                textColor: .white,
+                letterSpacingPercentage: -0.43,
+                alignment: .center
+            ),
+            type: .outro
+        )
     }
 }

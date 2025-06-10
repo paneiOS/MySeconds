@@ -16,7 +16,7 @@ protocol VideoRecordInteractable: Interactable {
 
 protocol VideoRecordViewControllable: ViewControllable {}
 
-final class VideoRecordRouter: BaseRouter<VideoRecordInteractor, VideoRecordViewController>, VideoRecordRouting {
+final class VideoRecordRouter: ViewableRouter<VideoRecordInteractor, VideoRecordViewController>, VideoRecordRouting {
 
     override init(interactor: VideoRecordInteractor, viewController: VideoRecordViewController) {
         super.init(interactor: interactor, viewController: viewController)

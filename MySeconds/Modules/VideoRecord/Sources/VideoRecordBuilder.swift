@@ -34,7 +34,7 @@ public protocol VideoRecordBuildable: Buildable {
     func build(withListener listener: VideoRecordListener) -> VideoRecordRouting
 }
 
-public final class VideoRecordBuilder: BaseBuilder<VideoRecordComponent>, VideoRecordBuildable {
+public final class VideoRecordBuilder: Builder<VideoRecordComponent>, VideoRecordBuildable {
 
     override public init(dependency: VideoRecordComponent) {
         super.init(dependency: dependency)
