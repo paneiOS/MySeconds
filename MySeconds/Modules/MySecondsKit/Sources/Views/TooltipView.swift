@@ -124,11 +124,13 @@ public final class TooltipView: UIView {
                 delay: 0,
                 usingSpringWithDamping: 0.7,
                 initialSpringVelocity: 0.8,
-                options: [.curveEaseOut]
-            ) {
-                self.alpha = 1
-                self.transform = .identity
-            }
+                options: [.curveEaseOut],
+                animations: { [weak self] in
+                    guard let self else { return }
+                    self.alpha = 1
+                    self.transform = .identity
+                }
+            )
         } else {
             self.alpha = 1
             self.transform = .identity
@@ -137,25 +139,24 @@ public final class TooltipView: UIView {
 
     public func hide(_ parentView: UIView, animated: Bool = true) {
         guard !isHidden else { return }
-        parentView.removeFromSuperview()
-
-        let completion: (Bool) -> Void = { _ in
-            self.isHidden = true
-            self.transform = .identity
-            self.alpha = 1
-        }
 
         if animated {
             UIView.animate(
                 withDuration: 0.2,
-                animations: {
+                animations: { [weak self] in
+                    guard let self else { return }
                     self.alpha = 0
                     self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
                 },
-                completion: completion
+                completion: { [weak self] _ in
+                    guard let self else { return }
+                    self.removeFromSuperview()
+                }
             )
         } else {
-            completion(true)
+            self.isHidden = true
+            self.transform = .identity
+            self.alpha = 1
         }
     }
 }
