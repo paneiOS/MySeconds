@@ -21,13 +21,9 @@ public final class TooltipView: UIView {
 
     private let bubbleLayer = CAShapeLayer()
 
-    /// 주어진 텍스트로 툴팁을 초기화.
-    /// - Parameter text: 말풍선 안에 표시할 메시지
-    public init(text: String) {
+    override public init(frame: CGRect) {
         super.init(frame: .zero)
         self.commonInit()
-        self.textLabel.text = text
-        self.isHidden = true
     }
 
     @available(*, unavailable)
@@ -101,5 +97,65 @@ public final class TooltipView: UIView {
 
         self.bubbleLayer.path = path.cgPath
         self.bubbleLayer.fillColor = UIColor.neutral800.cgColor
+    }
+
+    public func show(_ parentView: UIView, standardView: UIView, text: String, animated: Bool = false) {
+        parentView.addSubview(self)
+
+        self.snp.makeConstraints {
+            $0.centerX.equalTo(standardView)
+            $0.bottom.equalTo(standardView.snp.top).offset(-8)
+        }
+
+        self.textLabel.text = text
+
+        self.bringSubviewToFront(self)
+        self.setNeedsLayout()
+        self.layoutIfNeeded()
+
+        guard isHidden else { return }
+        self.alpha = 0
+        self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+        self.isHidden = false
+
+        if animated {
+            UIView.animate(
+                withDuration: 0.25,
+                delay: 0,
+                usingSpringWithDamping: 0.7,
+                initialSpringVelocity: 0.8,
+                options: [.curveEaseOut]
+            ) {
+                self.alpha = 1
+                self.transform = .identity
+            }
+        } else {
+            self.alpha = 1
+            self.transform = .identity
+        }
+    }
+
+    public func hide(_ parentView: UIView, animated: Bool = true) {
+        guard !isHidden else { return }
+        parentView.removeFromSuperview()
+
+        let completion: (Bool) -> Void = { _ in
+            self.isHidden = true
+            self.transform = .identity
+            self.alpha = 1
+        }
+
+        if animated {
+            UIView.animate(
+                withDuration: 0.2,
+                animations: {
+                    self.alpha = 0
+                    self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+                },
+                completion: completion
+            )
+        } else {
+            completion(true)
+        }
     }
 }

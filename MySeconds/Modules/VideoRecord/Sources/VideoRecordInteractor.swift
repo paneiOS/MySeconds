@@ -108,9 +108,7 @@ extension VideoRecordInteractor {
         }
     }
 
-    func didTapFlip() {
-        
-    }
+    func didTapFlip() {}
 
     func didTapRatio() {
         let nextIndex = (currentRatioIndex + 1) % self.videoRatios.count
@@ -125,7 +123,7 @@ extension VideoRecordInteractor {
         } else {
             self.maxRecordingTime = self.durationOptions.first ?? self.maxRecordingTime
         }
-        
+
         let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
 
         self.presenter.timerButtonTextPublisher.send(maxRecordingTime)

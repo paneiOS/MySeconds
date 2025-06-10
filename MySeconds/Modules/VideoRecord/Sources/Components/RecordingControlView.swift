@@ -77,12 +77,7 @@ final class RecordControlView: UIView {
         return label
     }()
 
-    private let tooltipView: TooltipView = {
-        let view = TooltipView(
-            text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
-        )
-        return view
-    }()
+    private let tooltipView = TooltipView()
 
     private let albumStack: UIStackView = {
         let stack = UIStackView()
@@ -119,7 +114,7 @@ final class RecordControlView: UIView {
         }
     }
 
-    init(count maxAlbumCount: Int) {
+    public init(count maxAlbumCount: Int) {
         self.maxAlbumCount = maxAlbumCount
 
         super.init(frame: .zero)
@@ -159,7 +154,7 @@ final class RecordControlView: UIView {
             self.buttonStack.addArrangedSubview(item)
         }
 
-        addSubviews(self.albumStack, self.buttonStack, self.recordButton, self.tooltipView)
+        self.addSubviews(self.albumStack, self.buttonStack, self.recordButton)
 
         self.recordButton.snp.makeConstraints {
             $0.center.equalToSuperview()
@@ -176,11 +171,6 @@ final class RecordControlView: UIView {
         }
 
         self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
-
-        self.tooltipView.snp.makeConstraints {
-            $0.centerX.equalTo(self.recordButton)
-            $0.bottom.equalTo(self.recordButton.snp.top).offset(-8)
-        }
     }
 
     private func bind() {
@@ -305,8 +295,8 @@ final class RecordControlView: UIView {
             self.recordButton.alpha = 0.5
 
             self.progressLayer?.opacity = 0.5
-            self.tooltipView.isHidden = false
-            bringSubviewToFront(self.tooltipView)
+
+            self.tooltipView.show(self, standardView: self.recordButton, text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요")
         } else {
             self.buttonStack.isUserInteractionEnabled = true
             self.buttonStack.alpha = 1.0
@@ -314,7 +304,8 @@ final class RecordControlView: UIView {
             self.recordButton.alpha = 1.0
 
             self.progressLayer?.opacity = 1.0
-            self.tooltipView.isHidden = true
+
+            self.tooltipView.hide(self)
         }
     }
 }
