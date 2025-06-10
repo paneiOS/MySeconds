@@ -8,6 +8,7 @@
 import UIKit
 
 import ResourceKit
+import SharedModels
 import UtilsKit
 
 final class CoverClipCell: UICollectionViewCell {
@@ -59,7 +60,7 @@ final class CoverClipCell: UICollectionViewCell {
         }
     }
 
-    func drawCell(data: CoverClip) {
+    func drawCell(data: VideoCoverClip) {
         self.label.attributedText = .makeAttributedString(
             text: data.type.rawValue,
             font: .systemFont(ofSize: 12, weight: .medium),

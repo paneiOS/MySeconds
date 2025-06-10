@@ -25,17 +25,11 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        // TODO: - 모듈이름소문자로 수정 필요
-        let {{ name }}Builder = {{ name }}Builder(
-            dependency: .init(
-                dependency: Mock{{ name }}Dependency()
-            )
-        )
-        // TODO: - 모듈이름소문자로 수정 필요
-        let {{ name }}Router = {{ name }}Builder.build(withListener: self.mockListener)
-        self.router = {{ name }}Router
+        let builder = {{ name }}Builder(dependency: Mock{{ name }}Dependency())
+        let router = builder.build(withListener: self.mockListener)
+        self.router = router
 
-        self.window?.rootViewController = {{ name }}Router.viewControllable.uiviewController
+        self.window?.rootViewController = router.viewControllable.uiviewController
         self.window?.makeKeyAndVisible()
     }
 }

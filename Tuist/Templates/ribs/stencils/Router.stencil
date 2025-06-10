@@ -16,10 +16,16 @@ protocol {{ name }}Interactable: Interactable {
 
 protocol {{ name }}ViewControllable: ViewControllable {}
 
-final class {{ name }}Router: BaseRouter<{{ name }}Interactor, {{ name }}ViewController>, {{ name }}Routing {
+final class {{ name }}Router: ViewableRouter<{{ name }}Interactor, {{ name }}ViewController>, {{ name }}Routing {
 
     override init(interactor: {{ name }}Interactor, viewController: {{ name }}ViewController) {
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
+    }
+
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
     }
 }

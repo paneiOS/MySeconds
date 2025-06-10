@@ -7,7 +7,8 @@
 
 import ModernRIBs
 
-import BaseRIBsKit
+import CoverClipCreation
+import SharedModels
 
 public protocol VideoCreationDependency: Dependency {
     var clips: [CompositionClip] { get }
@@ -17,7 +18,11 @@ public final class VideoCreationComponent: Component<VideoCreationDependency> {
     public var clips: [CompositionClip] { dependency.clips }
 }
 
-extension VideoCreationComponent: VideoCreationDependency {}
+extension VideoCreationComponent: CoverClipCreationDependency {
+    public var coverClipCreationBuilder: CoverClipCreationBuildable {
+        CoverClipCreationBuilder(dependency: self)
+    }
+}
 
 // MARK: - Builder
 
@@ -25,9 +30,9 @@ public protocol VideoCreationBuildable: Buildable {
     func build(withListener listener: VideoCreationListener) -> VideoCreationRouting
 }
 
-public final class VideoCreationBuilder: BaseBuilder<VideoCreationComponent>, VideoCreationBuildable {
+public final class VideoCreationBuilder: Builder<VideoCreationDependency>, VideoCreationBuildable {
 
-    override public init(dependency: VideoCreationComponent) {
+    override public init(dependency: VideoCreationDependency) {
         super.init(dependency: dependency)
     }
 
@@ -36,6 +41,6 @@ public final class VideoCreationBuilder: BaseBuilder<VideoCreationComponent>, Vi
         let viewController = VideoCreationViewController()
         let interactor = VideoCreationInteractor(presenter: viewController, component: component)
         interactor.listener = listener
-        return VideoCreationRouter(interactor: interactor, viewController: viewController)
+        return VideoCreationRouter(interactor: interactor, viewController: viewController, component: component)
     }
 }

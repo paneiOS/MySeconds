@@ -7,19 +7,49 @@
 
 import ModernRIBs
 
-import BaseRIBsKit
+import CoverClipCreation
+import SharedModels
 
-protocol VideoCreationInteractable: Interactable {
+protocol VideoCreationInteractable: Interactable, CoverClipCreationListener {
     var router: VideoCreationRouting? { get set }
     var listener: VideoCreationListener? { get set }
 }
 
 protocol VideoCreationViewControllable: ViewControllable {}
 
-final class VideoCreationRouter: BaseRouter<VideoCreationInteractor, VideoCreationViewController>, VideoCreationRouting {
+final class VideoCreationRouter: ViewableRouter<VideoCreationInteractable, VideoCreationViewController>, VideoCreationRouting {
+    private let component: VideoCreationComponent
+    private var coverClipCreationRouter: CoverClipCreationRouting?
 
-    override init(interactor: VideoCreationInteractor, viewController: VideoCreationViewController) {
+    init(
+        interactor: VideoCreationInteractable,
+        viewController: VideoCreationViewController,
+        component: VideoCreationComponent
+    ) {
+        self.component = component
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
+    }
+
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
+    }
+
+    func routeToCoverclipCreation(with videoCoverClip: VideoCoverClip) {
+        guard self.coverClipCreationRouter == nil else { return }
+        let router = self.component.coverClipCreationBuilder.build(withListener: self.interactor, videoCoverClip: videoCoverClip)
+        self.coverClipCreationRouter = router
+        router.viewControllable.uiviewController.modalPresentationStyle = .overFullScreen
+        self.viewControllable.present(child: router.viewControllable, animated: false)
+        self.attachChild(router)
+    }
+
+    func closeCoverClipCreation() {
+        guard let router = self.coverClipCreationRouter else { return }
+        router.viewControllable.dismiss(animated: false)
+        self.detachChild(router)
+        self.coverClipCreationRouter = nil
     }
 }

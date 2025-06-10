@@ -14,7 +14,7 @@ protocol RootDependency: Dependency {}
 final class RootComponent: Component<RootDependency>, LoginDependency {
 
     var loginBuilder: LoginBuildable {
-        LoginBuilder(dependency: .init(dependency: EmptyComponent()))
+        LoginBuilder(dependency: EmptyComponent())
     }
 }
 

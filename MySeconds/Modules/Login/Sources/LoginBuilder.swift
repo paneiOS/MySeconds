@@ -7,8 +7,6 @@
 
 import ModernRIBs
 
-import BaseRIBsKit
-
 public protocol LoginDependency: Dependency {}
 
 public final class LoginComponent: Component<EmptyComponent> {}
@@ -19,9 +17,9 @@ public protocol LoginBuildable: Buildable {
     func build(withListener listener: LoginListener) -> LoginRouting
 }
 
-public final class LoginBuilder: BaseBuilder<LoginComponent>, LoginBuildable {
+public final class LoginBuilder: Builder<EmptyComponent>, LoginBuildable {
 
-    override public init(dependency: LoginComponent) {
+    override public init(dependency: EmptyComponent) {
         super.init(dependency: dependency)
     }
 

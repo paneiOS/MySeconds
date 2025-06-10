@@ -12,14 +12,17 @@ import UIKit
 import SnapKit
 
 import BaseRIBsKit
+import CoverClipCreation
 import MySecondsKit
 import ResourceKit
+import SharedModels
 import UtilsKit
 
 protocol VideoCreationPresentableListener: AnyObject {
     func initClips()
     func update(clips: [CompositionClip])
     func delete(clip: CompositionClip)
+    func didSelectCoverClip(clip: VideoCoverClip)
     var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
 }
 
@@ -366,9 +369,8 @@ extension VideoCreationViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let clip = clips[safe: indexPath.item] else { return }
         switch clip {
-        case .cover:
-            // TODO: - 구현 예정
-            print("인트로/아웃트로 영상 제작")
+        case let .cover(coverClip):
+            self.listener?.didSelectCoverClip(clip: coverClip)
         case let .video(videoClip):
             let player = AVPlayer(url: videoClip.url)
             self.pendingPlayer = player

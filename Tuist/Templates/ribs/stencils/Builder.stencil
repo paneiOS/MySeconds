@@ -13,18 +13,22 @@ public protocol {{ name }}Dependency: Dependency {}
 
 public final class {{ name }}Component: Component<{{ name }}Dependency> {}
 
-extension {{ name }}Component: {{ name }}Dependency {}
-
 // MARK: - Builder
 
 public protocol {{ name }}Buildable: Buildable {
     func build(withListener listener: {{ name }}Listener) -> {{ name }}Routing
 }
 
-public final class {{ name }}Builder: BaseBuilder<{{ name }}Component>, {{ name }}Buildable {
+public final class {{ name }}Builder: Builder<{{ name }}Dependency>, {{ name }}Buildable {
 
-    override public init(dependency: {{ name }}Component) {
+    override public init(dependency: {{ name }}Dependency) {
         super.init(dependency: dependency)
+    }
+
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
     }
 
     public func build(withListener listener: {{ name }}Listener) -> {{ name }}Routing {

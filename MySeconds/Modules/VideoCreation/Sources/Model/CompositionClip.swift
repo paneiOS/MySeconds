@@ -6,8 +6,9 @@
 //
 
 import Foundation
+import SharedModels
 
 public enum CompositionClip: Hashable {
-    case cover(CoverClip)
+    case cover(VideoCoverClip)
     case video(VideoClip)
 }
