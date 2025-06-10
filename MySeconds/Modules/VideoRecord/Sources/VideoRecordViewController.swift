@@ -19,9 +19,8 @@ protocol VideoRecordPresentableListener: AnyObject {
     var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
+
     var albumPublisher: AnyPublisher<(UIImage?, Int), Never> { get }
-    var albumTapPublisher: AnyPublisher<Void, Never> { get }
-    var flipTapPublisher: AnyPublisher<Void, Never> { get }
 
     func initAlbum()
     func didTapRecord()
@@ -133,26 +132,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.recordControlView.updateAlbum(thumbnail: thumb, count: count)
             })
             .store(in: &cancellables)
-
-        self.listener?.albumTapPublisher
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
-                print("Tap Album")
-            })
-            .store(in: &cancellables)
-
-        self.listener?.flipTapPublisher
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
-                print("Tap Flip")
-            })
-            .store(in: &cancellables)
-    }
-
-    func handleFlip() {
-        print("카메라 플립 탭")
     }
 
     func navigationConfig() -> NavigationConfig {

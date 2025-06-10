@@ -49,16 +49,6 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.albumSubject.eraseToAnyPublisher()
     }
 
-    private let albumTapSubject = PassthroughSubject<Void, Never>()
-    public var albumTapPublisher: AnyPublisher<Void, Never> {
-        self.albumTapSubject.eraseToAnyPublisher()
-    }
-
-    private let flipTapSubject = PassthroughSubject<Void, Never>()
-    public var flipTapPublisher: AnyPublisher<Void, Never> {
-        self.flipTapSubject.eraseToAnyPublisher()
-    }
-
     private let thumbnailSubject = CurrentValueSubject<UIImage?, Never>(nil)
     private let albumCountSubject = CurrentValueSubject<Int, Never>(0)
 
@@ -131,7 +121,7 @@ extension VideoRecordInteractor {
     }
 
     func didTapFlip() {
-        self.flipTapSubject.send()
+        print("Tap Flip")
     }
 
     func didTapRatio() {
@@ -155,7 +145,7 @@ extension VideoRecordInteractor {
     }
 
     func didTapAlbum() {
-        self.albumTapSubject.send()
+        print("Tap Album")
     }
 
     // TODO: 샘플앱을 위한 테스트 메서든 추후 수정 필요
