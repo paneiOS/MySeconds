@@ -34,7 +34,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.ratioButtonTextSubject.eraseToAnyPublisher()
     }
 
-    private let isRecordingSubject = PassthroughSubject<Bool, Never>()
+    private let isRecordingSubject = CurrentValueSubject<Bool, Never>(false)
     public var isRecordingPublisher: AnyPublisher<Bool, Never> {
         self.isRecordingSubject.eraseToAnyPublisher()
     }
@@ -66,6 +66,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     private var currentRatioIndex: Int = 0
     private var maxRecordingTime: TimeInterval = 1
     private let durationOptions: [TimeInterval] = [1, 2, 3]
+    private var recordWorkItem: DispatchWorkItem?
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -111,14 +112,21 @@ extension VideoRecordInteractor {
 
 extension VideoRecordInteractor {
     func didTapRecord() {
-        self.recordDurationSubject.send(self.maxRecordingTime)
-        self.isRecordingSubject.send(true)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + self.maxRecordingTime) { [weak self] in
-            guard let self else { return }
-
-            self.recordDidFinish()
+        if self.isRecordingSubject.value {
+            self.recordWorkItem?.cancel()
             self.isRecordingSubject.send(false)
+            self.recordDurationSubject.send(0)
+        } else {
+            self.recordDurationSubject.send(self.maxRecordingTime)
+            self.isRecordingSubject.send(true)
+
+            let work = DispatchWorkItem { [weak self] in
+                guard let self else { return }
+                self.recordDidFinish()
+                self.isRecordingSubject.send(false)
+            }
+            self.recordWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + self.maxRecordingTime, execute: work)
         }
     }
 
