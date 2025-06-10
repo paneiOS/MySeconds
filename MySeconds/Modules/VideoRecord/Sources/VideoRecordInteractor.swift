@@ -16,15 +16,6 @@ public protocol VideoRecordRouting: ViewableRouting {}
 
 protocol VideoRecordPresentable: Presentable {
     var listener: VideoRecordPresentableListener? { get set }
-
-    var timerButtonTextPublisher: PassthroughSubject<String, Never> { get }
-    var ratioButtonTextPublisher: PassthroughSubject<String, Never> { get }
-    var isRecordingPublisher: PassthroughSubject<Bool, Never> { get }
-    var recordDurationPublisher: PassthroughSubject<TimeInterval, Never> { get }
-    var albumPublisher: PassthroughSubject<(UIImage?, Int), Never> { get }
-
-    func handleFlip()
-    func handleAlbumTap()
 }
 
 public protocol VideoRecordListener: AnyObject {}
@@ -33,20 +24,46 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 
     private let component: VideoRecordComponent
 
+    private let timerButtonTextSubject = PassthroughSubject<String, Never>()
+    public var timerButtonTextPublisher: AnyPublisher<String, Never> {
+        self.timerButtonTextSubject.eraseToAnyPublisher()
+    }
+
+    private let ratioButtonTextSubject = PassthroughSubject<String, Never>()
+    public var ratioButtonTextPublisher: AnyPublisher<String, Never> {
+        self.ratioButtonTextSubject.eraseToAnyPublisher()
+    }
+
+    private let isRecordingSubject = PassthroughSubject<Bool, Never>()
+    public var isRecordingPublisher: AnyPublisher<Bool, Never> {
+        self.isRecordingSubject.eraseToAnyPublisher()
+    }
+
+    private let recordDurationSubject = PassthroughSubject<TimeInterval, Never>()
+    public var recordDurationPublisher: AnyPublisher<TimeInterval, Never> {
+        self.recordDurationSubject.eraseToAnyPublisher()
+    }
+
+    private let albumSubject = PassthroughSubject<(UIImage?, Int), Never>()
+    public var albumPublisher: AnyPublisher<(UIImage?, Int), Never> {
+        self.albumSubject.eraseToAnyPublisher()
+    }
+
+    private let albumTapSubject = PassthroughSubject<Void, Never>()
+    public var albumTapPublisher: AnyPublisher<Void, Never> {
+        self.albumTapSubject.eraseToAnyPublisher()
+    }
+
+    private let flipTapSubject = PassthroughSubject<Void, Never>()
+    public var flipTapPublisher: AnyPublisher<Void, Never> {
+        self.flipTapSubject.eraseToAnyPublisher()
+    }
+
     private let thumbnailSubject = CurrentValueSubject<UIImage?, Never>(nil)
     private let albumCountSubject = CurrentValueSubject<Int, Never>(0)
 
-    public var thumbnailPublisher: AnyPublisher<UIImage?, Never> {
-        self.thumbnailSubject.eraseToAnyPublisher()
-    }
-
-    public var albumCountPublisher: AnyPublisher<Int, Never> {
-        self.albumCountSubject.eraseToAnyPublisher()
-    }
-
     private let videoRatios: [String] = ["1:1", "4:3"]
     private var currentRatioIndex: Int = 0
-
     private var maxRecordingTime: TimeInterval = 1
     private let durationOptions: [TimeInterval] = [1, 2, 3]
 
@@ -75,7 +92,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] thumbnail, count in
                 guard let self else { return }
-                self.presenter.albumPublisher.send((thumbnail, count))
+                self.albumSubject.send((thumbnail, count))
             })
             .store(in: &self.cancellables)
     }
@@ -83,38 +100,38 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 
 extension VideoRecordInteractor {
     func initAlbum() {
-        let thumb = self.component.initialAlbumThumbnail
-        let cnt = self.component.initialAlbumCount
-
-        self.thumbnailSubject.send(thumb)
-        self.albumCountSubject.send(cnt)
+        self.thumbnailSubject.send(self.component.initialAlbumThumbnail)
+        self.albumCountSubject.send(self.component.initialAlbumCount)
 
         let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
-        self.presenter.timerButtonTextPublisher.send(maxRecordingTime)
-        self.presenter.ratioButtonTextPublisher.send(self.videoRatios[self.currentRatioIndex])
+        self.timerButtonTextSubject.send(maxRecordingTime)
+        self.ratioButtonTextSubject.send(self.videoRatios[self.currentRatioIndex])
     }
 }
 
 extension VideoRecordInteractor {
     func didTapRecord() {
-        self.presenter.recordDurationPublisher.send(self.maxRecordingTime)
-        self.presenter.isRecordingPublisher.send(true)
+        self.recordDurationSubject.send(self.maxRecordingTime)
+        self.isRecordingSubject.send(true)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + self.maxRecordingTime) { [weak self] in
             guard let self else { return }
 
             self.recordDidFinish()
-            self.presenter.isRecordingPublisher.send(false)
+            self.isRecordingSubject.send(false)
         }
     }
 
-    func didTapFlip() {}
+    func didTapFlip() {
+        self.flipTapSubject.send()
+    }
 
     func didTapRatio() {
         let nextIndex = (currentRatioIndex + 1) % self.videoRatios.count
         self.currentRatioIndex = nextIndex
         let newRatioText = self.videoRatios[nextIndex]
-        self.presenter.ratioButtonTextPublisher.send(newRatioText)
+
+        self.ratioButtonTextSubject.send(newRatioText)
     }
 
     func didTapTimer() {
@@ -126,17 +143,17 @@ extension VideoRecordInteractor {
 
         let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
 
-        self.presenter.timerButtonTextPublisher.send(maxRecordingTime)
+        self.timerButtonTextSubject.send(maxRecordingTime)
     }
 
     func didTapAlbum() {
-        self.presenter.handleAlbumTap()
+        self.albumTapSubject.send()
     }
 
     // TODO: 샘플앱을 위한 테스트 메서든 추후 수정 필요
     func recordDidFinish() {
-        let currentCount = self.albumCountSubject.value
-        let newCount = currentCount + 1
+
+        let newCount = self.albumCountSubject.value + 1
         self.albumCountSubject.send(newCount)
 
         let colorIndex = newCount % self.sampleColors.count

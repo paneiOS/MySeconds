@@ -15,8 +15,13 @@ import MySecondsKit
 import ResourceKit
 
 protocol VideoRecordPresentableListener: AnyObject {
-    var thumbnailPublisher: AnyPublisher<UIImage?, Never> { get }
-    var albumCountPublisher: AnyPublisher<Int, Never> { get }
+    var timerButtonTextPublisher: AnyPublisher<String, Never> { get }
+    var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
+    var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
+    var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
+    var albumPublisher: AnyPublisher<(UIImage?, Int), Never> { get }
+    var albumTapPublisher: AnyPublisher<Void, Never> { get }
+    var flipTapPublisher: AnyPublisher<Void, Never> { get }
 
     func initAlbum()
     func didTapRecord()
@@ -32,12 +37,6 @@ protocol VideoRecordPresentableListener: AnyObject {
 final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
 
     weak var listener: VideoRecordPresentableListener?
-
-    let timerButtonTextPublisher = PassthroughSubject<String, Never>()
-    let ratioButtonTextPublisher = PassthroughSubject<String, Never>()
-    let isRecordingPublisher = PassthroughSubject<Bool, Never>()
-    let recordDurationPublisher = PassthroughSubject<TimeInterval, Never>()
-    let albumPublisher = PassthroughSubject<(UIImage?, Int), Never>()
 
     private let recordControlView = RecordControlView(count: 15)
 
@@ -95,7 +94,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.timerButtonTextPublisher
+        self.listener?.timerButtonTextPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] text in
                 guard let self else { return }
@@ -103,7 +102,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.ratioButtonTextPublisher
+        self.listener?.ratioButtonTextPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] text in
                 guard let self else { return }
@@ -111,7 +110,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.isRecordingPublisher
+        self.listener?.isRecordingPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] isRecording in
                 guard let self else { return }
@@ -119,7 +118,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.recordDurationPublisher
+        self.listener?.recordDurationPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] duration in
                 guard let self else { return }
@@ -127,21 +126,33 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.albumPublisher
+        self.listener?.albumPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] thumb, count in
                 guard let self else { return }
                 self.recordControlView.updateAlbum(thumbnail: thumb, count: count)
             })
             .store(in: &cancellables)
+
+        self.listener?.albumTapPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                print("Tap Album")
+            })
+            .store(in: &cancellables)
+
+        self.listener?.flipTapPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                print("Tap Flip")
+            })
+            .store(in: &cancellables)
     }
 
     func handleFlip() {
         print("카메라 플립 탭")
-    }
-
-    func handleAlbumTap() {
-        print("앨범 버튼 탭")
     }
 
     func navigationConfig() -> NavigationConfig {
