@@ -104,7 +104,7 @@ final class BGMSelectInteractor: PresentableInteractor<BGMSelectPresentable>, BG
                       let fileName = url.lastPathComponent.components(separatedBy: ".").first else {
                     return nil
                 }
-                return BGM(fileName: fileName, bpm: 90, duratuion: duration, category: "발랄함")
+                return BGM(fileName: fileName, bpm: 90, duration: duration, category: "발랄함")
             }
         }
         .asyncCompactMap { await $0.value }

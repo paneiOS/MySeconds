@@ -10,7 +10,7 @@ import Foundation
 public struct BGM {
     public let fileName: String
     public let bpm: Int
-    public let duratuion: TimeInterval
+    public let duration: TimeInterval
     public let category: String
 
     var bpmStr: String {
@@ -18,6 +18,6 @@ public struct BGM {
     }
 
     var durationStr: String {
-        self.duratuion.formattedTime
+        self.duration.formattedTime
     }
 }
