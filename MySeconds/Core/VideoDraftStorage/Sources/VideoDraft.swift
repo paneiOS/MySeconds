@@ -19,7 +19,7 @@ public struct VideoDraft: Codable, Equatable {
         id: UUID = .init(),
         createdAt: Date = .init(),
         duration: Double,
-        thumbnail: Data,
+        thumbnail: Data
     ) {
         self.id = id
         self.createdAt = createdAt
