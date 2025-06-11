@@ -68,12 +68,12 @@ public final class VideoDraftStorage: VideoDraftStoring {
         try self.fileManager.createDirectory(at: self.baseDirectoryURL, withIntermediateDirectories: true)
     }
 
-    // MARK: - Private
-
     public func updateBackup(_ items: [some Encodable]) throws {
         let data = try JSONEncoder().encode(items)
-        try data.write(to: self.videoDraftsFileURL)
+        try data.write(to: self.videoDraftsFileURL, options: .atomic)
     }
+    
+    // MARK: - Private
 
     private func videoFileURLPath(fileName: String) -> URL {
         self.baseDirectoryURL.appendingPathComponent(fileName + ".mp4")

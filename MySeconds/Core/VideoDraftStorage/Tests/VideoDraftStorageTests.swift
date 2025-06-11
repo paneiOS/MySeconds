@@ -103,7 +103,7 @@ extension VideoDraftStorageTests {
     private func createTempVideoFile(with data: Data) throws -> URL {
         let tempDir = FileManager.default.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent(UUID().uuidString).appendingPathExtension("mp4")
-        try data.write(to: fileURL)
+        try data.write(to: fileURL, options: .atomic)
         return fileURL
     }
 }
