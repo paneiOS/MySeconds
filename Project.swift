@@ -9,6 +9,7 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "com.panestudio.myseconds",
+            deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",
@@ -72,6 +73,7 @@ let project = Project(
                 .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
                 .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
 
+                .project(target: "BGMSelect", path: "MySeconds/Modules/BGMSelect"),
                 .project(target: "CoverClipCreation", path: "MySeconds/Modules/CoverClipCreation"),
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),

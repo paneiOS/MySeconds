@@ -12,16 +12,15 @@ import ModernRIBs
 import BaseRIBsKit
 import SharedModels
 
-public protocol VideoCreationRouting: ViewableRouting {
-    func routeToCoverclipCreation(with clip: VideoCoverClip)
-    func closeCoverClipCreation()
-}
+public protocol VideoCreationRouting: ViewableRouting {}
 
 protocol VideoCreationPresentable: Presentable {
     var listener: VideoCreationPresentableListener? { get set }
 }
 
-public protocol VideoCreationListener: AnyObject {}
+public protocol VideoCreationListener: AnyObject {
+    func videoCreationDidSelectCoverClip(_ clip: VideoCoverClip)
+}
 
 final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresentable>, VideoCreationInteractable {
     private let component: VideoCreationComponent
@@ -38,10 +37,6 @@ final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresenta
         self.component = component
         super.init(presenter: presenter)
         presenter.listener = self
-    }
-
-    func closeCoverClipCreation() {
-        self.router?.closeCoverClipCreation()
     }
 }
 
@@ -62,6 +57,6 @@ extension VideoCreationInteractor: VideoCreationPresentableListener {
     }
 
     func didSelectCoverClip(clip: VideoCoverClip) {
-        self.router?.routeToCoverclipCreation(with: clip)
+        self.listener?.videoCreationDidSelectCoverClip(clip)
     }
 }

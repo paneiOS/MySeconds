@@ -18,9 +18,7 @@ protocol CoverClipCreationPresentable: Presentable {
     var listener: CoverClipCreationPresentableListener? { get set }
 }
 
-public protocol CoverClipCreationListener: AnyObject {
-    func closeCoverClipCreation()
-}
+public protocol CoverClipCreationListener: AnyObject {}
 
 final class CoverClipCreationInteractor: PresentableInteractor<CoverClipCreationPresentable>, CoverClipCreationInteractable {
     private let component: CoverClipCreationComponent
@@ -46,12 +44,10 @@ extension CoverClipCreationInteractor: CoverClipCreationPresentableListener {
     }
 
     func closeButtonTapped() {
-        self.listener?.closeCoverClipCreation()
+        // TODO: - 닫기 버튼 구현
     }
 
     func addButtonTapped(with videoCoverClip: VideoCoverClip) {
-        // MARK: - 추가 버튼 구현
-
-        print("추가 버튼 탭", videoCoverClip)
+        // TODO: - 추가 버튼 구현
     }
 }

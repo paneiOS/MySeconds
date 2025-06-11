@@ -11,4 +11,14 @@ public extension Array {
     subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil
     }
+
+    func asyncCompactMap<T>(_ transform: @escaping (Element) async -> T?) async -> [T] {
+        var results = [T]()
+        for element in self {
+            if let value = await transform(element) {
+                results.append(value)
+            }
+        }
+        return results
+    }
 }
