@@ -41,7 +41,6 @@ final class BGMSelectViewController: BaseBottomSheetViewController, BGMSelectPre
         view.allowsSelection = false
         view.register(BGMCell.self, forCellWithReuseIdentifier: BGMCell.reuseIdentifier)
         view.dataSource = self
-        view.delegate = self
         return view
     }()
 
@@ -147,12 +146,5 @@ extension BGMSelectViewController: UICollectionViewDataSource {
         })
         .store(in: &self.cancellables)
         return cell
-    }
-}
-
-extension BGMSelectViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        guard let bgm = self.bgmList[safe: indexPath.item] else { return }
-        self.listener?.play(bgm: bgm)
     }
 }
