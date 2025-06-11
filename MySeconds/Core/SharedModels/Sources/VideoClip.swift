@@ -1,16 +1,26 @@
 //
 //  VideoClip.swift
-//  VideoCreation
+//  SharedModels
 //
-//  Created by 이정환 on 4/29/25.
+//  Created by 이정환 on 6/12/25.
 //
 
 import UIKit
 
-public struct VideoClip: Hashable {
+import UtilsKit
+
+public protocol Clip: Hashable {
+    var id: UUID { get }
+    var duration: TimeInterval { get }
+    var thumbnail: UIImage? { get }
+}
+
+public struct VideoClip: Clip {
     public let id: UUID
     public let fileName: String
+    public let createdAt: Date
     public var thumbnail: UIImage?
+    public let duration: TimeInterval
 
     public var url: URL {
         VideoClip.clipsFolder.appendingPathComponent(self.fileName)
@@ -19,11 +29,14 @@ public struct VideoClip: Hashable {
     public init(
         id: UUID = .init(),
         fileName: String,
+        createdAt: Date = .init(),
         duration: TimeInterval,
         thumbnail: UIImage? = nil
     ) {
         self.id = id
         self.fileName = fileName
+        self.createdAt = createdAt
+        self.duration = duration
         self.thumbnail = thumbnail
     }
 
@@ -46,4 +59,8 @@ public struct VideoClip: Hashable {
         }
         return folder
     }()
+
+    public var fileBaseName: String {
+        self.createdAt.formattedString(format: "yyyyMMdd_HHmmssSSS") + "_" + self.id.uuidString
+    }
 }

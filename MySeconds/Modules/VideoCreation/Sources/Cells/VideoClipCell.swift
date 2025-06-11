@@ -9,6 +9,7 @@ import AVFoundation
 import UIKit
 
 import ResourceKit
+import SharedModels
 import UtilsKit
 
 public protocol ThumbnailGenerating {

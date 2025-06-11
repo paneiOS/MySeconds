@@ -19,26 +19,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private var mockListener: MockVideoCreationListener = .init()
     private var router: VideoCreationRouting?
 
-    func scene(
-        _ scene: UIScene,
-        willConnectTo _: UISceneSession,
-        options _: UIScene.ConnectionOptions
-    ) {
-        guard let windowScene = (scene as? UIWindowScene) else { return }
-        let window = UIWindow(windowScene: windowScene)
-        self.window = window
-
-        let videoCreationBuilder = VideoCreationBuilder(dependency: MockVideoCreationDependency())
-        let videoCreationRouter = videoCreationBuilder.build(withListener: self.mockListener)
-        self.router = videoCreationRouter
-
-        self.window?.rootViewController = videoCreationRouter.viewControllable.uiviewController
-        self.window?.makeKeyAndVisible()
-    }
-}
-
-final class MockVideoCreationDependency: VideoCreationDependency {
-    public var clips: [CompositionClip] {
+    var clips: [CompositionClip] {
         [
             .cover(self.makeIntroClip()),
             .video(self.makeSampleClip(named: "sample", ext: "mp4")),
@@ -52,24 +33,40 @@ final class MockVideoCreationDependency: VideoCreationDependency {
             .video(self.makeSampleClip(named: "sample08", ext: "mp4")),
             .video(self.makeSampleClip(named: "sample09", ext: "mp4")),
             .video(self.makeSampleClip(named: "sample10", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample11", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample12", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample13", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample14", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample15", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample16", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample17", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample18", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample19", ext: "mp4")),
-//            .video(self.makeSampleClip(named: "sample20", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample11", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample12", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample13", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample14", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample15", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample16", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample17", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample18", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample19", ext: "mp4")),
+            //            .video(self.makeSampleClip(named: "sample20", ext: "mp4")),
             .cover(self.makeOutroClip())
         ]
     }
+
+    func scene(
+        _ scene: UIScene,
+        willConnectTo _: UISceneSession,
+        options _: UIScene.ConnectionOptions
+    ) {
+        guard let windowScene = (scene as? UIWindowScene) else { return }
+        let window = UIWindow(windowScene: windowScene)
+        self.window = window
+
+        let mockComponent = MockVideoCreationComponent(clips: self.clips)
+        let videoCreationBuilder = VideoCreationBuilder(dependency: mockComponent)
+        let videoCreationRouter = videoCreationBuilder.build(withListener: self.mockListener, clips: self.clips)
+        self.router = videoCreationRouter
+
+        self.window?.rootViewController = videoCreationRouter.viewControllable.uiviewController
+        self.window?.makeKeyAndVisible()
+    }
 }
 
-final class MockVideoCreationListener: VideoCreationListener {}
-
-extension MockVideoCreationDependency {
+extension SceneDelegate {
     func makeSampleClip(named name: String, ext: String) -> VideoClip {
         let bundle = ResourceKitResources.bundle
 
@@ -145,5 +142,23 @@ extension MockVideoCreationDependency {
             ),
             type: .outro
         )
+    }
+}
+
+final class MockVideoCreationComponent: VideoCreationDependency {
+    let clips: [CompositionClip]
+
+    init(clips: [CompositionClip]) {
+        self.clips = clips
+    }
+}
+
+final class MockVideoCreationListener: VideoCreationListener {
+    func videoCreationDidFinish() {
+        print("videoCreationDidFinish 호출됨")
+    }
+
+    func videoCreationDidSelectCoverClip(_ clip: VideoCoverClip) {
+        print("videoCreationDidSelectCoverClip: \(clip)")
     }
 }

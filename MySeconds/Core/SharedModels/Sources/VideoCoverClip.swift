@@ -7,7 +7,7 @@
 
 import UIKit
 
-public struct VideoCoverClip: Hashable {
+public struct VideoCoverClip: Clip {
     public let id: UUID
     public var title: NSAttributedString?
     public var description: NSAttributedString?

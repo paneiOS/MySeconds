@@ -8,13 +8,21 @@
 import ModernRIBs
 
 import Login
+import VideoCreation
 
 protocol RootDependency: Dependency {}
 
-final class RootComponent: Component<RootDependency>, LoginDependency {
+final class RootComponent: Component<RootDependency> {}
 
+extension RootComponent: LoginDependency {
     var loginBuilder: LoginBuildable {
         LoginBuilder(dependency: EmptyComponent())
+    }
+}
+
+extension RootComponent: VideoCreationDependency {
+    var videoCreationBuilder: VideoCreationBuildable {
+        VideoCreationBuilder(dependency: self)
     }
 }
 
