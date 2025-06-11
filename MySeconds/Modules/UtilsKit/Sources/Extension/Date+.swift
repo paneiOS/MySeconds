@@ -11,6 +11,12 @@ public extension Date {
     var dateToString: String {
         DateFormatter.dateToString.string(from: self)
     }
+
+    func formattedString(format: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        return formatter.string(from: self)
+    }
 }
 
 private extension DateFormatter {

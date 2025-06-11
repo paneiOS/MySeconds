@@ -1,8 +1,8 @@
 //
-//  UIImageView+.swift
+//  UIImage+.swift
 //  UtilsKit
 //
-//  Created by 이정환 on 5/8/25.
+//  Created by Chung Wussup on 5/13/25.
 //
 
 import UIKit

@@ -66,6 +66,8 @@ let project = Project(
             ],
             dependencies: [
                 .project(target: "SharedModels", path: "MySeconds/Core/SharedModels"),
+                .project(target: "VideoDraftStorage", path: "MySeconds/Core/VideoDraftStorage"),
+
                 .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
                 .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
                 .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
