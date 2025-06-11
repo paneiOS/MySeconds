@@ -117,7 +117,7 @@ public final class BGMCell: UICollectionViewCell {
 
     override public func prepareForReuse() {
         super.prepareForReuse()
-        self.cancellables.removeAll()
+
         self.isPlay = false
     }
 
