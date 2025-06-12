@@ -303,7 +303,16 @@ final class RecordControlView: UIView {
 
             self.progressLayer?.opacity = 0.5
 
-            self.tooltipView.show(self, standardView: self.recordButton, text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요")
+            self.tooltipView.snp.makeConstraints {
+                $0.centerX.equalTo(self.recordButton)
+                $0.bottom.equalTo(self.recordButton.snp.top).offset(-8)
+            }
+
+            self.tooltipView.show(
+                self,
+                text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
+            )
+
         } else {
             self.buttonStack.isUserInteractionEnabled = true
             self.buttonStack.alpha = 1.0

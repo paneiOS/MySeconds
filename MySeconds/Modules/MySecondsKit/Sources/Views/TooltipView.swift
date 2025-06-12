@@ -21,6 +21,8 @@ public final class TooltipView: UIView {
 
     private let bubbleLayer = CAShapeLayer()
 
+    private var isShowing: Bool = false
+
     override public init(frame: CGRect) {
         super.init(frame: .zero)
         self.commonInit()
@@ -95,15 +97,11 @@ public final class TooltipView: UIView {
         self.bubbleLayer.fillColor = UIColor.neutral800.cgColor
     }
 
-    public func show(_ parentView: UIView, standardView: UIView, text: String, animated: Bool = false) {
-        guard superview == nil else { return }
+    public func show(_ parentView: UIView, text: String, animated: Bool = false) {
+        guard !self.isShowing else { return }
+        self.isShowing = true
 
         parentView.addSubview(self)
-
-        self.snp.makeConstraints {
-            $0.centerX.equalTo(standardView)
-            $0.bottom.equalTo(standardView.snp.top).offset(-8)
-        }
 
         self.textLabel.text = text
 
@@ -129,7 +127,8 @@ public final class TooltipView: UIView {
     }
 
     public func hide(animated: Bool = true) {
-        guard superview != nil else { return }
+        guard self.isShowing else { return }
+        self.isShowing = false
 
         let hiddenAnimation = {
             self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
