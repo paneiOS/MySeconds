@@ -54,7 +54,7 @@ final class RecordControlView: UIView {
     private let ratioButton = RecordControlButton(type: .ratio)
     private let timerButton = RecordControlButton(type: .timer)
     private let cameraFlipButton = RecordControlButton(type: .flip)
-    public var maxAlbumCount: Int {
+    private var maxAlbumCount: Int {
         didSet {
             self.albumCountLabel.text = "\(self.currentAlbumCount) / \(self.maxAlbumCount)"
             self.updateAlbum(thumbnail: self.albumButton.image(for: .normal), count: self.currentAlbumCount)
@@ -324,9 +324,5 @@ final class RecordControlView: UIView {
 
             self.tooltipView.hide()
         }
-    }
-
-    public func setMaxAlbumCount(_ max: Int) {
-        self.maxAlbumCount = max
     }
 }
