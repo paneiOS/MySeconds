@@ -44,11 +44,6 @@ public final class TooltipView: UIView {
         }
     }
 
-    override public func layoutSubviews() {
-        super.layoutSubviews()
-        self.drawBubblePath()
-    }
-
     private func drawBubblePath() {
         let width = bounds.width
         let height = bounds.height
@@ -113,7 +108,7 @@ public final class TooltipView: UIView {
         self.textLabel.text = text
 
         self.layoutIfNeeded()
-
+        self.drawBubblePath()
         let showAnimation = {
             self.alpha = 1
             self.transform = .identity
