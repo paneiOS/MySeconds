@@ -33,7 +33,8 @@ public final class TooltipView: UIView {
 
     private func commonInit() {
         self.backgroundColor = .clear
-        self.isHidden = true
+        self.alpha = 0
+        self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
         self.layer.addSublayer(self.bubbleLayer)
         self.addSubview(self.textLabel)
 
@@ -100,6 +101,8 @@ public final class TooltipView: UIView {
     }
 
     public func show(_ parentView: UIView, standardView: UIView, text: String, animated: Bool = false) {
+        guard superview == nil else { return }
+
         parentView.addSubview(self)
 
         self.snp.makeConstraints {
@@ -111,10 +114,10 @@ public final class TooltipView: UIView {
 
         self.layoutIfNeeded()
 
-        guard isHidden else { return }
-        self.alpha = 0
-        self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
-        self.isHidden = false
+        let showAnimation = {
+            self.alpha = 1
+            self.transform = .identity
+        }
 
         if animated {
             UIView.animate(
@@ -123,42 +126,35 @@ public final class TooltipView: UIView {
                 usingSpringWithDamping: 0.7,
                 initialSpringVelocity: 0.8,
                 options: [.curveEaseOut],
-                animations: { [weak self] in
-                    guard let self else { return }
-                    self.alpha = 1
-                    self.transform = .identity
-                }
+                animations: showAnimation
             )
         } else {
-            self.alpha = 1
-            self.transform = .identity
+            showAnimation()
         }
     }
 
     public func hide(animated: Bool = true) {
-        guard !isHidden else { return }
+        guard superview != nil else { return }
+
+        let hiddenAnimation = {
+            self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            self.alpha = 0
+        }
+
+        let completion: (Bool) -> Void = { _ in
+            self.removeFromSuperview()
+            self.transform = .identity
+        }
 
         if animated {
             UIView.animate(
                 withDuration: 0.2,
-                animations: { [weak self] in
-                    guard let self else { return }
-                    self.alpha = 0
-                    self.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
-                },
-                completion: { [weak self] _ in
-                    guard let self else { return }
-                    self.removeFromSuperview()
-                    self.isHidden = true
-                    self.transform = .identity
-                    self.alpha = 1
-                }
+                animations: hiddenAnimation,
+                completion: completion
             )
         } else {
-            self.removeFromSuperview()
-            self.isHidden = true
-            self.transform = .identity
-            self.alpha = 1
+            hiddenAnimation()
+            completion(true)
         }
     }
 }
