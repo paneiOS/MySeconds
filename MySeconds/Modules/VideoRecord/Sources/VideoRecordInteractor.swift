@@ -78,6 +78,10 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         super.init(presenter: presenter)
         presenter.listener = self
 
+        self.bind()
+    }
+
+    private func bind() {
         self.thumbnailSubject
             .combineLatest(self.albumCountSubject)
             .receive(on: DispatchQueue.main)
