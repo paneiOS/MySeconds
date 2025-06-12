@@ -109,7 +109,6 @@ public final class TooltipView: UIView {
 
         self.textLabel.text = text
 
-        self.bringSubviewToFront(self)
         self.setNeedsLayout()
         self.layoutIfNeeded()
 
