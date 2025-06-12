@@ -236,8 +236,9 @@ final class RecordControlView: UIView {
         guard duration > 0 else { return }
         CATransaction.begin()
         CATransaction.setCompletionBlock { [weak self] in
-            self?.progressLayer?.strokeEnd = 1
-            self?.progressLayer?.removeAnimation(forKey: "progress")
+            guard let self else { return }
+            self.progressLayer?.strokeEnd = 1
+            self.progressLayer?.removeAnimation(forKey: "progress")
         }
         let animation = CABasicAnimation(keyPath: "strokeEnd")
         animation.fromValue = 1
