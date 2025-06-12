@@ -109,7 +109,6 @@ public final class TooltipView: UIView {
 
         self.textLabel.text = text
 
-        self.setNeedsLayout()
         self.layoutIfNeeded()
 
         guard isHidden else { return }
