@@ -130,22 +130,25 @@ extension VideoRecordInteractor {
 
     func didTapRatio() {
         let nextIndex = (currentRatioIndex + 1) % self.videoRatios.count
-        self.currentRatioIndex = nextIndex
-        let newRatioText = self.videoRatios[nextIndex]
 
-        self.ratioButtonTextSubject.send(newRatioText)
+        self.videoRatios[safe: nextIndex].map { [weak self] newRatio in
+            guard let self else { return }
+            self.currentRatioIndex = nextIndex
+            self.ratioButtonTextSubject.send(newRatio)
+        }
     }
 
     func didTapTimer() {
-        if let idx = durationOptions.firstIndex(of: maxRecordingTime) {
-            self.maxRecordingTime = self.durationOptions[(idx + 1) % self.durationOptions.count]
-        } else {
-            self.maxRecordingTime = self.durationOptions.first ?? self.maxRecordingTime
+        let nextIndex = self.durationOptions
+            .firstIndex(of: self.maxRecordingTime)
+            .map { ($0 + 1) % self.durationOptions.count }
+            ?? 0
+
+        self.durationOptions[safe: nextIndex].map { [weak self] next in
+            guard let self else { return }
+            self.maxRecordingTime = next
+            self.timerButtonTextSubject.send("\(Int(next))초")
         }
-
-        let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
-
-        self.timerButtonTextSubject.send(maxRecordingTime)
     }
 
     func didTapAlbum() {
