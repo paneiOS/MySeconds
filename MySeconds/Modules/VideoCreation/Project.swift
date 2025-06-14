@@ -9,6 +9,7 @@ import ProjectDescription
 
 let project = Project(
     name: "VideoCreation",
+    options: .options(automaticSchemesOptions: .disabled),
     targets: [
         .target(
             name: "VideoCreation",
@@ -104,6 +105,15 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "VideoCreationApp",
+            shared: true,
+            hidden: true,
+            buildAction: .buildAction(targets: ["VideoCreationModuleApp"]),
+            runAction: .runAction(executable: "VideoCreationModuleApp")
         )
     ]
 )

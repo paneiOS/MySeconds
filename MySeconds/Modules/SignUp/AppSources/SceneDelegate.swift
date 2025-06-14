@@ -26,8 +26,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        let signUpBuilder = SignUpBuilder(dependency: MockSignUpDependency())
-        let signUpRouter = signUpBuilder.build(withListener: self.mockListener)
+        let uid = "mockTokenValue"
+        let mockComponent = MockSignUpDependency(uid: uid)
+        let signUpBuilder = SignUpBuilder(dependency: mockComponent)
+        let signUpRouter = signUpBuilder.build(withListener: self.mockListener, uid: uid)
         self.router = signUpRouter
 
         self.window?.rootViewController = signUpRouter.viewControllable.uiviewController
@@ -36,8 +38,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 
 final class MockSignUpDependency: SignUpDependency {
-    public var token: String {
-        "mockTokenValue"
+    let uid: String
+
+    init(uid: String) {
+        self.uid = uid
     }
 }
 

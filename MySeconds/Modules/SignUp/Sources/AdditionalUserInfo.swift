@@ -9,5 +9,5 @@ import Foundation
 
 public struct AdditionalUserInfo {
     let age: String
-    let male: String
+    let gender: String
 }

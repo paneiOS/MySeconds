@@ -14,7 +14,22 @@
     let packageSettings = PackageSettings(
         productTypes: [
             "SnapKit": .framework,
-            "ModernRIBs": .framework
+            "ModernRIBs": .framework,
+            "FirebaseAuth": .framework,
+            "FirebaseFirestore": .framework,
+            "GoogleSignIn": .staticFramework,
+
+            "FirebaseAppCheckInterop": .framework,
+            "GTMSessionFetcherCore": .framework,
+            "GoogleUtilities-Logger": .framework,
+            "FirebaseCore": .framework,
+            "FirebaseCoreExtension": .framework,
+            "GoogleUtilities-NSData": .framework,
+            "Firebase": .framework,
+            "third-party-IsAppEncrypted": .framework,
+            "FirebaseFirestoreTarget": .framework,
+            "GoogleUtilities-Environment": .framework,
+            "FirebaseCoreInternal": .framework
         ]
     )
 #endif
@@ -22,9 +37,8 @@
 let package = Package(
     name: "MySecondsDependencies",
     platforms: [
-        .iOS(.v15)
+        .iOS(.v17)
     ],
-    products: [],
     dependencies: [
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.6.0"),
         .package(url: "https://github.com/google/GoogleSignIn-iOS.git", from: "8.0.0"),

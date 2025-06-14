@@ -90,7 +90,7 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
         gridSize: .init(row: 2, column: 3)
     )
 
-    private let maleTitleLabel: UILabel = {
+    private let genderTitleLabel: UILabel = {
         let label: UILabel = .init()
         label.attributedText = .makeAttributedString(
             text: "성별",
@@ -100,9 +100,9 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
         return label
     }()
 
-    private let maleView: UIView = .init()
+    private let genderView: UIView = .init()
 
-    private let maleSelectButtonsView: SelectButtonsView = .init(
+    private let genderSelectButtonsView: SelectButtonsView = .init(
         buttonTitles: ["남성", "여성"],
         gridSize: .init(row: 1, column: 2)
     )
@@ -151,16 +151,16 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
-        self.maleView.addSubviews(self.maleTitleLabel, self.maleSelectButtonsView)
-        self.maleTitleLabel.snp.makeConstraints {
+        self.genderView.addSubviews(self.genderTitleLabel, self.genderSelectButtonsView)
+        self.genderTitleLabel.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
         }
-        self.maleSelectButtonsView.snp.makeConstraints {
-            $0.top.equalTo(self.maleTitleLabel.snp.bottom).offset(8)
+        self.genderSelectButtonsView.snp.makeConstraints {
+            $0.top.equalTo(self.genderTitleLabel.snp.bottom).offset(8)
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
-        for item in [self.titleView, self.ageView, self.maleView] {
+        for item in [self.titleView, self.ageView, self.genderView] {
             self.contentsSubView.addArrangedSubview(item)
         }
     }
@@ -170,7 +170,7 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
 
         Publishers.CombineLatest(
             self.ageSelectButtonsView.selectionPublisher,
-            self.maleSelectButtonsView.selectionPublisher
+            self.genderSelectButtonsView.selectionPublisher
         )
         .map { $0 != nil && $1 != nil }
         .receive(on: DispatchQueue.main)
@@ -185,10 +185,10 @@ final class SignUpViewController: BaseViewController, SignUpPresentable, SignUpV
             .sink(receiveValue: { [weak self] _ in
                 guard let self,
                       let age = self.ageSelectButtonsView.selectedValue,
-                      let male = self.maleSelectButtonsView.selectedValue else {
+                      let gender = self.genderSelectButtonsView.selectedValue else {
                     return
                 }
-                self.listener?.sendUserInfo(with: .init(age: age, male: male))
+                self.listener?.sendUserInfo(with: .init(age: age, gender: gender))
             })
             .store(in: &self.cancellables)
     }

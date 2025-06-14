@@ -2,20 +2,21 @@
 //  Project.swift
 //  MySeconds
 //
-//  Created by pane on 06/05/2025.
+//  Created by pane on 6/12/25.
 //
 
 import ProjectDescription
 
 let project = Project(
-    name: "VideoDraftStorage",
+    name: "SocialLoginKit",
     targets: [
         .target(
-            name: "VideoDraftStorage",
+            name: "SocialLoginKit",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.VideoDraftStorage",
+            bundleId: "com.panestudio.SocialLoginKit",
             deploymentTargets: .iOS("17.0"),
+            infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],
             scripts: [
@@ -37,36 +38,18 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .project(target: "UtilsKit", path: "../../Modules/UtilsKit")
-            ]
-        ),
-        .target(
-            name: "VideoDraftStorageTests",
-            destinations: .iOS,
-            product: .unitTests,
-            bundleId: "com.panestudio.VideoDraftStorage",
-            infoPlist: .default,
-            sources: ["Tests/**"],
-            dependencies: [
-                .target(name: "VideoDraftStorage")
+                .external(name: "FirebaseAuth"),
+                .external(name: "FirebaseFirestore"),
+                .external(name: "GoogleSignIn")
             ],
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
-                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds",
+                    "OTHER_LDFLAGS": "$(inherited) -ObjC"
                 ]
             )
-        )
-    ],
-    schemes: [
-        .scheme(
-            name: "VideoDraftStorageTests",
-            shared: true,
-            hidden: true,
-            buildAction: .buildAction(targets: ["VideoDraftStorage", "VideoDraftStorageTests"]),
-            testAction: .targets(["VideoDraftStorageTests"]),
-            runAction: nil
         )
     ]
 )

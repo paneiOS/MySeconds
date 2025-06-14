@@ -9,11 +9,14 @@ import ModernRIBs
 
 import Login
 import SharedModels
+import SignUp
+import SocialLoginKit
 import UtilsKit
 
 protocol RootRouting: ViewableRouting {
     func routeToLogin()
     func dismissLogin()
+    func routeToSignUp(uid: String)
     func routeToVideoCreation(clips: [CompositionClip])
 }
 
@@ -43,19 +46,23 @@ final class RootInteractor: PresentableInteractor<RootPresentable>, RootPresenta
 }
 
 extension RootInteractor: RootInteractable {
-    func videoCreationDidSelectCoverClip(_ clip: VideoCoverClip) {
-        print("videoCreationDidSelectCoverClip 탭")
-    }
-
     func didLogin(with result: LoginResult) {
         switch result {
         case .success:
-            self.router?.dismissLogin()
             self.router?.routeToVideoCreation(clips: self.clips)
+        case let .additionalInfoRequired(uid):
+//            self.router?.dismissLogin()
+            self.router?.routeToSignUp(uid: uid)
         case let .failure(error):
             printDebug("로그인 실패 \(error)")
-        case let .additionalInfoRequired(uid):
-            printDebug("추가정보 화면 \(uid)")
         }
+    }
+
+    func sendUserInfo(with userInfo: AdditionalUserInfo) {
+        printDebug("sendUserInfo 탭: \(userInfo)")
+    }
+
+    func videoCreationDidSelectCoverClip(_ clip: VideoCoverClip) {
+        printDebug("videoCreationDidSelectCoverClip 탭: \(clip)")
     }
 }

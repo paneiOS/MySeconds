@@ -20,4 +20,10 @@ final class SignUpRouter: ViewableRouter<SignUpInteractor, SignUpViewController>
         super.init(interactor: interactor, viewController: viewController)
         interactor.router = self
     }
+
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
+    }
 }

@@ -7,22 +7,42 @@
 
 import ModernRIBs
 
+import FirebaseFirestore
 import Login
+import SignUp
+import SocialLoginKit
 import VideoCreation
 
-protocol RootDependency: Dependency {}
+protocol RootDependency: Dependency {
+    var socialLoginService: SocialLoginService { get }
+    var firestore: Firestore { get }
+}
 
 final class RootComponent: Component<RootDependency> {}
 
 extension RootComponent: LoginDependency {
+    var firestore: Firestore {
+        dependency.firestore
+    }
+
+    var socialLoginService: SocialLoginService {
+        dependency.socialLoginService
+    }
+
     var loginBuilder: LoginBuildable {
-        LoginBuilder(dependency: EmptyComponent())
+        LoginBuilder(dependency: self)
     }
 }
 
 extension RootComponent: VideoCreationDependency {
     var videoCreationBuilder: VideoCreationBuildable {
         VideoCreationBuilder(dependency: self)
+    }
+}
+
+extension RootComponent: SignUpDependency {
+    var signUpBuilder: SignUpBuildable {
+        SignUpBuilder(dependency: self)
     }
 }
 

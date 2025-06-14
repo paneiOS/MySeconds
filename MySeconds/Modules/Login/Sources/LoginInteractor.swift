@@ -5,6 +5,7 @@
 //  Created by pane on 01/09/2025.
 //
 
+import Combine
 import UIKit
 
 import FirebaseAuth
@@ -13,6 +14,7 @@ import GoogleSignIn
 import ModernRIBs
 
 import BaseRIBsKit
+import SocialLoginKit
 import UtilsKit
 
 public protocol LoginRouting: ViewableRouting {}
@@ -29,16 +31,24 @@ final class LoginInteractor: PresentableInteractor<LoginPresentable>, LoginInter
     weak var router: LoginRouting?
     weak var listener: LoginListener?
 
-    private let firestore = Firestore.firestore()
+    private let firestore: Firestore
     private let socialLoginService: SocialLoginService
 
     init(
         presenter: LoginPresentable,
+        firestore: Firestore,
         socialLoginService: SocialLoginService
     ) {
         self.socialLoginService = socialLoginService
+        self.firestore = firestore
         super.init(presenter: presenter)
         presenter.listener = self
+    }
+
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
     }
 }
 

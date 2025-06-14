@@ -22,6 +22,12 @@ final class LoginRouter: ViewableRouter<LoginInteractor, LoginViewController>, L
         interactor.router = self
     }
 
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
+    }
+
     func googleSignIn(completion: @escaping (Result<GIDSignInResult, Error>) -> Void) {
         let presentingVC = self.viewControllable.uiviewController
         GIDSignIn.sharedInstance.signIn(withPresenting: presentingVC) { result, error in

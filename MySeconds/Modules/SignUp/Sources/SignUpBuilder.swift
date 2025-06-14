@@ -7,18 +7,21 @@
 
 import ModernRIBs
 
-public protocol SignUpDependency: Dependency {
-    var token: String { get }
-}
+public protocol SignUpDependency: Dependency {}
 
 public final class SignUpComponent: Component<SignUpDependency> {
-    public var token: String { dependency.token }
+    public let uid: String
+
+    public init(dependency: SignUpDependency, uid: String) {
+        self.uid = uid
+        super.init(dependency: dependency)
+    }
 }
 
 // MARK: - Builder
 
 public protocol SignUpBuildable: Buildable {
-    func build(withListener listener: SignUpListener) -> SignUpRouting
+    func build(withListener listener: SignUpListener, uid: String) -> SignUpRouting
 }
 
 public final class SignUpBuilder: Builder<SignUpDependency>, SignUpBuildable {
@@ -27,8 +30,14 @@ public final class SignUpBuilder: Builder<SignUpDependency>, SignUpBuildable {
         super.init(dependency: dependency)
     }
 
-    public func build(withListener listener: SignUpListener) -> SignUpRouting {
-        let component = SignUpComponent(dependency: dependency)
+    deinit {
+        #if DEBUG
+            print("✅ Deinit: \(self)")
+        #endif
+    }
+
+    public func build(withListener listener: SignUpListener, uid: String) -> SignUpRouting {
+        let component = SignUpComponent(dependency: dependency, uid: uid)
         let viewController = SignUpViewController()
         let interactor = SignUpInteractor(presenter: viewController, component: component)
         interactor.listener = listener
