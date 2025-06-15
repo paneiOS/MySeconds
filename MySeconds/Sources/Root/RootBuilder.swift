@@ -7,6 +7,7 @@
 
 import ModernRIBs
 
+import CoverClipCreation
 import FirebaseFirestore
 import Login
 import SignUp
@@ -43,6 +44,12 @@ extension RootComponent: VideoCreationDependency {
 extension RootComponent: SignUpDependency {
     var signUpBuilder: SignUpBuildable {
         SignUpBuilder(dependency: self)
+    }
+}
+
+extension RootComponent: CoverClipCreationDependency {
+    var coverClipCreationBuilder: CoverClipCreationBuildable {
+        CoverClipCreationBuilder(dependency: self)
     }
 }
 

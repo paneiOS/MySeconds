@@ -9,13 +9,14 @@ import UIKit
 
 import ModernRIBs
 
+import CoverClipCreation
 import Login
 import SharedModels
 import SignUp
 import UtilsKit
 import VideoCreation
 
-protocol RootInteractable: Interactable, LoginListener, VideoCreationListener, SignUpListener {
+protocol RootInteractable: Interactable, LoginListener, VideoCreationListener, SignUpListener, CoverClipCreationListener {
     var router: RootRouting? { get set }
     var listener: RootListener? { get set }
 }
@@ -28,6 +29,7 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
     private var loginRouter: LoginRouting?
     private var signUpRouter: SignUpRouting?
     private var videoCreationRouter: VideoCreationRouting?
+    private var coverClipCreationRouter: CoverClipCreationRouting?
 
     init(
         interactor: RootInteractable,
@@ -80,6 +82,23 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
         self.detachChild(signUpRouter)
         self.rootNavigationController?.popViewController(animated: false)
         self.signUpRouter = nil
+    }
+
+    func routeToCoverClipCreation(clip: VideoCoverClip) {
+        guard coverClipCreationRouter == nil else { return }
+        let coverClipCreationRouter = self.component.coverClipCreationBuilder.build(withListener: self.interactor, videoCoverClip: clip)
+        let coverClipCreationViewController = coverClipCreationRouter.uiviewController
+        coverClipCreationViewController.modalPresentationStyle = .overFullScreen
+        self.attachChild(coverClipCreationRouter)
+        self.coverClipCreationRouter = coverClipCreationRouter
+        self.viewController.present(child: coverClipCreationRouter.viewControllable, animated: false)
+    }
+
+    func closeCoverClipCreation() {
+        guard let coverClipCreationRouter else { return }
+        self.detachChild(coverClipCreationRouter)
+        self.viewController.dismiss(animated: true)
+        self.coverClipCreationRouter = nil
     }
 }
 

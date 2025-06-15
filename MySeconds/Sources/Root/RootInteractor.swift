@@ -17,6 +17,8 @@ protocol RootRouting: ViewableRouting {
     func routeToLogin()
     func routeToSignUp(uid: String)
     func routeToVideoCreation(clips: [CompositionClip])
+    func routeToCoverClipCreation(clip: VideoCoverClip)
+    func closeCoverClipCreation()
 }
 
 protocol RootPresentable: Presentable {
@@ -60,11 +62,14 @@ extension RootInteractor: RootInteractable {
     }
 
     func sendUserInfo(with userInfo: AdditionalUserInfo) {
-        printDebug("sendUserInfo 탭: \(userInfo)")
         self.router?.routeToVideoCreation(clips: self.clips)
     }
 
-    func videoCreationDidSelectCoverClip(_ clip: VideoCoverClip) {
-        printDebug("videoCreationDidSelectCoverClip 탭: \(clip)")
+    func videoCreationDidSelectCoverClip(clip: VideoCoverClip) {
+        self.router?.routeToCoverClipCreation(clip: clip)
+    }
+
+    func closeCoverClipCreation() {
+        self.router?.closeCoverClipCreation()
     }
 }

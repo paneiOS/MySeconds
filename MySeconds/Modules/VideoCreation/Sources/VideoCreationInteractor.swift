@@ -19,7 +19,7 @@ protocol VideoCreationPresentable: Presentable {
 }
 
 public protocol VideoCreationListener: AnyObject {
-    func videoCreationDidSelectCoverClip(_ clip: VideoCoverClip)
+    func videoCreationDidSelectCoverClip(clip: VideoCoverClip)
 }
 
 final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresentable>, VideoCreationInteractable {
@@ -57,6 +57,6 @@ extension VideoCreationInteractor: VideoCreationPresentableListener {
     }
 
     func didSelectCoverClip(clip: VideoCoverClip) {
-        self.listener?.videoCreationDidSelectCoverClip(clip)
+        self.listener?.videoCreationDidSelectCoverClip(clip: clip)
     }
 }

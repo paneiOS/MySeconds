@@ -10,7 +10,7 @@ import ModernRIBs
 import CoverClipCreation
 import SharedModels
 
-protocol VideoCreationInteractable: Interactable, CoverClipCreationListener {
+protocol VideoCreationInteractable: Interactable {
     var router: VideoCreationRouting? { get set }
     var listener: VideoCreationListener? { get set }
 }
