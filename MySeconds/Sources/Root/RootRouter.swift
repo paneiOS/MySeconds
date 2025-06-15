@@ -24,6 +24,7 @@ protocol RootViewControllable: ViewControllable {}
 
 final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, RootRouting {
     private let component: RootComponent
+    private var rootNavigationController: UINavigationController?
     private var loginRouter: LoginRouting?
     private var signUpRouter: SignUpRouting?
     private var videoCreationRouter: VideoCreationRouting?
@@ -35,53 +36,51 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
     ) {
         self.component = component
         super.init(interactor: interactor, viewController: viewController)
+        self.rootNavigationController = viewController.uiviewController as? UINavigationController
         interactor.router = self
     }
 
     func routeToLogin() {
         guard self.loginRouter == nil else { return }
         let loginRouter = self.component.loginBuilder.build(withListener: self.interactor)
-        loginRouter.viewControllable.uiviewController.modalPresentationStyle = .fullScreen
         self.attachChild(loginRouter)
         self.loginRouter = loginRouter
-        self.viewController.present(child: loginRouter.viewControllable, animated: false)
+        self.rootNavigationController?.isNavigationBarHidden = true
+        self.rootNavigationController?.pushViewController(loginRouter.uiviewController, animated: false)
     }
 
-    func dismissLogin() {
+    func popToLogin() {
         guard let loginRouter else { return }
         self.detachChild(loginRouter)
-        self.viewController.dismiss()
+        self.rootNavigationController?.popViewController(animated: false)
         self.loginRouter = nil
     }
 
     func routeToVideoCreation(clips: [CompositionClip]) {
-        if let signUp = signUpRouter {
-            detachChild(signUp)
-            signUp.viewControllable.dismiss()
-            self.signUpRouter = nil
-        }
-
-        if let login = loginRouter {
-            detachChild(login)
-            viewController.dismiss()
-            self.loginRouter = nil
-        }
+        self.popToSignUp()
+        self.popToLogin()
 
         guard self.videoCreationRouter == nil else { return }
         let videoCreationRouter = self.component.videoCreationBuilder.build(withListener: self.interactor, clips: clips)
-        videoCreationRouter.viewControllable.uiviewController.modalPresentationStyle = .fullScreen
         self.attachChild(videoCreationRouter)
         self.videoCreationRouter = videoCreationRouter
-        self.viewController.present(child: videoCreationRouter.viewControllable, animated: true)
+        self.rootNavigationController?.pushViewController(videoCreationRouter.uiviewController, animated: true)
     }
 
     func routeToSignUp(uid: String) {
-        guard let loginRouter, self.signUpRouter == nil else { return }
+        guard self.signUpRouter == nil else { return }
         let signUpRouter = self.component.signUpBuilder.build(withListener: self.interactor, uid: uid)
-        signUpRouter.viewControllable.uiviewController.modalPresentationStyle = .fullScreen
         self.attachChild(signUpRouter)
         self.signUpRouter = signUpRouter
-        let loginViewControllable = loginRouter.viewControllable
-        loginViewControllable.present(child: signUpRouter.viewControllable, animated: true)
+        self.rootNavigationController?.pushViewController(signUpRouter.uiviewController, animated: true)
+    }
+
+    func popToSignUp() {
+        guard let signUpRouter else { return }
+        self.detachChild(signUpRouter)
+        self.rootNavigationController?.popViewController(animated: false)
+        self.signUpRouter = nil
     }
 }
+
+extension UINavigationController: @retroactive ViewControllable, RootViewControllable {}

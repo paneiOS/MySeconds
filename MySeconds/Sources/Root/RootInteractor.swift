@@ -15,7 +15,6 @@ import UtilsKit
 
 protocol RootRouting: ViewableRouting {
     func routeToLogin()
-    func dismissLogin()
     func routeToSignUp(uid: String)
     func routeToVideoCreation(clips: [CompositionClip])
 }
@@ -31,7 +30,10 @@ final class RootInteractor: PresentableInteractor<RootPresentable>, RootPresenta
     weak var listener: RootListener?
 
     // TODO: - 백업파일 연결 예정
-    private var clips: [CompositionClip] = []
+    private var clips: [CompositionClip] = [
+        .cover(.init(title: nil, description: nil, type: .intro)),
+        .cover(.init(title: nil, description: nil, type: .outro))
+    ]
 
     override init(presenter: RootPresentable) {
         super.init(presenter: presenter)
@@ -51,7 +53,6 @@ extension RootInteractor: RootInteractable {
         case .success:
             self.router?.routeToVideoCreation(clips: self.clips)
         case let .additionalInfoRequired(uid):
-//            self.router?.dismissLogin()
             self.router?.routeToSignUp(uid: uid)
         case let .failure(error):
             printDebug("로그인 실패 \(error)")
@@ -60,6 +61,7 @@ extension RootInteractor: RootInteractable {
 
     func sendUserInfo(with userInfo: AdditionalUserInfo) {
         printDebug("sendUserInfo 탭: \(userInfo)")
+        self.router?.routeToVideoCreation(clips: self.clips)
     }
 
     func videoCreationDidSelectCoverClip(_ clip: VideoCoverClip) {

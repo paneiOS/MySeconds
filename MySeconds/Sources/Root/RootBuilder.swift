@@ -61,11 +61,13 @@ final class RootBuilder: Builder<RootDependency>, RootBuildable {
     func build() -> LaunchRouting {
         let component = RootComponent(dependency: self.dependency)
         let viewController = RootViewController()
-        viewController.modalPresentationStyle = .fullScreen
+        let navigationController = UINavigationController(rootViewController: viewController)
+        navigationController.modalPresentationStyle = .fullScreen
+
         let interactor = RootInteractor(presenter: viewController)
         let router = RootRouter(
             interactor: interactor,
-            viewController: viewController,
+            viewController: navigationController,
             component: component
         )
         return router
