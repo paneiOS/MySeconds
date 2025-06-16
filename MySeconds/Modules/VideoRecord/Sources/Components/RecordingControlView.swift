@@ -17,7 +17,7 @@ final class RecordControlView: UIView {
 
     private enum Constants {
         static let recordButtonSize: CGFloat = 54
-        static let progressSize: CGFloat = 64
+        static let controlButtonSize: CGFloat = 48
         static let recordCornerRadius: CGFloat = 32
         static let horizontalInset: CGFloat = 24
         static let verticalInset: CGFloat = 16
@@ -50,10 +50,66 @@ final class RecordControlView: UIView {
         self.albumTapSubject.eraseToAnyPublisher()
     }
 
-    private let recordButton = RecordControlButton(type: .record)
-    private let ratioButton = RecordControlButton(type: .ratio)
-    private let timerButton = RecordControlButton(type: .timer)
-    private let cameraFlipButton = RecordControlButton(type: .flip)
+    private let recordButton = RecordingButton(buttonSize: Constants.recordButtonSize, progressPadding: 5)
+
+    private let ratioButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .neutral100
+        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.neutral200.cgColor
+        button.setTitle("1:1", for: .normal)
+        button.setTitleColor(.neutral950, for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 14)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+
+    private let timerButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .neutral100
+        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.neutral200.cgColor
+
+        let title = "촬영"
+        let subtitle = "30초"
+        let fullText = "\(title)\n\(subtitle)"
+        let attributed = NSMutableAttributedString(string: fullText)
+
+        attributed.addAttributes([
+            .font: UIFont.systemFont(ofSize: 10, weight: .medium),
+            .foregroundColor: UIColor.neutral500
+        ], range: (fullText as NSString).range(of: title))
+
+        attributed.addAttributes([
+            .font: UIFont.systemFont(ofSize: 16, weight: .bold),
+            .foregroundColor: UIColor.neutral800
+        ], range: (fullText as NSString).range(of: subtitle))
+
+        button.setAttributedTitle(attributed, for: .normal)
+        button.titleLabel?.numberOfLines = 2
+        button.titleLabel?.textAlignment = .center
+
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+
+    private let cameraFlipButton: UIButton = {
+        let button = UIButton()
+        button.backgroundColor = .neutral100
+        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.neutral200.cgColor
+
+        let image = ResourceKitAsset.refreshCcw.image.withRenderingMode(.alwaysTemplate)
+        button.setImage(image, for: .normal)
+        button.tintColor = .neutral950
+
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+
     private var maxAlbumCount: Int {
         didSet {
             self.albumCountLabel.text = "\(self.currentAlbumCount) / \(self.maxAlbumCount)"
@@ -115,9 +171,7 @@ final class RecordControlView: UIView {
 
     var recordDuration: TimeInterval = 0 {
         didSet {
-            self.progressLayer?.removeFromSuperlayer()
-            self.progressLayer = nil
-            setNeedsLayout()
+            self.recordButton.changeDuration(duration: self.recordDuration)
         }
     }
 
@@ -134,47 +188,42 @@ final class RecordControlView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        if self.progressLayer == nil {
-            self.setupProgressLayer(duration: self.recordDuration)
-        }
-    }
-
     private func setupUI() {
         backgroundColor = .white
 
-        for item in [self.albumButton, self.albumCountLabel] {
-            self.albumStack.addArrangedSubview(item)
-        }
-
+        [self.albumButton, self.albumCountLabel].forEach { self.albumStack.addArrangedSubview($0) }
         self.albumButton.snp.makeConstraints {
             $0.size.equalTo(Constants.recordButtonSize)
         }
-
-        for item in [self.ratioButton, self.cameraFlipButton] {
-            self.rightVStack.addArrangedSubview(item)
-        }
-
-        for item in [self.timerButton, self.rightVStack] {
-            self.buttonStack.addArrangedSubview(item)
-        }
-
-        self.addSubviews(self.albumStack, self.buttonStack, self.recordButton)
-
-        self.recordButton.snp.makeConstraints {
-            $0.center.equalToSuperview()
-            $0.size.equalTo(Constants.recordButtonSize)
-        }
-
+        addSubview(self.albumStack)
         self.albumStack.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(Constants.horizontalInset)
             $0.centerY.equalToSuperview()
         }
+
+        for button in [self.ratioButton, self.cameraFlipButton] {
+            self.rightVStack.addArrangedSubview(button)
+            button.snp.makeConstraints {
+                $0.size.equalTo(Constants.controlButtonSize)
+            }
+        }
+
+        self.buttonStack.addArrangedSubview(self.timerButton)
+        self.timerButton.snp.makeConstraints {
+            $0.size.equalTo(Constants.controlButtonSize)
+        }
+        self.buttonStack.addArrangedSubview(self.rightVStack)
+
+        addSubview(self.buttonStack)
         self.buttonStack.snp.makeConstraints {
             $0.trailing.equalToSuperview().inset(Constants.horizontalInset)
             $0.top.bottom.equalToSuperview().inset(Constants.verticalInset)
+        }
+
+        addSubview(self.recordButton)
+        self.recordButton.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.size.equalTo(Constants.recordButtonSize)
         }
 
         self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
@@ -196,58 +245,6 @@ final class RecordControlView: UIView {
                 .subscribe(subject)
                 .store(in: &self.cancellables)
         }
-    }
-
-    private func setupProgressLayer(duration: TimeInterval) {
-        self.progressLayer?.removeFromSuperlayer()
-
-        let buttonSize = Constants.recordButtonSize
-        let progressSize = Constants.progressSize
-        let padding = (progressSize - buttonSize) / 2
-
-        let layerFrame = CGRect(
-            x: -padding,
-            y: -padding,
-            width: progressSize,
-            height: progressSize
-        )
-
-        let radius = progressSize / 2
-        let center = CGPoint(x: radius, y: radius)
-        let path = UIBezierPath(
-            arcCenter: center,
-            radius: radius,
-            startAngle: -.pi / 2,
-            endAngle: 3 * .pi / 2,
-            clockwise: true
-        )
-
-        let shape = CAShapeLayer()
-        shape.frame = layerFrame
-        shape.path = path.cgPath
-        shape.fillColor = UIColor.clear.cgColor
-        shape.strokeColor = UIColor.neutral950.cgColor
-        shape.lineWidth = 3
-        shape.lineCap = .round
-
-        self.recordButton.layer.addSublayer(shape)
-        self.progressLayer = shape
-
-        guard duration > 0 else { return }
-        CATransaction.begin()
-        CATransaction.setCompletionBlock { [weak self] in
-            guard let self else { return }
-            self.progressLayer?.strokeEnd = 1
-            self.progressLayer?.removeAnimation(forKey: "progress")
-        }
-        let animation = CABasicAnimation(keyPath: "strokeEnd")
-        animation.fromValue = 1
-        animation.toValue = 0
-        animation.duration = duration
-        animation.fillMode = .forwards
-        animation.isRemovedOnCompletion = false
-        shape.add(animation, forKey: "progress")
-        CATransaction.commit()
     }
 
     private func makeTimerAttributedText(seconds: String) -> NSAttributedString {
