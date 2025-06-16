@@ -15,6 +15,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.panestudio.login",
+            deploymentTargets: .iOS("17.0"),
             sources: ["Sources/**"],
             dependencies: [
                 .external(name: "FirebaseAuth"),
@@ -39,6 +40,7 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "com.panestudio.myseconds",
+            deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",

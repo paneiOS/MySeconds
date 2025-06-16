@@ -1,20 +1,23 @@
+//
+//  Project.swift
+//  MySeconds
+//
+//  Created by pane on 06/05/2025.
+//
+
 import ProjectDescription
 
 let project = Project(
-    name: "ResourceKit",
+    name: "VideoDraftStorage",
     targets: [
         .target(
-            name: "ResourceKit",
+            name: "VideoDraftStorage",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.resourcekit",
-            deploymentTargets: .iOS("17.0"),
+            bundleId: "com.panestudio.VideoDraftStorage",
             infoPlist: .default,
             sources: ["Sources/**"],
-            resources: [
-                .folderReference(path: "Resources/BGMs"),
-                .glob(pattern: "Resources/**", excluding: ["Resources/BGMs/**"])
-            ],
+            resources: [],
             scripts: [
                 .pre(
                     script: """
@@ -33,7 +36,20 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: [],
+            dependencies: [
+                .project(target: "UtilsKit", path: "../../Modules/UtilsKit")
+            ]
+        ),
+        .target(
+            name: "VideoDraftStorageTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.panestudio.VideoDraftStorage",
+            infoPlist: .default,
+            sources: ["Tests/**"],
+            dependencies: [
+                .target(name: "VideoDraftStorage")
+            ],
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
@@ -41,6 +57,15 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "VideoDraftStorageTests",
+            shared: true,
+            buildAction: .buildAction(targets: ["VideoDraftStorage", "VideoDraftStorageTests"]),
+            testAction: .targets(["VideoDraftStorageTests"]),
+            runAction: nil
         )
     ]
 )

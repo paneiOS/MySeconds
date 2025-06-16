@@ -2,32 +2,31 @@
 //  Project.swift
 //  MySeconds
 //
-//  Created by pane on 04/23/2025.
+//  Created by pane on 05/28/2025.
 //
 
 import ProjectDescription
 
 let project = Project(
-    name: "SignUp",
+    name: "BGMSelect",
     targets: [
         .target(
-            name: "SignUp",
+            name: "BGMSelect",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.signup",
+            bundleId: "com.panestudio.BGMSelect",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],
             dependencies: [
+                .external(name: "SnapKit"),
                 .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
-                .project(target: "MySecondsKit", path: "../MySecondsKit"),
-                .project(target: "ResourceKit", path: "../ResourceKit"),
-                .project(target: "UtilsKit", path: "../UtilsKit")
+                .project(target: "MySecondsKit", path: "../MySecondsKit")
             ]
         ),
         .target(
-            name: "SignUpModuleApp",
+            name: "BGMSelectModuleApp",
             destinations: .iOS,
             product: .app,
             bundleId: "com.panestudio.myseconds",
@@ -74,7 +73,7 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .target(name: "SignUp")
+                .target(name: "BGMSelect")
             ],
             settings: .settings(
                 base: [
@@ -85,14 +84,14 @@ let project = Project(
             )
         ),
         .target(
-            name: "SignUpTests",
+            name: "BGMSelectTests",
             destinations: .iOS,
             product: .unitTests,
-            bundleId: "com.panestudio.signup",
+            bundleId: "com.panestudio.bgmselect",
             infoPlist: .default,
             sources: ["Tests/**"],
             dependencies: [
-                .target(name: "SignUp")
+                .target(name: "BGMSelect")
             ],
             settings: .settings(
                 base: [

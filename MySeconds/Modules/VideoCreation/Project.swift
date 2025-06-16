@@ -15,6 +15,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.panestudio.VideoCreation",
+            deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: [],
@@ -33,6 +34,7 @@ let project = Project(
             destinations: .iOS,
             product: .app,
             bundleId: "com.panestudio.myseconds",
+            deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",

@@ -19,7 +19,6 @@ protocol VideoCreationViewControllable: ViewControllable {}
 
 final class VideoCreationRouter: ViewableRouter<VideoCreationInteractable, VideoCreationViewController>, VideoCreationRouting {
     private let component: VideoCreationComponent
-    private var coverClipCreationRouter: CoverClipCreationRouting?
 
     init(
         interactor: VideoCreationInteractable,
@@ -35,21 +34,5 @@ final class VideoCreationRouter: ViewableRouter<VideoCreationInteractable, Video
         #if DEBUG
             print("✅ Deinit: \(self)")
         #endif
-    }
-
-    func routeToCoverclipCreation(with videoCoverClip: VideoCoverClip) {
-        guard self.coverClipCreationRouter == nil else { return }
-        let router = self.component.coverClipCreationBuilder.build(withListener: self.interactor, videoCoverClip: videoCoverClip)
-        self.coverClipCreationRouter = router
-        router.viewControllable.uiviewController.modalPresentationStyle = .overFullScreen
-        self.viewControllable.present(child: router.viewControllable, animated: false)
-        self.attachChild(router)
-    }
-
-    func closeCoverClipCreation() {
-        guard let router = self.coverClipCreationRouter else { return }
-        router.viewControllable.dismiss(animated: false)
-        self.detachChild(router)
-        self.coverClipCreationRouter = nil
     }
 }
