@@ -28,9 +28,6 @@ protocol VideoRecordPresentableListener: AnyObject {
     func didTapRatio()
     func didTapTimer()
     func didTapAlbum()
-
-    // TODO: Sample App 테스트 위한 메서드
-    func recordDidFinish()
 }
 
 final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
@@ -38,16 +35,44 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     weak var listener: VideoRecordPresentableListener?
 
     private let recordControlView = RecordControlView(count: 15)
+    private let cameraManager: CameraManagerProtocol
+    private var cameraPreview: UIView = .init()
+    private let permissionView = CameraPermissionView()
+
+    init(cameraManager: CameraManagerProtocol) {
+        self.cameraManager = cameraManager
+        super.init()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.cameraManager.updatePreviewLayout()
+    }
 
     override func setupUI() {
         self.view.backgroundColor = .white
-        self.view.addSubviews(self.recordControlView)
+        self.view.addSubviews(self.recordControlView, self.cameraPreview)
 
         self.recordControlView.snp.makeConstraints {
             $0.height.equalTo(136)
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalTo(self.view.safeAreaLayoutGuide)
         }
+
+        self.cameraPreview.snp.makeConstraints {
+            $0.top.equalTo(self.view.safeAreaLayoutGuide).offset(62)
+            $0.bottom.equalTo(self.recordControlView.snp.top).offset(-62)
+            $0.leading.trailing.equalToSuperview().inset(24)
+        }
+
+        self.cameraManager.configurePreview(in: self.cameraPreview, cornerRadius: 32)
+        self.cameraManager.requestAuthorization()
+        self.cameraManager.startSession()
     }
 
     override func bind() {
@@ -82,7 +107,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.listener?.didTapRatio()
-
             })
             .store(in: &cancellables)
 

@@ -73,7 +73,7 @@ final class RecordControlView: UIView {
         button.layer.borderColor = UIColor.neutral200.cgColor
 
         let title = "촬영"
-        let subtitle = "30초"
+        let subtitle = "1초"
         let fullText = "\(title)\n\(subtitle)"
         let attributed = NSMutableAttributedString(string: fullText)
 
