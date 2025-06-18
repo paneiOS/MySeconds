@@ -95,6 +95,8 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
         Double(self.durationOptions[self.currentDurationIndex])
     }
 
+    private var isUserCancelled: Bool = false
+
     override public init() {
         super.init()
     }
@@ -202,6 +204,7 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
         guard self.session.isRunning else { return }
 
         if self.movieOutput.isRecording {
+            self.isUserCancelled = true
             self.movieOutput.stopRecording()
             self.isRecordingSubject.send(false)
 
@@ -211,6 +214,7 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
             let outputURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(UUID().uuidString)
                 .appendingPathExtension("mov")
+            self.isUserCancelled = false
             self.movieOutput.startRecording(to: outputURL, recordingDelegate: self)
             self.isRecordingSubject.send(true)
 
@@ -276,6 +280,11 @@ extension CameraManager: AVCaptureFileOutputRecordingDelegate {
 
         guard error == nil else {
             print("녹화 실패:", error!)
+            return
+        }
+
+        guard self.isUserCancelled == false else {
+            print("녹화 취소")
             return
         }
 
