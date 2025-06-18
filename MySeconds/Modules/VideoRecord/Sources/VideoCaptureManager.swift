@@ -88,7 +88,7 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
     private var isFrontCamera = false
     private var currentAspectRatio: AspectRatio = .oneToOne
     private var currentDurationIndex = 0
-    private let durationOptions: [Int] = [1, 3, 5]
+    private let durationOptions: [Int] = [1, 2, 3]
 
     private var recordingTimer: Timer?
     private var currentRecordingDuration: TimeInterval {
@@ -162,6 +162,7 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
     }
 
     // MARK: - Preview
+
     public func configurePreview(in view: UIView, cornerRadius: CGFloat = 0) {
         self.previewContainer = view
         let layer = AVCaptureVideoPreviewLayer(session: session)
@@ -196,6 +197,7 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
     }
 
     // MARK: - 버튼
+
     public func toggleRecording() {
         guard self.session.isRunning else { return }
 
