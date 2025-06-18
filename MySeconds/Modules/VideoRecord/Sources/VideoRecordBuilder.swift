@@ -10,19 +10,15 @@ import UIKit
 import ModernRIBs
 
 import BaseRIBsKit
+import VideoDraftStorage
 
 public protocol VideoRecordDependency: Dependency {
-    var initialAlbumThumbnail: UIImage? { get }
-    var initialAlbumCount: Int { get }
+    var videoDraftStorage: VideoDraftStorage { get }
 }
 
 public final class VideoRecordComponent: Component<VideoRecordDependency> {
-    public var initialAlbumThumbnail: UIImage? {
-        dependency.initialAlbumThumbnail
-    }
-
-    public var initialAlbumCount: Int {
-        dependency.initialAlbumCount
+    public var videoDraftStorage: VideoDraftStorage {
+        dependency.videoDraftStorage
     }
 }
 

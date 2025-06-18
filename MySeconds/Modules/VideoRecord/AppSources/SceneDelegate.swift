@@ -12,6 +12,7 @@ import ModernRIBs
 
 import MySecondsKit
 import ResourceKit
+import VideoDraftStorage
 import VideoRecord
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -46,33 +47,13 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 
 final class MockVideoRecordDependency: VideoRecordDependency {
-    var initialAlbumThumbnail: UIImage? {
-
-        guard let url = ResourceKitResources.bundle.url(forResource: "sample012", withExtension: "mp4") else {
-            print("⚠️ sample01.mp4 를 번들에서 찾을 수 없습니다.")
-            return nil
+    lazy var videoDraftStorage: VideoDraftStorage = {
+        do {
+            return try VideoDraftStorage()
+        } catch {
+            fatalError("초기화실패 mock error: \(error)")
         }
-        return makeThumbnail(from: url)
-    }
-
-    var initialAlbumCount: Int = 0
+    }()
 }
 
 final class MockVideoRecordListener: VideoRecordListener {}
-
-extension MockVideoRecordDependency {
-    func makeThumbnail(from videoURL: URL) -> UIImage? {
-        let asset = AVAsset(url: videoURL)
-        let generator = AVAssetImageGenerator(asset: asset)
-        generator.appliesPreferredTrackTransform = true
-        let time = CMTime(seconds: 1, preferredTimescale: 600) // 1초 지점
-
-        do {
-            let cgImage = try generator.copyCGImage(at: time, actualTime: nil)
-            return UIImage(cgImage: cgImage)
-        } catch {
-            print("썸네일 생성 실패:", error)
-            return nil
-        }
-    }
-}
