@@ -41,7 +41,7 @@ open class BaseBottomSheetViewController: BaseViewController {
 
     public let headerLabel = UILabel()
 
-    let closeButton: UIControl = .init()
+    private let closeButton: UIControl = .init()
 
     public let closeButtonView: UIView = {
         let view: UIView = .init()
@@ -138,7 +138,9 @@ open class BaseBottomSheetViewController: BaseViewController {
                 UIView.animate(withDuration: 0.3, animations: {
                     self.contentsView.transform = CGAffineTransform(translationX: 0, y: self.view.bounds.height)
                 }, completion: { _ in
-                    self.closeTappedSubject.send(true)
+                    self.dismiss(animated: false) {
+                        self.closeTappedSubject.send(true)
+                    }
                 })
             })
             .store(in: &self.baseCancellables)

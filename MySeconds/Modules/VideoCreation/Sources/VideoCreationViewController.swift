@@ -305,7 +305,8 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
                     textColor: .neutral600,
                     alignment: .center
                 )
-                self.lastIndex = self.segmentedControl.selectedIndex
+                self.lastIndex = Constants.bgmIndex
+                self.segmentedControl.selectSegment(at: Constants.bgmIndex)
             })
             .store(in: &self.cancellables)
 
@@ -328,6 +329,9 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
                 .sink(receiveValue: { [weak self] _ in
                     guard let self else { return }
                     if self.segmentedControl.selectedIndex == Constants.bgmIndex {
+                        if self.selectedBGMLabel.attributedText == nil {
+                            self.segmentedControl.selectSegment(at: self.lastIndex)
+                        }
                         self.listener?.bgmSelectButtonTapped()
                     } else {
                         self.lastIndex = self.segmentedControl.selectedIndex
