@@ -15,7 +15,7 @@ import MySecondsKit
 import ResourceKit
 
 protocol VideoRecordPresentableListener: AnyObject {
-    var timerButtonTextPublisher: AnyPublisher<String, Never> { get }
+    var timerButtonTextPublisher: AnyPublisher<Int, Never> { get }
     var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
@@ -153,9 +153,9 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
         self.listener?.ratioButtonTextPublisher
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] text in
+            .sink(receiveValue: { [weak self] seconds in
                 guard let self else { return }
-                self.recordControlView.setRatioButtonText(text: text)
+                self.recordControlView.setRatioButtonText(text: seconds)
             })
             .store(in: &cancellables)
 

@@ -30,8 +30,8 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     private let component: VideoRecordComponent
     private let cameraManager: CameraManagerProtocol
 
-    private let timerButtonTextSubject = PassthroughSubject<String, Never>()
-    public var timerButtonTextPublisher: AnyPublisher<String, Never> {
+    private let timerButtonTextSubject = PassthroughSubject<Int, Never>()
+    public var timerButtonTextPublisher: AnyPublisher<Int, Never> {
         self.timerButtonTextSubject.eraseToAnyPublisher()
     }
 

@@ -86,8 +86,12 @@ final class RecordControlView: UIView {
                     .font: UIFont.systemFont(ofSize: 10, weight: .medium),
                     .foregroundColor: UIColor.neutral500
                 ]),
-                (text: "1초", attribute: [
+                (text: "1", attribute: [
                     .font: UIFont.systemFont(ofSize: 16, weight: .bold),
+                    .foregroundColor: UIColor.neutral800
+                ]),
+                (text: "초", attribute: [
+                    .font: UIFont.systemFont(ofSize: 10, weight: .bold),
                     .foregroundColor: UIColor.neutral800
                 ])
             ]
@@ -249,7 +253,7 @@ final class RecordControlView: UIView {
     }
 
     private func makeTimerAttributedText(seconds: String) -> NSAttributedString {
-        let title = "촬영\n\(seconds)"
+        let title = "촬영\n\(seconds)초"
         let attributeStrings: [(String, [NSAttributedString.Key: Any])] = [
             ("촬영", [
                 .font: UIFont.systemFont(ofSize: 10, weight: .medium),
@@ -257,6 +261,10 @@ final class RecordControlView: UIView {
             ]),
             (seconds, [
                 .font: UIFont.systemFont(ofSize: 16, weight: .bold),
+                .foregroundColor: UIColor.neutral800
+            ]),
+            (text: "초", attribute: [
+                .font: UIFont.systemFont(ofSize: 10, weight: .bold),
                 .foregroundColor: UIColor.neutral800
             ])
         ]
@@ -271,8 +279,8 @@ final class RecordControlView: UIView {
         )
     }
 
-    func setTimerButtonText(seconds: String) {
-        let attributed = self.makeTimerAttributedText(seconds: seconds)
+    func setTimerButtonText(seconds: Int) {
+        let attributed = self.makeTimerAttributedText(seconds: "\(seconds)")
         self.timerButton.setAttributedTitle(attributed, for: .normal)
     }
 

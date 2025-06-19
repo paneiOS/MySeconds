@@ -24,7 +24,7 @@ public protocol CameraManagerProtocol: AnyObject {
     var recordedURLPublisher: AnyPublisher<URL, Never> { get }
 
     var aspectRatioTextPublisher: AnyPublisher<String, Never> { get }
-    var durationTextPublisher: AnyPublisher<String, Never> { get }
+    var durationTextPublisher: AnyPublisher<Int, Never> { get }
     var authorizationPublisher: AnyPublisher<Bool, Never> { get }
 
     func requestAuthorization()
@@ -74,8 +74,8 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
         self.aspectRatioTextSubject.eraseToAnyPublisher()
     }
 
-    private let durationTextSubject = CurrentValueSubject<String, Never>("1초")
-    public var durationTextPublisher: AnyPublisher<String, Never> {
+    private let durationTextSubject = CurrentValueSubject<Int, Never>(1)
+    public var durationTextPublisher: AnyPublisher<Int, Never> {
         self.durationTextSubject.eraseToAnyPublisher()
     }
 
@@ -263,7 +263,7 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
     public func changeDuration() {
         self.currentDurationIndex = (self.currentDurationIndex + 1) % self.durationOptions.count
         let value = self.durationOptions[self.currentDurationIndex]
-        self.durationTextSubject.send("\(value)초")
+        self.durationTextSubject.send(value)
     }
 
     private func reconfigureSessionPreset() {
