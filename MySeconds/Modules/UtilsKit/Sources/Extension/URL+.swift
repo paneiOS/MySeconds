@@ -14,12 +14,12 @@ public extension URL {
         let duration = try await asset.load(.duration)
         return CMTimeGetSeconds(duration)
     }
-    
+
     func generateThumbnail(at seconds: TimeInterval = 0.1) -> UIImage? {
         let asset = AVAsset(url: self)
         let imageGenerator = AVAssetImageGenerator(asset: asset)
         imageGenerator.appliesPreferredTrackTransform = true
-        
+
         do {
             let cgImage = try imageGenerator.copyCGImage(
                 at: CMTime(seconds: seconds, preferredTimescale: 600),

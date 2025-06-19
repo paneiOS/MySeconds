@@ -12,6 +12,9 @@ import ModernRIBs
 
 import BaseRIBsKit
 
+import AVFoundation
+import VideoDraftStorage
+
 public protocol VideoRecordRouting: ViewableRouting {}
 
 protocol VideoRecordPresentable: Presentable {
@@ -21,6 +24,8 @@ protocol VideoRecordPresentable: Presentable {
 public protocol VideoRecordListener: AnyObject {}
 
 final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordInteractable, VideoRecordPresentableListener {
+
+    private let videoDraftStorage = try? VideoDraftStorage()
 
     private let component: VideoRecordComponent
     private let cameraManager: CameraManagerProtocol
@@ -48,6 +53,11 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     private let albumSubject = PassthroughSubject<(UIImage?, Int), Never>()
     public var albumPublisher: AnyPublisher<(UIImage?, Int), Never> {
         self.albumSubject.eraseToAnyPublisher()
+    }
+
+    private let authorizationSubject = CurrentValueSubject<Bool, Never>(false)
+    public var authorizationPublisher: AnyPublisher<Bool, Never> {
+        self.authorizationSubject.eraseToAnyPublisher()
     }
 
     private let thumbnailSubject = CurrentValueSubject<UIImage?, Never>(nil)
@@ -107,16 +117,68 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.cameraManager.recordedURLPublisher
             .sink(receiveValue: { [weak self] url in
                 guard let self else { return }
-                print("recordedURLPublisher \(url)")
+                Task {
+                    await self.saveVideo(url: url)
+                }
             })
             .store(in: &self.cancellables)
+
+        self.cameraManager.authorizationPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] isAuthorized in
+                guard let self else { return }
+                self.authorizationSubject.send(isAuthorized)
+            })
+            .store(in: &self.cancellables)
+    }
+
+    private func saveVideo(url: URL) async {
+        guard let thumbnail = url.generateThumbnail(),
+              let thumbnailData = thumbnail.jpegData(compressionQuality: 0.8) else {
+            print("썸네일 생성 실패")
+            return
+        }
+
+        do {
+            let duration = try await url.videoDuration()
+
+            let draft = VideoDraft(
+                duration: duration,
+                thumbnail: thumbnailData
+            )
+
+            let filePath = try self.videoDraftStorage?.saveVideoDraft(sourceURL: url, fileName: draft.fileBaseName)
+            var drafts = try self.videoDraftStorage?.loadAll(type: VideoDraft.self) ?? []
+            drafts.append(draft)
+            try self.videoDraftStorage?.updateBackup(drafts)
+
+            self.thumbnailSubject.send(thumbnail)
+            self.albumCountSubject.send(drafts.count)
+            print("저장 성공 \(filePath?.lastPathComponent ?? "")")
+        } catch {
+            print("저장 실패", error)
+        }
     }
 }
 
 extension VideoRecordInteractor {
     func initAlbum() {
-        self.thumbnailSubject.send(self.component.initialAlbumThumbnail)
-        self.albumCountSubject.send(self.component.initialAlbumCount)
+        do {
+            let videos = try self.videoDraftStorage?.loadAll(type: VideoDraft.self)
+            let sorted = videos?.sorted {
+                $0.createdAt > $1.createdAt
+            }
+            let thumbnail = sorted?.first.flatMap {
+                UIImage(data: $0.thumbnail)
+            }
+            let count = videos?.count ?? 0
+
+            self.thumbnailSubject.send(thumbnail)
+            self.albumCountSubject.send(count)
+        } catch {
+            self.thumbnailSubject.send(nil)
+            self.albumCountSubject.send(0)
+        }
     }
 }
 

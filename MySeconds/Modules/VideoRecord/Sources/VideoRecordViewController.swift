@@ -22,6 +22,8 @@ protocol VideoRecordPresentableListener: AnyObject {
 
     var albumPublisher: AnyPublisher<(UIImage?, Int), Never> { get }
 
+    var authorizationPublisher: AnyPublisher<Bool, Never> { get }
+
     func initAlbum()
     func didTapRecord()
     func didTapFlip()
@@ -56,7 +58,11 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     override func setupUI() {
         self.view.backgroundColor = .white
-        self.view.addSubviews(self.recordControlView, self.cameraPreview)
+        self.view.addSubviews(self.recordControlView, self.cameraPreview, self.permissionView)
+
+        self.permissionView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
 
         self.recordControlView.snp.makeConstraints {
             $0.height.equalTo(136)
@@ -70,9 +76,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             $0.leading.trailing.equalToSuperview().inset(24)
         }
 
-        self.cameraManager.configurePreview(in: self.cameraPreview, cornerRadius: 32)
         self.cameraManager.requestAuthorization()
-        self.cameraManager.startSession()
     }
 
     override func bind() {
@@ -126,6 +130,19 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     }
 
     private func bindStateBindings() {
+        self.listener?.authorizationPublisher
+            .sink(receiveValue: { [weak self] isAuthorized in
+                guard let self else { return }
+                self.cameraManager.previewLayer?.isHidden = !isAuthorized
+                self.permissionView.isHidden = isAuthorized
+
+                if isAuthorized {
+                    self.cameraManager.configurePreview(in: self.cameraPreview, cornerRadius: 32)
+                    self.cameraManager.startSession()
+                }
+            })
+            .store(in: &cancellables)
+
         self.listener?.timerButtonTextPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] text in
