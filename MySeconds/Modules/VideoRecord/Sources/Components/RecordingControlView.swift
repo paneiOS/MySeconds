@@ -52,63 +52,28 @@ final class RecordControlView: UIView {
 
     private let recordButton = RecordingButton(buttonSize: Constants.recordButtonSize, progressPadding: 5)
 
-    private let ratioButton: UIButton = {
-        let button: UIButton = .init()
+    private lazy var ratioButton: UIButton = {
+        let button = self.makeButtonStyle()
         var configuration: UIButton.Configuration = .plain()
         configuration.attributedTitle = .init(.makeAttributedString(
             text: "1:1",
             font: .systemFont(ofSize: 16),
             textColor: .neutral950
         ))
-
-        button.backgroundColor = .neutral100
-        button.layer.cornerRadius = Constants.controlButtonSize / 2
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.neutral200.cgColor
         button.configuration = configuration
         return button
     }()
 
-    private let timerButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .neutral100
-        button.layer.cornerRadius = Constants.controlButtonSize / 2
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.neutral200.cgColor
-
-        let attributed = NSAttributedString.makeAttributedString(
-            text: "촬영\n1초",
-            font: .systemFont(ofSize: 16),
-            textColor: .neutral800,
-            alignment: .center,
-            additionalAttributes: [
-                (text: "촬영", attribute: [
-                    .font: UIFont.systemFont(ofSize: 10, weight: .medium),
-                    .foregroundColor: UIColor.neutral500
-                ]),
-                (text: "1", attribute: [
-                    .font: UIFont.systemFont(ofSize: 16, weight: .bold),
-                    .foregroundColor: UIColor.neutral800
-                ]),
-                (text: "초", attribute: [
-                    .font: UIFont.systemFont(ofSize: 10, weight: .bold),
-                    .foregroundColor: UIColor.neutral800
-                ])
-            ]
-        )
-        button.setAttributedTitle(attributed, for: .normal)
+    private lazy var timerButton: UIButton = {
+        let button = self.makeButtonStyle()
+        button.setAttributedTitle(self.makeTimerAttributedText(seconds: "1"), for: .normal)
         button.titleLabel?.numberOfLines = 2
         button.titleLabel?.textAlignment = .center
         return button
     }()
 
-    private let cameraFlipButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .neutral100
-        button.layer.cornerRadius = Constants.controlButtonSize / 2
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.neutral200.cgColor
-
+    private lazy var cameraFlipButton: UIButton = {
+        let button = self.makeButtonStyle()
         let image = ResourceKitAsset.refreshCcw.image.withRenderingMode(.alwaysTemplate)
         button.setImage(image, for: .normal)
         button.tintColor = .neutral950
@@ -279,18 +244,26 @@ final class RecordControlView: UIView {
         )
     }
 
+    private func makeButtonStyle(size: CGFloat = Constants.controlButtonSize) -> UIButton {
+        let button = UIButton()
+        button.backgroundColor = .neutral100
+        button.layer.cornerRadius = size / 2
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.neutral200.cgColor
+        return button
+    }
+
     func setTimerButtonText(seconds: Int) {
         let attributed = self.makeTimerAttributedText(seconds: "\(seconds)")
         self.timerButton.setAttributedTitle(attributed, for: .normal)
     }
 
     func setRatioButtonText(text: String) {
-        let attributed = NSAttributedString.makeAttributedString(
+        self.ratioButton.setAttributedTitle(NSAttributedString.makeAttributedString(
             text: text,
             font: .systemFont(ofSize: 16),
             textColor: .neutral950
-        )
-        self.ratioButton.setAttributedTitle(attributed, for: .normal)
+        ), for: .normal)
     }
 
     func setRecordingState(_ isRecording: Bool) {
@@ -324,7 +297,6 @@ final class RecordControlView: UIView {
                 self,
                 text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
             )
-
         } else {
             self.buttonStack.isUserInteractionEnabled = true
             self.buttonStack.alpha = 1.0
