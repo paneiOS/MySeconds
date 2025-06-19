@@ -53,15 +53,19 @@ final class RecordControlView: UIView {
     private let recordButton = RecordingButton(buttonSize: Constants.recordButtonSize, progressPadding: 5)
 
     private let ratioButton: UIButton = {
-        let button = UIButton()
+        let button: UIButton = .init()
+        var configuration: UIButton.Configuration = .plain()
+        configuration.attributedTitle = .init(.makeAttributedString(
+            text: "1:1",
+            font: .systemFont(ofSize: 16),
+            textColor: .neutral950
+        ))
+
         button.backgroundColor = .neutral100
         button.layer.cornerRadius = Constants.controlButtonSize / 2
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.neutral200.cgColor
-        button.setTitle("1:1", for: .normal)
-        button.setTitleColor(.neutral950, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 14)
-        button.translatesAutoresizingMaskIntoConstraints = false
+        button.configuration = configuration
         return button
     }()
 
@@ -72,26 +76,25 @@ final class RecordControlView: UIView {
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.neutral200.cgColor
 
-        let title = "촬영"
-        let subtitle = "1초"
-        let fullText = "\(title)\n\(subtitle)"
-        let attributed = NSMutableAttributedString(string: fullText)
-
-        attributed.addAttributes([
-            .font: UIFont.systemFont(ofSize: 10, weight: .medium),
-            .foregroundColor: UIColor.neutral500
-        ], range: (fullText as NSString).range(of: title))
-
-        attributed.addAttributes([
-            .font: UIFont.systemFont(ofSize: 16, weight: .bold),
-            .foregroundColor: UIColor.neutral800
-        ], range: (fullText as NSString).range(of: subtitle))
-
+        let attributed = NSAttributedString.makeAttributedString(
+            text: "촬영\n1초",
+            font: .systemFont(ofSize: 16),
+            textColor: .neutral800,
+            alignment: .center,
+            additionalAttributes: [
+                (text: "촬영", attribute: [
+                    .font: UIFont.systemFont(ofSize: 10, weight: .medium),
+                    .foregroundColor: UIColor.neutral500
+                ]),
+                (text: "1초", attribute: [
+                    .font: UIFont.systemFont(ofSize: 16, weight: .bold),
+                    .foregroundColor: UIColor.neutral800
+                ])
+            ]
+        )
         button.setAttributedTitle(attributed, for: .normal)
         button.titleLabel?.numberOfLines = 2
         button.titleLabel?.textAlignment = .center
-
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
 
@@ -105,8 +108,6 @@ final class RecordControlView: UIView {
         let image = ResourceKitAsset.refreshCcw.image.withRenderingMode(.alwaysTemplate)
         button.setImage(image, for: .normal)
         button.tintColor = .neutral950
-
-        button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
 
@@ -276,7 +277,12 @@ final class RecordControlView: UIView {
     }
 
     func setRatioButtonText(text: String) {
-        self.ratioButton.setTitle(text, for: .normal)
+        let attributed = NSAttributedString.makeAttributedString(
+            text: text,
+            font: .systemFont(ofSize: 16),
+            textColor: .neutral950
+        )
+        self.ratioButton.setAttributedTitle(attributed, for: .normal)
     }
 
     func setRecordingState(_ isRecording: Bool) {
