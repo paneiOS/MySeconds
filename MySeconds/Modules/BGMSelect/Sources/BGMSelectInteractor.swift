@@ -20,7 +20,10 @@ protocol BGMSelectPresentable: Presentable {
     var listener: BGMSelectPresentableListener? { get set }
 }
 
-public protocol BGMSelectListener: AnyObject {}
+public protocol BGMSelectListener: AnyObject {
+    func apply(bgm: BGM)
+    func closeBGMSelect()
+}
 
 final class BGMSelectInteractor: PresentableInteractor<BGMSelectPresentable>, BGMSelectInteractable {
     private let component: BGMSelectComponent
@@ -113,11 +116,12 @@ final class BGMSelectInteractor: PresentableInteractor<BGMSelectPresentable>, BG
 
 extension BGMSelectInteractor: BGMSelectPresentableListener {
     func applyButtonTapped(bgm: BGM) {
-        // TODO: - 적용 버튼 구현
+        self.stop()
+        self.listener?.apply(bgm: bgm)
     }
 
     func closeButtonTapped() {
-        // TODO: - 닫기 버튼 구현
+        self.listener?.closeBGMSelect()
     }
 }
 

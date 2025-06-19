@@ -10,16 +10,20 @@ import Combine
 import ModernRIBs
 
 import BaseRIBsKit
+import BGMSelect
 import SharedModels
 
-public protocol VideoCreationRouting: ViewableRouting {}
+public protocol VideoCreationRouting: ViewableRouting {
+    func apply(bgm: BGM)
+}
 
 protocol VideoCreationPresentable: Presentable {
     var listener: VideoCreationPresentableListener? { get set }
 }
 
 public protocol VideoCreationListener: AnyObject {
-    func videoCreationDidSelectCoverClip(clip: VideoCoverClip)
+    func didSelectCoverClip(clip: VideoCoverClip)
+    func bgmSelectButtonTapped()
 }
 
 final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresentable>, VideoCreationInteractable {
@@ -28,6 +32,11 @@ final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresenta
     private let clipsSubject = CurrentValueSubject<[CompositionClip], Never>([])
     public var clipsPublisher: AnyPublisher<[CompositionClip], Never> {
         self.clipsSubject.eraseToAnyPublisher()
+    }
+
+    private let selectedBGMSubject = CurrentValueSubject<BGM?, Never>(nil)
+    public var selectedBGMPublisher: AnyPublisher<BGM?, Never> {
+        self.selectedBGMSubject.eraseToAnyPublisher()
     }
 
     weak var router: VideoCreationRouting?
@@ -57,6 +66,14 @@ extension VideoCreationInteractor: VideoCreationPresentableListener {
     }
 
     func didSelectCoverClip(clip: VideoCoverClip) {
-        self.listener?.videoCreationDidSelectCoverClip(clip: clip)
+        self.listener?.didSelectCoverClip(clip: clip)
+    }
+
+    func bgmSelectButtonTapped() {
+        self.listener?.bgmSelectButtonTapped()
+    }
+
+    func apply(bgm: BGM) {
+        self.selectedBGMSubject.send(bgm)
     }
 }

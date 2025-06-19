@@ -37,7 +37,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let bundle = ResourceKitResources.bundle
         guard let bgmsDir = bundle.url(forResource: "BGMs", withExtension: nil) else { return }
         let builder = BGMSelectBuilder(dependency: MockBGMSelectDependency(bgmDirectoryURL: bgmsDir))
-        let router = builder.build(withListener: self.mockListener)
+        let router = builder.build(withListener: self.mockListener, bgmDirectoryURL: bgmsDir)
         self.router = router
 
         self.window?.rootViewController = router.viewControllable.uiviewController
@@ -53,4 +53,6 @@ final class MockBGMSelectDependency: BGMSelectDependency {
     }
 }
 
-final class MockBGMSelectListener: BGMSelectListener {}
+final class MockBGMSelectListener: BGMSelectListener {
+    func closeBGMSelect() {}
+}

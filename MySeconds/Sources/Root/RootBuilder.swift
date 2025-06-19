@@ -7,6 +7,7 @@
 
 import ModernRIBs
 
+import BGMSelect
 import CoverClipCreation
 import FirebaseFirestore
 import Login
@@ -50,6 +51,12 @@ extension RootComponent: SignUpDependency {
 extension RootComponent: CoverClipCreationDependency {
     var coverClipCreationBuilder: CoverClipCreationBuildable {
         CoverClipCreationBuilder(dependency: self)
+    }
+}
+
+extension RootComponent: BGMSelectDependency {
+    var bgmSelectBuilder: BGMSelectBuildable {
+        BGMSelectBuilder(dependency: self)
     }
 }
 

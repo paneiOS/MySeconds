@@ -9,6 +9,7 @@ import UIKit
 
 import ModernRIBs
 
+import BGMSelect
 import CoverClipCreation
 import Login
 import SharedModels
@@ -16,7 +17,12 @@ import SignUp
 import UtilsKit
 import VideoCreation
 
-protocol RootInteractable: Interactable, LoginListener, VideoCreationListener, SignUpListener, CoverClipCreationListener {
+protocol RootInteractable: Interactable,
+    LoginListener,
+    VideoCreationListener,
+    SignUpListener,
+    CoverClipCreationListener,
+    BGMSelectListener {
     var router: RootRouting? { get set }
     var listener: RootListener? { get set }
 }
@@ -30,6 +36,7 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
     private var signUpRouter: SignUpRouting?
     private var videoCreationRouter: VideoCreationRouting?
     private var coverClipCreationRouter: CoverClipCreationRouting?
+    private var bgmSelectRouter: BGMSelectRouting?
 
     init(
         interactor: RootInteractable,
@@ -99,6 +106,29 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
         self.detachChild(coverClipCreationRouter)
         self.viewController.dismiss(animated: true)
         self.coverClipCreationRouter = nil
+    }
+
+    func routeToBGMSelect(bgmDirectoryURL: URL) {
+        guard bgmSelectRouter == nil else { return }
+        let bgmSelectRouter = self.component.bgmSelectBuilder.build(withListener: self.interactor, bgmDirectoryURL: bgmDirectoryURL)
+        let bgmSelectViewController = bgmSelectRouter.uiviewController
+        bgmSelectViewController.modalPresentationStyle = .overFullScreen
+        self.attachChild(bgmSelectRouter)
+        self.bgmSelectRouter = bgmSelectRouter
+        self.viewController.present(child: bgmSelectRouter.viewControllable, animated: false)
+    }
+
+    func apply(bgm: BGM) {
+        self.closeBGMSelect()
+        guard let videoCreationRouter else { return }
+        videoCreationRouter.apply(bgm: bgm)
+    }
+
+    func closeBGMSelect() {
+        guard let bgmSelectRouter else { return }
+        self.detachChild(bgmSelectRouter)
+        self.viewController.dismiss(animated: true)
+        self.bgmSelectRouter = nil
     }
 }
 

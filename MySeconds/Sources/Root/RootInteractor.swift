@@ -5,9 +5,13 @@
 //  Created by JeongHwan Lee on 1/27/25.
 //
 
+import Foundation
+
 import ModernRIBs
 
+import BGMSelect
 import Login
+import ResourceKit
 import SharedModels
 import SignUp
 import SocialLoginKit
@@ -19,6 +23,9 @@ protocol RootRouting: ViewableRouting {
     func routeToVideoCreation(clips: [CompositionClip])
     func routeToCoverClipCreation(clip: VideoCoverClip)
     func closeCoverClipCreation()
+    func routeToBGMSelect(bgmDirectoryURL: URL)
+    func apply(bgm: BGM)
+    func closeBGMSelect()
 }
 
 protocol RootPresentable: Presentable {
@@ -36,6 +43,10 @@ final class RootInteractor: PresentableInteractor<RootPresentable>, RootPresenta
         .cover(.init(title: nil, description: nil, type: .intro)),
         .cover(.init(title: nil, description: nil, type: .outro))
     ]
+
+    private var bgmDirectoryURL: URL? {
+        ResourceKitResources.bundle.url(forResource: "BGMs", withExtension: nil)
+    }
 
     override init(presenter: RootPresentable) {
         super.init(presenter: presenter)
@@ -65,11 +76,24 @@ extension RootInteractor: RootInteractable {
         self.router?.routeToVideoCreation(clips: self.clips)
     }
 
-    func videoCreationDidSelectCoverClip(clip: VideoCoverClip) {
+    func didSelectCoverClip(clip: VideoCoverClip) {
         self.router?.routeToCoverClipCreation(clip: clip)
     }
 
     func closeCoverClipCreation() {
         self.router?.closeCoverClipCreation()
+    }
+
+    func bgmSelectButtonTapped() {
+        guard let bgmDirectoryURL else { return }
+        self.router?.routeToBGMSelect(bgmDirectoryURL: bgmDirectoryURL)
+    }
+
+    func apply(bgm: BGM) {
+        self.router?.apply(bgm: bgm)
+    }
+
+    func closeBGMSelect() {
+        self.router?.closeBGMSelect()
     }
 }

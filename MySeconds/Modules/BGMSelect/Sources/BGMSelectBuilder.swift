@@ -12,20 +12,21 @@ import ModernRIBs
 import BaseRIBsKit
 import ResourceKit
 
-public protocol BGMSelectDependency: Dependency {
-    var bgmDirectoryURL: URL { get }
-}
+public protocol BGMSelectDependency: Dependency {}
 
 public final class BGMSelectComponent: Component<BGMSelectDependency> {
-    var bgmDirectoryURL: URL {
-        dependency.bgmDirectoryURL
+    public let bgmDirectoryURL: URL
+
+    public init(dependency: BGMSelectDependency, bgmDirectoryURL: URL) {
+        self.bgmDirectoryURL = bgmDirectoryURL
+        super.init(dependency: dependency)
     }
 }
 
 // MARK: - Builder
 
 public protocol BGMSelectBuildable: Buildable {
-    func build(withListener listener: BGMSelectListener) async -> BGMSelectRouting
+    func build(withListener listener: BGMSelectListener, bgmDirectoryURL: URL) -> BGMSelectRouting
 }
 
 public final class BGMSelectBuilder: Builder<BGMSelectDependency>, BGMSelectBuildable {
@@ -40,8 +41,8 @@ public final class BGMSelectBuilder: Builder<BGMSelectDependency>, BGMSelectBuil
         #endif
     }
 
-    public func build(withListener listener: BGMSelectListener) -> BGMSelectRouting {
-        let component = BGMSelectComponent(dependency: dependency)
+    public func build(withListener listener: BGMSelectListener, bgmDirectoryURL: URL) -> BGMSelectRouting {
+        let component = BGMSelectComponent(dependency: dependency, bgmDirectoryURL: bgmDirectoryURL)
         let viewController = BGMSelectViewController()
         let interactor = BGMSelectInteractor(presenter: viewController, component: component)
         interactor.listener = listener

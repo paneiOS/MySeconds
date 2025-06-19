@@ -7,17 +7,19 @@
 
 import ModernRIBs
 
+import BGMSelect
 import CoverClipCreation
 import SharedModels
 
 protocol VideoCreationInteractable: Interactable {
     var router: VideoCreationRouting? { get set }
     var listener: VideoCreationListener? { get set }
+    func apply(bgm: BGM)
 }
 
 protocol VideoCreationViewControllable: ViewControllable {}
 
-final class VideoCreationRouter: ViewableRouter<VideoCreationInteractable, VideoCreationViewController>, VideoCreationRouting {
+final class VideoCreationRouter: ViewableRouter<VideoCreationInteractable, VideoCreationViewController> {
     private let component: VideoCreationComponent
 
     init(
@@ -34,5 +36,11 @@ final class VideoCreationRouter: ViewableRouter<VideoCreationInteractable, Video
         #if DEBUG
             print("✅ Deinit: \(self)")
         #endif
+    }
+}
+
+extension VideoCreationRouter: VideoCreationRouting {
+    func apply(bgm: BGM) {
+        self.interactor.apply(bgm: bgm)
     }
 }

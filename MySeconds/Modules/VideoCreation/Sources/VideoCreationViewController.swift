@@ -12,6 +12,7 @@ import UIKit
 import SnapKit
 
 import BaseRIBsKit
+import BGMSelect
 import CoverClipCreation
 import MySecondsKit
 import ResourceKit
@@ -19,11 +20,13 @@ import SharedModels
 import UtilsKit
 
 protocol VideoCreationPresentableListener: AnyObject {
+    var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
+    var selectedBGMPublisher: AnyPublisher<BGM?, Never> { get }
     func initClips()
     func update(clips: [CompositionClip])
     func delete(clip: CompositionClip)
     func didSelectCoverClip(clip: VideoCoverClip)
-    var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
+    func bgmSelectButtonTapped()
 }
 
 final class VideoCreationViewController: BaseViewController, VideoCreationPresentable, VideoCreationViewControllable {
@@ -42,6 +45,8 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
 
         static let thumbnailSize: CGSize = .init(width: cellSize.width * 2, height: cellSize.height * 2)
         static let contentViewSpacing: CGFloat = 32
+        static let initialSelectedSegmentIndex: Int = 2
+        static let bgmIndex: Int = 1
     }
 
     private enum Section {
@@ -143,10 +148,12 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
                 .init(image: ResourceKitAsset.music.image, title: "BGM"),
                 .init(image: ResourceKitAsset.volume.image, title: "원본")
             ],
-            initialIndex: 1
+            initialIndex: Constants.initialSelectedSegmentIndex
         )
         return control
     }()
+
+    private let selectedBGMLabel: UILabel = .init()
 
     private let removeView: UIView = {
         let view: UIView = .init()
@@ -185,6 +192,11 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
     private var pendingPlayer: AVPlayer?
     private var fillLayer: CALayer?
     private var clips: [CompositionClip] = []
+    private var lastIndex: Int = Constants.initialSelectedSegmentIndex {
+        didSet {
+            print("pane_lastIndex", self.lastIndex)
+        }
+    }
 
     // MARK: - Override func
 
@@ -229,7 +241,7 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             $0.leading.trailing.bottom.equalToSuperview()
         }
 
-        self.contentsSubview.addSubviews(self.titleView, self.collectionView, self.segmentedControl)
+        self.contentsSubview.addSubviews(self.titleView, self.collectionView, self.segmentedControl, self.selectedBGMLabel)
         self.titleView.snp.makeConstraints {
             $0.top.leading.trailing.equalToSuperview()
         }
@@ -239,6 +251,10 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         }
         self.segmentedControl.snp.makeConstraints {
             $0.top.equalTo(self.collectionView.snp.bottom).offset(Constants.contentViewSpacing)
+            $0.centerX.equalToSuperview()
+        }
+        self.selectedBGMLabel.snp.makeConstraints {
+            $0.top.equalTo(self.segmentedControl.snp.bottom).offset(Constants.contentViewSpacing)
             $0.centerX.bottom.equalToSuperview()
         }
 
@@ -279,6 +295,20 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
             })
             .store(in: &self.cancellables)
 
+        self.listener?.selectedBGMPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] bgm in
+                guard let self, let bgm else { return }
+                self.selectedBGMLabel.attributedText = .makeAttributedString(
+                    text: "BGM - \(bgm.fileName)",
+                    font: .systemFont(ofSize: 14, weight: .medium),
+                    textColor: .neutral600,
+                    alignment: .center
+                )
+                self.lastIndex = self.segmentedControl.selectedIndex
+            })
+            .store(in: &self.cancellables)
+
         self.makeButton.publisher(for: .touchDown)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
@@ -292,6 +322,19 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
                 self.endHoldAnimation()
             })
             .store(in: &cancellables)
+
+        for button in self.segmentedControl.buttons {
+            button.publisher(for: .touchUpInside)
+                .sink(receiveValue: { [weak self] _ in
+                    guard let self else { return }
+                    if self.segmentedControl.selectedIndex == Constants.bgmIndex {
+                        self.listener?.bgmSelectButtonTapped()
+                    } else {
+                        self.lastIndex = self.segmentedControl.selectedIndex
+                    }
+                })
+                .store(in: &cancellables)
+        }
     }
 }
 

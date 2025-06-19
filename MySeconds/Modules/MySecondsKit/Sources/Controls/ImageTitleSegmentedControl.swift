@@ -47,7 +47,7 @@ public final class ImageTitleSegmentedControl: UIControl {
     }()
 
     public private(set) var selectedIndex: Int = 0
-    private var buttons: [UIButton] = []
+    public private(set) var buttons: [UIButton] = []
     private var indicatorLeading: Constraint?
     private var indicatorWidth: Constraint?
 
@@ -127,6 +127,13 @@ public final class ImageTitleSegmentedControl: UIControl {
         self.indicatorView.applyShadow(color: .black.withAlphaComponent(0.1), y: 1, blur: 4)
         layoutIfNeeded()
         self.updateIndicator(animated: false)
+    }
+
+    public func selectSegment(at index: Int, animated: Bool = true) {
+        guard index != self.selectedIndex,
+              index >= 0, index < self.buttons.count else { return }
+        self.selectedIndex = index
+        self.updateIndicator(animated: animated)
     }
 
     private func makeSegmentButton(item: Item, tintColor: UIColor) -> UIButton {
