@@ -25,6 +25,7 @@ public protocol CameraManagerProtocol: AnyObject {
 
     var aspectRatioTextPublisher: AnyPublisher<String, Never> { get }
     var durationTextPublisher: AnyPublisher<String, Never> { get }
+    var authorizationPublisher: AnyPublisher<Bool, Never> { get }
 
     func requestAuthorization()
     func configurePreview(in view: UIView, cornerRadius: CGFloat)
@@ -78,6 +79,11 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
         self.durationTextSubject.eraseToAnyPublisher()
     }
 
+    private let authorizationSubject = PassthroughSubject<Bool, Never>()
+    public var authorizationPublisher: AnyPublisher<Bool, Never> {
+        self.authorizationSubject.eraseToAnyPublisher()
+    }
+
     private let session = AVCaptureSession()
     private var videoDeviceInput: AVCaptureDeviceInput?
     private let movieOutput = AVCaptureMovieFileOutput()
@@ -109,14 +115,16 @@ public final class CameraManager: NSObject, CameraManagerProtocol {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             self.configureSession()
+            self.authorizationSubject.send(true)
         case .notDetermined:
             AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                self?.authorizationSubject.send(granted)
                 if granted {
                     self?.configureSession()
                 }
             }
         default:
-            break
+            self.authorizationSubject.send(false)
         }
     }
 
