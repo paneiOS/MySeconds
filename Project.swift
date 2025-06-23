@@ -79,7 +79,8 @@ let project = Project(
                 .project(target: "CoverClipCreation", path: "MySeconds/Modules/CoverClipCreation"),
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
-                .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation")
+                .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation"),
+                .project(target: "VideoRecord", path: "MySeconds/Modules/VideoRecord")
             ],
             settings: .settings(
                 base: [
