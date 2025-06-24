@@ -47,7 +47,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 
 final class MockVideoRecordDependency: VideoRecordDependency {
-    lazy var videoDraftStorage: VideoDraftStorage = {
+    var videoDraftStorage: VideoDraftStorage = {
         do {
             return try VideoDraftStorage()
         } catch {

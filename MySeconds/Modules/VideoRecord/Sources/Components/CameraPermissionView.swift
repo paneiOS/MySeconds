@@ -61,11 +61,7 @@ class CameraPermissionView: UIView {
         self.bind()
     }
 
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        self.setupUI()
-        self.bind()
-    }
+    required init?(coder: NSCoder) { nil }
 
     private func setupUI() {
         self.backgroundColor = .white
@@ -90,7 +86,7 @@ class CameraPermissionView: UIView {
             $0.center.equalToSuperview()
         }
         self.cameraImageView.snp.makeConstraints {
-            $0.width.height.equalTo(48)
+            $0.size.equalTo(48)
         }
     }
 
