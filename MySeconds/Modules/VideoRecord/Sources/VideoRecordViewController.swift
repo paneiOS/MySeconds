@@ -13,6 +13,7 @@ import SnapKit
 
 import MySecondsKit
 import ResourceKit
+import VideoDraftStorage
 
 protocol VideoRecordPresentableListener: AnyObject {
     var timerButtonTextPublisher: AnyPublisher<Int, Never> { get }
@@ -20,9 +21,9 @@ protocol VideoRecordPresentableListener: AnyObject {
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
 
-    var albumPublisher: AnyPublisher<(UIImage?, Int), Never> { get }
+    var videosPublisher: AnyPublisher<[VideoDraft], Never> { get }
 
-    var authorizationPublisher: AnyPublisher<Bool, Never> { get }
+    var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> { get }
 
     func initAlbum()
     func didTapRecord()
@@ -36,13 +37,14 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     weak var listener: VideoRecordPresentableListener?
 
-    private let recordControlView = RecordControlView(count: 15)
+    private var recordControlView: RecordControlView
     private let cameraManager: CameraManagerProtocol
     private var cameraPreview: UIView = .init()
     private let permissionView = CameraPermissionView()
 
     init(cameraManager: CameraManagerProtocol) {
         self.cameraManager = cameraManager
+        self.recordControlView = RecordControlView(videos: [], maxAlbumCount: 15)
         super.init()
     }
 
@@ -75,8 +77,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             $0.bottom.equalTo(self.recordControlView.snp.top).offset(-62)
             $0.leading.trailing.equalToSuperview().inset(24)
         }
-
-        self.cameraManager.requestAuthorization()
     }
 
     override func bind() {
@@ -130,19 +130,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     }
 
     private func bindStateBindings() {
-        self.listener?.authorizationPublisher
-            .sink(receiveValue: { [weak self] isAuthorized in
-                guard let self else { return }
-                self.cameraManager.previewLayer?.isHidden = !isAuthorized
-                self.permissionView.isHidden = isAuthorized
-
-                if isAuthorized {
-                    self.cameraManager.configurePreview(in: self.cameraPreview, cornerRadius: 32)
-                    self.cameraManager.startSession()
-                }
-            })
-            .store(in: &cancellables)
-
         self.listener?.timerButtonTextPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] text in
@@ -175,13 +162,28 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.listener?.albumPublisher
+        self.listener?.videosPublisher
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] thumbnail, count in
+            .sink(receiveValue: { [weak self] videos in
                 guard let self else { return }
-                self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
+                self.recordControlView.updateAlbum(videos: videos)
             })
             .store(in: &cancellables)
+
+        self.listener?.cameraAuthorizationPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] isAuthorized in
+                guard let self else { return }
+
+                self.cameraManager.previewLayer?.isHidden = !isAuthorized
+                self.permissionView.isHidden = isAuthorized
+
+                if isAuthorized {
+                    self.cameraManager.configurePreview(in: self.cameraPreview, cornerRadius: 32)
+                    self.cameraManager.startSession()
+                }
+            })
+            .store(in: &self.cancellables)
     }
 
     func navigationConfig() -> NavigationConfig {

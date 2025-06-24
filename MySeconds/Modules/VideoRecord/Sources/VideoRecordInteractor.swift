@@ -5,14 +5,13 @@
 //  Created by chungwussup on 05/19/2025.
 //
 
+import AVFoundation
 import Combine
 import UIKit
 
 import ModernRIBs
 
 import BaseRIBsKit
-
-import AVFoundation
 import VideoDraftStorage
 
 public protocol VideoRecordRouting: ViewableRouting {}
@@ -50,18 +49,17 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.recordDurationSubject.eraseToAnyPublisher()
     }
 
-    private let albumSubject = PassthroughSubject<(UIImage?, Int), Never>()
-    public var albumPublisher: AnyPublisher<(UIImage?, Int), Never> {
-        self.albumSubject.eraseToAnyPublisher()
+    private let videosSubject = PassthroughSubject<[VideoDraft], Never>()
+    public var videosPublisher: AnyPublisher<[VideoDraft], Never> {
+        self.videosSubject.eraseToAnyPublisher()
     }
 
-    private let authorizationSubject = CurrentValueSubject<Bool, Never>(false)
-    public var authorizationPublisher: AnyPublisher<Bool, Never> {
-        self.authorizationSubject.eraseToAnyPublisher()
+    private let cameraAuthorizationSubject = PassthroughSubject<Bool, Never>()
+    var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> {
+        self.cameraAuthorizationSubject.eraseToAnyPublisher()
     }
 
-    private let thumbnailSubject = CurrentValueSubject<UIImage?, Never>(nil)
-    private let albumCountSubject = CurrentValueSubject<Int, Never>(0)
+    private let videoSubject = CurrentValueSubject<[VideoDraft], Never>([])
 
     private let videoRatios: [String] = ["1:1", "4:3"]
     private var cancellables = Set<AnyCancellable>()
@@ -80,12 +78,19 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     }
 
     private func bind() {
-        self.thumbnailSubject
-            .combineLatest(self.albumCountSubject)
+        self.videoSubject
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] thumbnail, count in
+            .sink(receiveValue: { [weak self] videos in
                 guard let self else { return }
-                self.albumSubject.send((thumbnail, count))
+                self.videosSubject.send(videos)
+            })
+            .store(in: &self.cancellables)
+
+        self.cameraManager
+            .requestAuthorizationPublisher()
+            .sink(receiveValue: { [weak self] isAuthorized in
+                guard let self else { return }
+                self.cameraAuthorizationSubject.send(isAuthorized)
             })
             .store(in: &self.cancellables)
     }
@@ -122,14 +127,6 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
                 }
             })
             .store(in: &self.cancellables)
-
-        self.cameraManager.authorizationPublisher
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] isAuthorized in
-                guard let self else { return }
-                self.authorizationSubject.send(isAuthorized)
-            })
-            .store(in: &self.cancellables)
     }
 
     private func saveVideo(url: URL) async {
@@ -152,8 +149,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
             drafts.append(draft)
             try self.videoDraftStorage?.updateBackup(drafts)
 
-            self.thumbnailSubject.send(thumbnail)
-            self.albumCountSubject.send(drafts.count)
+            self.videoSubject.send(drafts)
             print("저장 성공 \(filePath?.lastPathComponent ?? "")")
         } catch {
             print("저장 실패", error)
@@ -164,20 +160,16 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 extension VideoRecordInteractor {
     func initAlbum() {
         do {
-            let videos = try self.videoDraftStorage?.loadAll(type: VideoDraft.self)
-            let sorted = videos?.sorted {
-                $0.createdAt > $1.createdAt
+            if let videos = try self.videoDraftStorage?.loadAll(type: VideoDraft.self) {
+                let sorted = videos.sorted {
+                    $0.createdAt > $1.createdAt
+                }
+                self.videoSubject.send(videos)
+            } else {
+                self.videoSubject.send([])
             }
-            let thumbnail = sorted?.first.flatMap {
-                UIImage(data: $0.thumbnail)
-            }
-            let count = videos?.count ?? 0
-
-            self.thumbnailSubject.send(thumbnail)
-            self.albumCountSubject.send(count)
         } catch {
-            self.thumbnailSubject.send(nil)
-            self.albumCountSubject.send(0)
+            self.videoSubject.send([])
         }
     }
 }
