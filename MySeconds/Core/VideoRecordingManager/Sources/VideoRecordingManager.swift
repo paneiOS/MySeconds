@@ -139,9 +139,6 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
 
             switch AVCaptureDevice.authorizationStatus(for: .video) {
             case .authorized:
-//                self.configureSession {
-//                    promise(.success(true))
-//                }
                 switch self.configureSession() {
                 case .success:
                     promise(.success(true))
@@ -151,13 +148,6 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
 
             case .notDetermined:
                 AVCaptureDevice.requestAccess(for: .video) { granted in
-//                    if granted {
-//                        self.configureSession {
-//                            promise(.success(true))
-//                        }
-//                    } else {
-//                        promise(.success(false))
-//                    }
                     if granted {
                         switch self.configureSession() {
                         case .success:
