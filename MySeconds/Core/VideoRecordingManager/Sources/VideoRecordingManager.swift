@@ -7,7 +7,6 @@
 
 import AVFoundation
 import Combine
-import UIKit
 
 public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtocol {
     public enum CameraError: Error {
@@ -54,25 +53,15 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         self.durationTextSubject.eraseToAnyPublisher()
     }
 
-    private let authorizationSubject = PassthroughSubject<Bool, Never>()
-
     private let session = AVCaptureSession()
     private var videoDeviceInput: AVCaptureDeviceInput?
     private let movieOutput = AVCaptureMovieFileOutput()
-
-    public private(set) var previewLayer: AVCaptureVideoPreviewLayer?
-    private weak var previewContainer: UIView?
 
     private var isFrontCamera = false
     private var currentAspectRatio: AspectRatio = .oneToOne
     private var currentDurationIndex = 0
     private let durationOptions: [Int] = [1, 2, 3]
-
     private var recordingTimer: Timer?
-    private var currentRecordingDuration: TimeInterval {
-        Double(self.durationOptions[self.currentDurationIndex])
-    }
-
     private var isUserCancelled: Bool = false
 
     override public init() {
@@ -170,37 +159,12 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
 
     // MARK: - Preview
 
-    public func configurePreview(in view: UIView, cornerRadius: CGFloat = 0) {
-        self.previewContainer = view
+    public func makePreviewLayer(cornerRadius: CGFloat = 0) -> AVCaptureVideoPreviewLayer {
         let layer = AVCaptureVideoPreviewLayer(session: session)
         layer.videoGravity = .resizeAspectFill
         layer.cornerRadius = cornerRadius
         layer.masksToBounds = true
-
-        DispatchQueue.main.async {
-            view.layer.insertSublayer(layer, at: 0)
-            self.previewLayer = layer
-            self.updatePreviewLayout()
-        }
-    }
-
-    public func updatePreviewLayout() {
-        guard let container = previewContainer,
-              let layer = previewLayer else { return }
-
-        let width = container.bounds.width
-        let height: CGFloat = (currentAspectRatio == .oneToOne)
-            ? width
-            : width * (4.0 / 3.0)
-
-        DispatchQueue.main.async {
-            layer.frame = CGRect(
-                x: 0,
-                y: (container.bounds.height - height) / 2,
-                width: width,
-                height: height
-            )
-        }
+        return layer
     }
 
     // MARK: - 버튼
@@ -212,9 +176,7 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
             self.isUserCancelled = true
             self.movieOutput.stopRecording()
             self.isRecordingSubject.send(false)
-
             self.recordingTimer?.invalidate()
-            self.recordingTimer = nil
         } else {
             let outputURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent(UUID().uuidString)
@@ -223,8 +185,7 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
             self.movieOutput.startRecording(to: outputURL, recordingDelegate: self)
             self.isRecordingSubject.send(true)
 
-            self.recordingTimer?.invalidate()
-            self.recordingTimer = Timer.scheduledTimer(withTimeInterval: self.currentRecordingDuration, repeats: false) { [weak self] _ in
+            self.recordingTimer = Timer.scheduledTimer(withTimeInterval: Double(self.durationOptions[self.currentDurationIndex]), repeats: false) { [weak self] _ in
                 guard let self else { return }
                 self.movieOutput.stopRecording()
             }
@@ -254,7 +215,6 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         self.currentAspectRatio.toggle()
         self.aspectRatioTextSubject.send(self.currentAspectRatio.rawValue)
         self.reconfigureSessionPreset()
-        self.updatePreviewLayout()
     }
 
     public func changeDuration() {

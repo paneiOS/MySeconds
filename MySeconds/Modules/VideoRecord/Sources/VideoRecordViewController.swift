@@ -5,6 +5,7 @@
 //  Created by chungwussup on 05/19/2025.
 //
 
+import AVFoundation
 import Combine
 import UIKit
 
@@ -21,9 +22,7 @@ protocol VideoRecordPresentableListener: AnyObject {
     var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
-
     var videosPublisher: AnyPublisher<[VideoDraft], Never> { get }
-
     var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> { get }
 
     func initAlbum()
@@ -43,6 +42,9 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     private var cameraPreview: UIView = .init()
     private let permissionView = CameraPermissionView()
 
+    private var previewLayer: AVCaptureVideoPreviewLayer?
+    private var currentAspectRatio: String = "1:1"
+
     init(recordingManager: VideoRecordingManagerProtocol) {
         self.recordingManager = recordingManager
         self.recordControlView = RecordControlView(videos: [], maxAlbumCount: 15)
@@ -56,7 +58,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        self.recordingManager.updatePreviewLayout()
+        self.updatePreviewLayout()
     }
 
     override func setupUI() {
@@ -176,15 +178,32 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .sink(receiveValue: { [weak self] isAuthorized in
                 guard let self else { return }
 
-                self.recordingManager.previewLayer?.isHidden = !isAuthorized
                 self.permissionView.isHidden = isAuthorized
 
-                if isAuthorized {
-                    self.recordingManager.configurePreview(in: self.cameraPreview, cornerRadius: 32)
+                if isAuthorized, self.previewLayer == nil {
+                    let layer = self.recordingManager.makePreviewLayer(cornerRadius: 32)
+                    self.cameraPreview.layer.insertSublayer(layer, at: 0)
+                    self.previewLayer = layer
+                    self.updatePreviewLayout()
                     self.recordingManager.startSession()
                 }
             })
             .store(in: &self.cancellables)
+    }
+
+    private func updatePreviewLayout() {
+        guard let previewLayer else { return }
+
+        let width = self.cameraPreview.bounds.width
+        let height: CGFloat = (self.currentAspectRatio == "1:1")
+            ? width
+            : width * (4.0 / 3.0)
+        previewLayer.frame = CGRect(
+            x: 0,
+            y: (self.cameraPreview.bounds.height - height) / 2,
+            width: width,
+            height: height
+        )
     }
 
     func navigationConfig() -> NavigationConfig {

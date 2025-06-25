@@ -273,7 +273,7 @@ final class RecordControlView: UIView {
     }
 
     func updateAlbum(videos: [VideoDraft]) {
-        if let thumbnail = videos.first?.thumbnail {
+        if let thumbnail = videos.last?.thumbnail {
             self.albumButton.setImage(UIImage(data: thumbnail), for: .normal)
             self.albumButton.tintColor = .clear
         } else {
