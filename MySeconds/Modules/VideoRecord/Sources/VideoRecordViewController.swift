@@ -24,6 +24,7 @@ protocol VideoRecordPresentableListener: AnyObject {
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
     var videosPublisher: AnyPublisher<[VideoDraft], Never> { get }
     var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> { get }
+    var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> { get }
 
     func initAlbum()
     func didTapRecord()
@@ -43,7 +44,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     private let permissionView = CameraPermissionView()
 
     private var previewLayer: AVCaptureVideoPreviewLayer?
-    private var currentAspectRatio: String = "1:1"
+    private var currentAspectRatio: AspectRatio = .oneToOne
 
     init(recordingManager: VideoRecordingManagerProtocol) {
         self.recordingManager = recordingManager
@@ -189,13 +190,22 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 }
             })
             .store(in: &self.cancellables)
+
+        self.listener?.aspectRatioPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] ratio in
+                guard let self else { return }
+                self.currentAspectRatio = ratio
+                self.updatePreviewLayout()
+            })
+            .store(in: &self.cancellables)
     }
 
     private func updatePreviewLayout() {
         guard let previewLayer else { return }
 
         let width = self.cameraPreview.bounds.width
-        let height: CGFloat = (self.currentAspectRatio == "1:1")
+        let height: CGFloat = (self.currentAspectRatio == .oneToOne)
             ? width
             : width * (4.0 / 3.0)
         previewLayer.frame = CGRect(
