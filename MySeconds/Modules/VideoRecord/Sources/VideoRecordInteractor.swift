@@ -13,6 +13,7 @@ import ModernRIBs
 
 import BaseRIBsKit
 import VideoDraftStorage
+import VideoRecordingManager
 
 public protocol VideoRecordRouting: ViewableRouting {}
 
@@ -27,7 +28,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     private let videoDraftStorage = try? VideoDraftStorage()
 
     private let component: VideoRecordComponent
-    private let cameraManager: CameraManagerProtocol
+    private let recordingManager: VideoRecordingManagerProtocol
 
     private let timerButtonTextSubject = PassthroughSubject<Int, Never>()
     public var timerButtonTextPublisher: AnyPublisher<Int, Never> {
@@ -61,20 +62,19 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 
     private let videoSubject = CurrentValueSubject<[VideoDraft], Never>([])
 
-    private let videoRatios: [String] = ["1:1", "4:3"]
     private var cancellables = Set<AnyCancellable>()
 
     weak var router: VideoRecordRouting?
     weak var listener: VideoRecordListener?
 
-    init(presenter: VideoRecordPresentable, component: VideoRecordComponent, cameraManager: CameraManagerProtocol) {
+    init(presenter: VideoRecordPresentable, component: VideoRecordComponent, recordingManager: VideoRecordingManagerProtocol) {
         self.component = component
-        self.cameraManager = cameraManager
+        self.recordingManager = recordingManager
         super.init(presenter: presenter)
         presenter.listener = self
 
         self.bind()
-        self.bindCameraManager()
+        self.bindRecordingManager()
     }
 
     private func bind() {
@@ -86,7 +86,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
             })
             .store(in: &self.cancellables)
 
-        self.cameraManager
+        self.recordingManager
             .requestAuthorizationPublisher()
             .sink(receiveValue: { [weak self] isAuthorized in
                 guard let self else { return }
@@ -95,31 +95,31 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
             .store(in: &self.cancellables)
     }
 
-    private func bindCameraManager() {
-        self.cameraManager.isRecordingPublisher
+    private func bindRecordingManager() {
+        self.recordingManager.isRecordingPublisher
             .sink(receiveValue: { [weak self] isRecording in
                 guard let self else { return }
                 self.isRecordingSubject.send(isRecording)
-                let duration = self.cameraManager.duration(isRecording: isRecording)
+                let duration = self.recordingManager.duration(isRecording: isRecording)
                 self.recordDurationSubject.send(TimeInterval(duration))
             })
             .store(in: &self.cancellables)
 
-        self.cameraManager.aspectRatioTextPublisher
+        self.recordingManager.aspectRatioTextPublisher
             .sink(receiveValue: { [weak self] text in
                 guard let self else { return }
                 self.ratioButtonTextSubject.send(text)
             })
             .store(in: &self.cancellables)
 
-        self.cameraManager.durationTextPublisher
+        self.recordingManager.durationTextPublisher
             .sink(receiveValue: { [weak self] text in
                 guard let self else { return }
                 self.timerButtonTextSubject.send(text)
             })
             .store(in: &self.cancellables)
 
-        self.cameraManager.recordedURLPublisher
+        self.recordingManager.recordedURLPublisher
             .sink(receiveValue: { [weak self] url in
                 guard let self else { return }
                 Task {
@@ -161,7 +161,7 @@ extension VideoRecordInteractor {
     func initAlbum() {
         do {
             if let videos = try self.videoDraftStorage?.loadAll(type: VideoDraft.self) {
-                let sorted = videos.sorted {
+                _ = videos.sorted {
                     $0.createdAt > $1.createdAt
                 }
                 self.videoSubject.send(videos)
@@ -176,19 +176,19 @@ extension VideoRecordInteractor {
 
 extension VideoRecordInteractor {
     func didTapRecord() {
-        self.cameraManager.toggleRecording()
+        self.recordingManager.toggleRecording()
     }
 
     func didTapFlip() {
-        self.cameraManager.switchCamera()
+        self.recordingManager.switchCamera()
     }
 
     func didTapRatio() {
-        self.cameraManager.changeAspectRatio()
+        self.recordingManager.changeAspectRatio()
     }
 
     func didTapTimer() {
-        self.cameraManager.changeDuration()
+        self.recordingManager.changeDuration()
     }
 
     func didTapAlbum() {

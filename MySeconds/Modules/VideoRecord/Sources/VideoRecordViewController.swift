@@ -14,6 +14,7 @@ import SnapKit
 import MySecondsKit
 import ResourceKit
 import VideoDraftStorage
+import VideoRecordingManager
 
 protocol VideoRecordPresentableListener: AnyObject {
     var timerButtonTextPublisher: AnyPublisher<Int, Never> { get }
@@ -38,12 +39,12 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     weak var listener: VideoRecordPresentableListener?
 
     private var recordControlView: RecordControlView
-    private let cameraManager: CameraManagerProtocol
+    private let recordingManager: VideoRecordingManagerProtocol
     private var cameraPreview: UIView = .init()
     private let permissionView = CameraPermissionView()
 
-    init(cameraManager: CameraManagerProtocol) {
-        self.cameraManager = cameraManager
+    init(recordingManager: VideoRecordingManagerProtocol) {
+        self.recordingManager = recordingManager
         self.recordControlView = RecordControlView(videos: [], maxAlbumCount: 15)
         super.init()
     }
@@ -55,7 +56,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        self.cameraManager.updatePreviewLayout()
+        self.recordingManager.updatePreviewLayout()
     }
 
     override func setupUI() {
@@ -175,12 +176,12 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .sink(receiveValue: { [weak self] isAuthorized in
                 guard let self else { return }
 
-                self.cameraManager.previewLayer?.isHidden = !isAuthorized
+                self.recordingManager.previewLayer?.isHidden = !isAuthorized
                 self.permissionView.isHidden = isAuthorized
 
                 if isAuthorized {
-                    self.cameraManager.configurePreview(in: self.cameraPreview, cornerRadius: 32)
-                    self.cameraManager.startSession()
+                    self.recordingManager.configurePreview(in: self.cameraPreview, cornerRadius: 32)
+                    self.recordingManager.startSession()
                 }
             })
             .store(in: &self.cancellables)
