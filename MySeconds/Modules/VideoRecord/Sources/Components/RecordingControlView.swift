@@ -275,8 +275,13 @@ final class RecordControlView: UIView {
     func updateAlbum(videos: [VideoDraft]) {
         if let thumbnail = videos.first?.thumbnail {
             self.albumButton.setImage(UIImage(data: thumbnail), for: .normal)
+            self.albumButton.tintColor = .clear
         } else {
-            // 썸네일이 없으면 어떤 이미지를 넣어야하지
+            let image = ResourceKitAsset.loader.image
+                .resized(to: CGSize(width: 32, height: 32))
+                .withRenderingMode(.alwaysTemplate)
+            self.albumButton.setImage(image, for: .normal)
+            self.albumButton.tintColor = .neutral300
         }
 
         self.albumCountLabel.text = "\(videos.count) / \(self.maxAlbumCount)"
