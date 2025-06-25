@@ -24,6 +24,7 @@ let project = Project(
                 .project(target: "MySecondsKit", path: "../MySecondsKit"),
                 .project(target: "ResourceKit", path: "../ResourceKit"),
                 .project(target: "VideoDraftStorage", path: "../../Core/VideoDraftStorage"),
+                .project(target: "VideoRecordingManager", path: "../../Core/VideoRecordingManager"),
                 .project(target: "UtilsKit", path: "../UtilsKit")
             ]
         ),
