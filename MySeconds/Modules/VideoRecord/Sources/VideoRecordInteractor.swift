@@ -76,14 +76,17 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     weak var router: VideoRecordRouting?
     weak var listener: VideoRecordListener?
 
-    init(presenter: VideoRecordPresentable, component: VideoRecordComponent, recordingManager: VideoRecordingManagerProtocol) {
+    init(
+        presenter: VideoRecordPresentable,
+        component: VideoRecordComponent,
+        recordingManager: VideoRecordingManagerProtocol
+    ) {
         self.component = component
         self.recordingManager = recordingManager
         super.init(presenter: presenter)
         presenter.listener = self
 
         self.bind()
-        self.bindRecordingManager()
     }
 
     private func bind() {
@@ -94,35 +97,10 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
             })
             .store(in: &self.cancellables)
 
-        self.recordingManager
-            .requestAuthorizationPublisher(aspectRatio: .oneToOne)
-            .sink(receiveValue: { [weak self] isAuthorized in
-                guard let self else { return }
-                self.cameraAuthorizationSubject.send(isAuthorized)
-            })
-            .store(in: &self.cancellables)
-    }
-
-    private func bindRecordingManager() {
-        self.recordingManager.isRecordingPublisher
-            .sink(receiveValue: { [weak self] isRecording in
-                guard let self else { return }
-                self.isRecordingSubject.send(isRecording)
-
-                let selectedDuration = self.durationOptions[self.currentDurationIndex]
-                let duration = isRecording ? TimeInterval(selectedDuration) : 0
-                self.recordDurationSubject.send(duration)
-            })
-            .store(in: &self.cancellables)
-        
-        self.recordingManager.recordedURLPublisher
-            .sink(receiveValue: { [weak self] url in
-                guard let self else { return }
-                Task {
-                    await self.saveVideo(url: url)
-                }
-            })
-            .store(in: &self.cancellables)
+        Task {
+            let isAuthorized = await self.recordingManager.requestAuthorization(aspectRatio: .oneToOne)
+            self.cameraAuthorizationSubject.send(isAuthorized)
+        }
     }
 
     private func saveVideo(url: URL) async {
@@ -173,7 +151,34 @@ extension VideoRecordInteractor {
 extension VideoRecordInteractor {
     func didTapRecord() {
         let duration = TimeInterval(durationOptions[currentDurationIndex])
-        self.recordingManager.toggleRecording(duration: duration)
+
+        self.isRecordingSubject.send(true)
+        self.recordDurationSubject.send(duration)
+
+        Task {
+            do {
+                let url = try await self.recordingManager.recordVideo(duration: duration)
+
+                self.isRecordingSubject.send(false)
+                self.recordDurationSubject.send(0)
+
+                await self.saveVideo(url: url)
+            } catch {
+                self.isRecordingSubject.send(false)
+                self.recordDurationSubject.send(0)
+
+                if let cameraError = error as? CameraError {
+                    switch cameraError {
+                    case .cancelled:
+                        print("사용자 취소")
+                    default:
+                        print("녹화 실패 \(cameraError)")
+                    }
+                } else {
+                    print("녹화 에러 \(error)")
+                }
+            }
+        }
     }
 
     func didTapFlip() {

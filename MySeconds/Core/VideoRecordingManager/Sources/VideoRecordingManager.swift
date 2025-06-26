@@ -6,7 +6,6 @@
 //
 
 import AVFoundation
-import Combine
 
 public enum AspectRatio: String, CaseIterable {
     case oneToOne = "1:1"
@@ -24,56 +23,44 @@ public enum AspectRatio: String, CaseIterable {
     }
 }
 
+public enum CameraError: Error {
+//    case authorizationDenied
+    case noDevice
+    case unableToAddInput
+    case sessionConfigurationFailed
+    case alreadyRecording
+    case cancelled
+}
+
 public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtocol {
-    public enum CameraError: Error {
-        case authorizationDenied
-        case noDevice
-        case unableToAddInput
-        case sessionConfigurationFailed
-        case unknown
-    }
-
-    private let isRecordingSubject = CurrentValueSubject<Bool, Never>(false)
-    public var isRecordingPublisher: AnyPublisher<Bool, Never> {
-        self.isRecordingSubject.eraseToAnyPublisher()
-    }
-
-    private let recordedURLSubject = PassthroughSubject<URL, Never>()
-    public var recordedURLPublisher: AnyPublisher<URL, Never> {
-        self.recordedURLSubject.eraseToAnyPublisher()
-    }
-
     private let session = AVCaptureSession()
     private var videoDeviceInput: AVCaptureDeviceInput?
     private let movieOutput = AVCaptureMovieFileOutput()
 
-    private var isFrontCamera = false
+    private var recordingContinuation: CheckedContinuation<URL, Error>?
     private var recordingTimer: Timer?
     private var isUserCancelled: Bool = false
-
-    override public init() {
-        super.init()
-    }
 
     deinit {
         recordingTimer?.invalidate()
     }
 
-    public func configureSession(aspectRatio: AspectRatio) -> Result<Void, CameraError> {
+    private func configureSession(aspectRatio: AspectRatio) -> Result<Void, CameraError> {
         self.session.beginConfiguration()
         self.session.sessionPreset = aspectRatio.preset
 
-        // Input
-        if let currentInput = videoDeviceInput {
-            self.session.removeInput(currentInput)
+        if let input = self.videoDeviceInput {
+            self.session.removeInput(input)
         }
 
+        // input
         guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
             self.session.commitConfiguration()
             return .failure(.noDevice)
         }
 
-        guard let input = try? AVCaptureDeviceInput(device: device), session.canAddInput(input) else {
+        guard let input = try? AVCaptureDeviceInput(device: device),
+              session.canAddInput(input) else {
             self.session.commitConfiguration()
             return .failure(.unableToAddInput)
         }
@@ -81,13 +68,46 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         self.session.addInput(input)
         self.videoDeviceInput = input
 
-        // Output
+        // output
         if self.session.canAddOutput(self.movieOutput) {
             self.session.addOutput(self.movieOutput)
         }
 
         self.session.commitConfiguration()
         return .success(())
+    }
+
+    public func requestAuthorization(aspectRatio: AspectRatio) async -> Bool {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            switch self.configureSession(aspectRatio: aspectRatio) {
+            case .success:
+                return true
+            case .failure:
+                return false
+            }
+
+        case .notDetermined:
+            let granted = await withCheckedContinuation { continuation in
+                AVCaptureDevice.requestAccess(for: .video) { granted in
+                    continuation.resume(returning: granted)
+                }
+            }
+
+            if granted {
+                switch self.configureSession(aspectRatio: aspectRatio) {
+                case .success:
+                    return true
+                case .failure:
+                    return false
+                }
+            } else {
+                return false
+            }
+
+        default:
+            return false
+        }
     }
 
     public func startSession() {
@@ -106,46 +126,6 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         }
     }
 
-    public func requestAuthorizationPublisher(aspectRatio: AspectRatio) -> AnyPublisher<Bool, Never> {
-        Future<Bool, Never> { [weak self] promise in
-            guard let self else {
-                promise(.success(false))
-                return
-            }
-
-            switch AVCaptureDevice.authorizationStatus(for: .video) {
-            case .authorized:
-                switch self.configureSession(aspectRatio: aspectRatio) {
-                case .success:
-                    promise(.success(true))
-                case .failure:
-                    promise(.success(false))
-                }
-
-            case .notDetermined:
-                AVCaptureDevice.requestAccess(for: .video) { granted in
-                    if granted {
-                        switch self.configureSession(aspectRatio: aspectRatio) {
-                        case .success:
-                            promise(.success(true))
-                        case .failure:
-                            promise(.success(false))
-                        }
-                    } else {
-                        promise(.success(false))
-                    }
-                }
-
-            default:
-                promise(.success(false))
-            }
-        }
-        .receive(on: DispatchQueue.main)
-        .eraseToAnyPublisher()
-    }
-
-    // MARK: - Preview
-
     public func makePreviewLayer(cornerRadius: CGFloat = 0) -> AVCaptureVideoPreviewLayer {
         let layer = AVCaptureVideoPreviewLayer(session: session)
         layer.videoGravity = .resizeAspectFill
@@ -154,33 +134,8 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         return layer
     }
 
-    // MARK: - 버튼
-
-    public func toggleRecording(duration: TimeInterval) {
-        guard self.session.isRunning else { return }
-
-        if self.movieOutput.isRecording {
-            self.isUserCancelled = true
-            self.movieOutput.stopRecording()
-            self.isRecordingSubject.send(false)
-            self.recordingTimer?.invalidate()
-        } else {
-            let outputURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString)
-                .appendingPathExtension("mov")
-            self.isUserCancelled = false
-            self.movieOutput.startRecording(to: outputURL, recordingDelegate: self)
-            self.isRecordingSubject.send(true)
-
-            self.recordingTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
-                guard let self else { return }
-                self.movieOutput.stopRecording()
-            }
-        }
-    }
-
     public func switchCamera() {
-        guard let currentInput = videoDeviceInput else { return }
+        guard let currentInput = self.videoDeviceInput else { return }
 
         let newPosition: AVCaptureDevice.Position = (currentInput.device.position == .back) ? .front : .back
 
@@ -189,12 +144,14 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
 
         self.session.beginConfiguration()
         self.session.removeInput(currentInput)
+
         if self.session.canAddInput(newInput) {
             self.session.addInput(newInput)
             self.videoDeviceInput = newInput
         } else {
             self.session.addInput(currentInput)
         }
+
         self.session.commitConfiguration()
     }
 
@@ -202,6 +159,44 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         self.session.beginConfiguration()
         self.session.sessionPreset = aspectRatio.preset
         self.session.commitConfiguration()
+    }
+
+    public func recordVideo(duration: TimeInterval) async throws -> URL {
+        try await withCheckedThrowingContinuation { continuation in
+            guard self.session.isRunning else {
+                continuation.resume(throwing: CameraError.sessionConfigurationFailed)
+                return
+            }
+
+            guard !self.movieOutput.isRecording else {
+                continuation.resume(throwing: CameraError.alreadyRecording)
+                return
+            }
+
+            let outputURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent(UUID().uuidString)
+                .appendingPathExtension("mov")
+
+            self.isUserCancelled = false
+            self.recordingContinuation = continuation
+            self.movieOutput.startRecording(to: outputURL, recordingDelegate: self)
+
+            // 타이머로 녹화종료
+            self.recordingTimer = Timer(timeInterval: duration, repeats: false) { [weak self] _ in
+                guard let self else { return }
+                self.movieOutput.stopRecording()
+            }
+
+            if let timer = self.recordingTimer {
+                RunLoop.main.add(timer, forMode: .common)
+            }
+        }
+    }
+
+    public func cancelRecording() {
+        guard self.movieOutput.isRecording else { return }
+        self.isUserCancelled = true
+        self.movieOutput.stopRecording()
     }
 }
 
@@ -212,18 +207,18 @@ extension VideoRecordingManager: AVCaptureFileOutputRecordingDelegate {
         from connections: [AVCaptureConnection],
         error: Error?
     ) {
-        self.isRecordingSubject.send(false)
+        self.recordingTimer?.invalidate()
 
-        guard error == nil else {
-            print("녹화 실패:", error!)
-            return
+        // recordVideo() 내부 continuation에 결과(url) 전달
+        guard let continuation = self.recordingContinuation else { return }
+        self.recordingContinuation = nil
+
+        if let error {
+            continuation.resume(throwing: error)
+        } else if self.isUserCancelled {
+            continuation.resume(throwing: CameraError.cancelled)
+        } else {
+            continuation.resume(returning: outputFileURL)
         }
-
-        guard self.isUserCancelled == false else {
-            print("녹화 취소")
-            return
-        }
-
-        self.recordedURLSubject.send(outputFileURL)
     }
 }

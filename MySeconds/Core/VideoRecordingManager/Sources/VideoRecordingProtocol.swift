@@ -10,16 +10,13 @@ import Combine
 import Foundation
 
 public protocol VideoRecordingManagerProtocol: AnyObject {
-    var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
-    var recordedURLPublisher: AnyPublisher<URL, Never> { get }
-    func requestAuthorizationPublisher(aspectRatio: AspectRatio) -> AnyPublisher<Bool, Never>
+    func requestAuthorization(aspectRatio: AspectRatio) async -> Bool
     func makePreviewLayer(cornerRadius: CGFloat) -> AVCaptureVideoPreviewLayer
-
-    func toggleRecording(duration: TimeInterval)
+    func updateAspectRatio(aspectRatio: AspectRatio)
+    func recordVideo(duration: TimeInterval) async throws -> URL
+    func cancelRecording()
 
     func startSession()
     func stopSession()
-
     func switchCamera()
-    func updateAspectRatio(aspectRatio: AspectRatio)
 }
