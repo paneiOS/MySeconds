@@ -11,20 +11,22 @@ public enum AspectRatio: String, CaseIterable {
     case oneToOne = "1:1"
     case fourToThree = "4:3"
 
-    public mutating func toggle() {
-        self = (self == .oneToOne) ? .fourToThree : .oneToOne
-    }
-
     var preset: AVCaptureSession.Preset {
         switch self {
         case .oneToOne: .high
         case .fourToThree: .vga640x480
         }
     }
+    
+    public func next() -> AspectRatio {
+        let allCases = Self.allCases
+        guard let index = allCases.firstIndex(of: self) else { return self }
+        let nextIndex = allCases.index(after: index)
+        return nextIndex < allCases.endIndex ? allCases[nextIndex] : allCases[allCases.startIndex]
+    }
 }
 
 public enum CameraError: Error {
-//    case authorizationDenied
     case noDevice
     case unableToAddInput
     case sessionConfigurationFailed

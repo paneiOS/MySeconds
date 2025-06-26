@@ -186,7 +186,7 @@ extension VideoRecordInteractor {
     }
 
     func didTapRatio() {
-        self.currentAspectRatio.toggle()
+        self.currentAspectRatio = self.currentAspectRatio.next()
         self.aspectRatioSubject.send(self.currentAspectRatio)
         self.ratioButtonTextSubject.send(self.currentAspectRatio.rawValue)
         self.recordingManager.updateAspectRatio(aspectRatio: self.currentAspectRatio)
