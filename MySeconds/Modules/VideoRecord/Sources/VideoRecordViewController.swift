@@ -79,7 +79,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
         self.cameraPreview.snp.makeConstraints {
             $0.top.equalTo(self.view.safeAreaLayoutGuide).offset(62)
             $0.bottom.equalTo(self.recordControlView.snp.top).offset(-62)
-            $0.leading.trailing.equalToSuperview().inset(24)
+            $0.leading.trailing.equalToSuperview()
         }
     }
 
@@ -182,7 +182,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.permissionView.isHidden = isAuthorized
 
                 if isAuthorized, self.previewLayer == nil {
-                    let layer = self.recordingManager.makePreviewLayer(cornerRadius: 32)
+                    let layer = self.recordingManager.makePreviewLayer(cornerRadius: 0)
                     self.cameraPreview.layer.insertSublayer(layer, at: 0)
                     self.previewLayer = layer
                     self.updatePreviewLayout()

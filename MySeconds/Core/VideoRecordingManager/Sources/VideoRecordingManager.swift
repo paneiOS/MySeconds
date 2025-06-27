@@ -17,7 +17,7 @@ public enum AspectRatio: String, CaseIterable {
         case .fourToThree: .vga640x480
         }
     }
-    
+
     public func next() -> AspectRatio {
         let allCases = Self.allCases
         guard let index = allCases.firstIndex(of: self) else { return self }
