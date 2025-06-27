@@ -210,9 +210,8 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
         guard let previewLayer else { return }
 
         let width = self.cameraPreview.bounds.width
-        let height: CGFloat = (self.currentAspectRatio == .oneToOne)
-            ? width
-            : width * (4.0 / 3.0)
+        let height = width * self.currentAspectRatio.ratio
+        
         previewLayer.frame = CGRect(
             x: 0,
             y: (self.cameraPreview.bounds.height - height) / 2,
