@@ -5,6 +5,7 @@
 //  Created by chungwussup on 05/19/2025.
 //
 
+import AVFoundation
 import Combine
 import UIKit
 
@@ -13,14 +14,17 @@ import SnapKit
 
 import MySecondsKit
 import ResourceKit
+import VideoDraftStorage
+import VideoRecordingManager
 
 protocol VideoRecordPresentableListener: AnyObject {
-    var timerButtonTextPublisher: AnyPublisher<String, Never> { get }
+    var timerButtonTextPublisher: AnyPublisher<Int, Never> { get }
     var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
-
-    var albumPublisher: AnyPublisher<(UIImage?, Int), Never> { get }
+    var videosPublisher: AnyPublisher<[VideoDraft], Never> { get }
+    var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> { get }
+    var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> { get }
 
     func initAlbum()
     func didTapRecord()
@@ -28,25 +32,54 @@ protocol VideoRecordPresentableListener: AnyObject {
     func didTapRatio()
     func didTapTimer()
     func didTapAlbum()
-
-    // TODO: Sample App 테스트 위한 메서드
-    func recordDidFinish()
 }
 
 final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
 
     weak var listener: VideoRecordPresentableListener?
 
-    private let recordControlView = RecordControlView(count: 15)
+    private var recordControlView: RecordControlView
+    private let recordingManager: VideoRecordingManagerProtocol
+    private var cameraPreview: UIView = .init()
+    private let permissionView = CameraPermissionView()
+
+    private var previewLayer: AVCaptureVideoPreviewLayer?
+    private var currentAspectRatio: AspectRatio = .oneToOne
+
+    init(recordingManager: VideoRecordingManagerProtocol) {
+        self.recordingManager = recordingManager
+        self.recordControlView = RecordControlView(videos: [], maxAlbumCount: 15)
+        super.init()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        self.updatePreviewLayout()
+    }
 
     override func setupUI() {
         self.view.backgroundColor = .white
-        self.view.addSubviews(self.recordControlView)
+        self.view.addSubviews(self.recordControlView, self.cameraPreview, self.permissionView)
+
+        self.permissionView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
 
         self.recordControlView.snp.makeConstraints {
             $0.height.equalTo(136)
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalTo(self.view.safeAreaLayoutGuide)
+        }
+
+        self.cameraPreview.snp.makeConstraints {
+            $0.top.equalTo(self.view.safeAreaLayoutGuide).offset(62)
+            $0.bottom.equalTo(self.recordControlView.snp.top).offset(-62)
+            $0.leading.trailing.equalToSuperview()
         }
     }
 
@@ -82,7 +115,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.listener?.didTapRatio()
-
             })
             .store(in: &cancellables)
 
@@ -112,9 +144,9 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
         self.listener?.ratioButtonTextPublisher
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] text in
+            .sink(receiveValue: { [weak self] seconds in
                 guard let self else { return }
-                self.recordControlView.setRatioButtonText(text: text)
+                self.recordControlView.setRatioButtonText(text: seconds)
             })
             .store(in: &cancellables)
 
@@ -134,13 +166,58 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.listener?.albumPublisher
+        self.listener?.videosPublisher
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] thumbnail, count in
+            .sink(receiveValue: { [weak self] videos in
                 guard let self else { return }
-                self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
+                self.recordControlView.updateAlbum(videos: videos)
             })
             .store(in: &cancellables)
+
+        self.listener?.cameraAuthorizationPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] isAuthorized in
+                guard let self else { return }
+
+                self.permissionView.isHidden = isAuthorized
+
+                if isAuthorized, self.previewLayer == nil {
+                    let layer = AVCaptureVideoPreviewLayer(session: self.recordingManager.session)
+                    layer.videoGravity = .resizeAspectFill
+                    self.cameraPreview.layer.insertSublayer(layer, at: 0)
+                    self.previewLayer = layer
+                    self.updatePreviewLayout()
+                    self.recordingManager.startSession()
+                } else {
+                    self.previewLayer?.removeFromSuperlayer()
+                    self.previewLayer = nil
+                    self.recordingManager.stopSession()
+                }
+            })
+            .store(in: &self.cancellables)
+
+        self.listener?.aspectRatioPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] ratio in
+                guard let self else { return }
+                self.currentAspectRatio = ratio
+                self.updatePreviewLayout()
+            })
+            .store(in: &self.cancellables)
+    }
+
+    private func updatePreviewLayout() {
+        guard let previewLayer else { return }
+
+        let width = self.cameraPreview.bounds.width
+        let height = width * self.currentAspectRatio.ratio
+
+        previewLayer.frame = CGRect(
+            x: 0,
+            y: (self.cameraPreview.bounds.height - height) / 2,
+            width: width,
+            height: height
+        )
     }
 
     func navigationConfig() -> NavigationConfig {

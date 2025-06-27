@@ -10,19 +10,16 @@ import UIKit
 import ModernRIBs
 
 import BaseRIBsKit
+import VideoDraftStorage
+import VideoRecordingManager
 
 public protocol VideoRecordDependency: Dependency {
-    var initialAlbumThumbnail: UIImage? { get }
-    var initialAlbumCount: Int { get }
+    var videoDraftStorage: VideoDraftStorage { get }
 }
 
 public final class VideoRecordComponent: Component<VideoRecordDependency> {
-    public var initialAlbumThumbnail: UIImage? {
-        dependency.initialAlbumThumbnail
-    }
-
-    public var initialAlbumCount: Int {
-        dependency.initialAlbumCount
+    public var videoDraftStorage: VideoDraftStorage {
+        dependency.videoDraftStorage
     }
 }
 
@@ -42,8 +39,13 @@ public final class VideoRecordBuilder: Builder<VideoRecordComponent>, VideoRecor
 
     public func build(withListener listener: VideoRecordListener) -> VideoRecordRouting {
         let component = VideoRecordComponent(dependency: dependency)
-        let viewController = VideoRecordViewController()
-        let interactor = VideoRecordInteractor(presenter: viewController, component: component)
+        let recordingManager = VideoRecordingManager()
+        let viewController = VideoRecordViewController(recordingManager: recordingManager)
+        let interactor = VideoRecordInteractor(
+            presenter: viewController,
+            component: component,
+            recordingManager: recordingManager
+        )
         interactor.listener = listener
         return VideoRecordRouter(interactor: interactor, viewController: viewController)
     }
