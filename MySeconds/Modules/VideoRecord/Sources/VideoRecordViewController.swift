@@ -182,11 +182,16 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.permissionView.isHidden = isAuthorized
 
                 if isAuthorized, self.previewLayer == nil {
-                    let layer = self.recordingManager.makePreviewLayer(cornerRadius: 0)
+                    let layer = AVCaptureVideoPreviewLayer(session: self.recordingManager.session)
+                    layer.videoGravity = .resizeAspectFill
                     self.cameraPreview.layer.insertSublayer(layer, at: 0)
                     self.previewLayer = layer
                     self.updatePreviewLayout()
                     self.recordingManager.startSession()
+                } else {
+                    self.previewLayer?.removeFromSuperlayer()
+                    self.previewLayer = nil
+                    self.recordingManager.stopSession()
                 }
             })
             .store(in: &self.cancellables)

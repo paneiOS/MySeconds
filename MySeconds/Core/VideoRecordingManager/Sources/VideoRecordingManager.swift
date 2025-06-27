@@ -35,7 +35,7 @@ public enum CameraError: Error {
 }
 
 public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtocol {
-    private let session = AVCaptureSession()
+    public private(set) var session = AVCaptureSession()
     private var videoDeviceInput: AVCaptureDeviceInput?
     private let movieOutput = AVCaptureMovieFileOutput()
 
@@ -126,14 +126,6 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
                 self.session.stopRunning()
             }
         }
-    }
-
-    public func makePreviewLayer(cornerRadius: CGFloat = 0) -> AVCaptureVideoPreviewLayer {
-        let layer = AVCaptureVideoPreviewLayer(session: session)
-        layer.videoGravity = .resizeAspectFill
-        layer.cornerRadius = cornerRadius
-        layer.masksToBounds = true
-        return layer
     }
 
     public func switchCamera() {
