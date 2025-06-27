@@ -54,7 +54,11 @@ final class RecordControlView: UIView {
     private let recordButton = RecordingButton(buttonSize: Constants.recordButtonSize, progressPadding: 5)
 
     private lazy var ratioButton: UIButton = {
-        let button = self.makeBorderedCircleButton(size: Constants.controlButtonSize)
+        let button = UIButton()
+        button.backgroundColor = .neutral100
+        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.neutral200.cgColor
         var configuration: UIButton.Configuration = .plain()
         configuration.attributedTitle = .init(.makeAttributedString(
             text: "1:1",
@@ -66,7 +70,11 @@ final class RecordControlView: UIView {
     }()
 
     private lazy var timerButton: UIButton = {
-        let button = self.makeBorderedCircleButton(size: Constants.controlButtonSize)
+        let button = UIButton()
+        button.backgroundColor = .neutral100
+        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.neutral200.cgColor
         button.setAttributedTitle(self.makeTimerAttributedText(seconds: "1"), for: .normal)
         button.titleLabel?.numberOfLines = 2
         button.titleLabel?.textAlignment = .center
@@ -74,7 +82,11 @@ final class RecordControlView: UIView {
     }()
 
     private lazy var cameraFlipButton: UIButton = {
-        let button = self.makeBorderedCircleButton(size: Constants.controlButtonSize)
+        let button = UIButton()
+        button.backgroundColor = .neutral100
+        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.neutral200.cgColor
         let image = ResourceKitAsset.refreshCcw.image.withRenderingMode(.alwaysTemplate)
         button.setImage(image, for: .normal)
         button.tintColor = .neutral950
@@ -243,15 +255,6 @@ final class RecordControlView: UIView {
             alignment: .center,
             additionalAttributes: attributeStrings
         )
-    }
-
-    private func makeBorderedCircleButton(size: CGFloat = Constants.controlButtonSize) -> UIButton {
-        let button = UIButton()
-        button.backgroundColor = .neutral100
-        button.layer.cornerRadius = size / 2
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.neutral200.cgColor
-        return button
     }
 
     func setTimerButtonText(seconds: Int) {

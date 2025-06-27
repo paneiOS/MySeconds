@@ -211,7 +211,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
         let width = self.cameraPreview.bounds.width
         let height = width * self.currentAspectRatio.ratio
-        
+
         previewLayer.frame = CGRect(
             x: 0,
             y: (self.cameraPreview.bounds.height - height) / 2,

@@ -17,16 +17,16 @@ public enum AspectRatio: String, CaseIterable {
         case .fourToThree: .vga640x480
         }
     }
-    
+
     public var ratio: CGFloat {
         switch self {
         case .oneToOne:
-            return 1.0
+            1.0
         case .fourToThree:
-            return 4.0 / 3.0
+            4.0 / 3.0
         }
     }
-    
+
     public func next() -> AspectRatio {
         let allCases = Self.allCases
         guard let index = allCases.firstIndex(of: self) else { return self }
