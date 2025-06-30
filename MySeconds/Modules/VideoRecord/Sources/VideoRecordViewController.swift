@@ -38,7 +38,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     weak var listener: VideoRecordPresentableListener?
 
-    private var recordControlView: RecordControlView
+    private let recordControlView: RecordControlView
     private let recordingManager: VideoRecordingManagerProtocol
     private var cameraPreview: UIView = .init()
     private let permissionView = CameraPermissionView()
