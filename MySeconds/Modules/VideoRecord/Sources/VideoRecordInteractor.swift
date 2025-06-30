@@ -61,8 +61,12 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     }
 
     private let cameraAuthorizationSubject = PassthroughSubject<Bool, Never>()
-    var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> {
+    public var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> {
         self.cameraAuthorizationSubject.eraseToAnyPublisher()
+    }
+    
+    public var captureSession: AVCaptureSession {
+        return self.recordingManager.session
     }
 
     private var currentDurationIndex = 0
@@ -149,6 +153,14 @@ extension VideoRecordInteractor {
 }
 
 extension VideoRecordInteractor {
+    func startSession() {
+        self.recordingManager.startSession()
+    }
+
+    func stopSession() {
+        self.recordingManager.stopSession()
+    }
+    
     func didTapRecord() {
         let duration = TimeInterval(durationOptions[safe: currentDurationIndex] ?? 1)
 

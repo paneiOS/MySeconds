@@ -18,6 +18,7 @@ import VideoDraftStorage
 import VideoRecordingManager
 
 protocol VideoRecordPresentableListener: AnyObject {
+    var captureSession: AVCaptureSession { get }
     var timerButtonTextPublisher: AnyPublisher<Int, Never> { get }
     var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
@@ -27,6 +28,8 @@ protocol VideoRecordPresentableListener: AnyObject {
     var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> { get }
 
     func initAlbum()
+    func startSession()
+    func stopSession()
     func didTapRecord()
     func didTapFlip()
     func didTapRatio()
@@ -39,15 +42,13 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     weak var listener: VideoRecordPresentableListener?
 
     private let recordControlView: RecordControlView
-    private let recordingManager: VideoRecordingManagerProtocol
     private var cameraPreview: UIView = .init()
     private let permissionView = CameraPermissionView()
 
     private var previewLayer: AVCaptureVideoPreviewLayer?
     private var currentAspectRatio: AspectRatio = .oneToOne
 
-    init(recordingManager: VideoRecordingManagerProtocol) {
-        self.recordingManager = recordingManager
+    override init() {
         self.recordControlView = RecordControlView(videos: [], maxAlbumCount: 15)
         super.init()
     }
@@ -181,17 +182,18 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
                 self.permissionView.isHidden = isAuthorized
 
-                if isAuthorized, self.previewLayer == nil {
-                    let layer = AVCaptureVideoPreviewLayer(session: self.recordingManager.session)
+                if isAuthorized, self.previewLayer == nil, let listener = self.listener {
+                    let session = listener.captureSession
+                    let layer = AVCaptureVideoPreviewLayer(session: session)
                     layer.videoGravity = .resizeAspectFill
                     self.cameraPreview.layer.insertSublayer(layer, at: 0)
                     self.previewLayer = layer
                     self.updatePreviewLayout()
-                    self.recordingManager.startSession()
+                    self.listener?.startSession()
                 } else {
                     self.previewLayer?.removeFromSuperlayer()
                     self.previewLayer = nil
-                    self.recordingManager.stopSession()
+                    self.listener?.stopSession()
                 }
             })
             .store(in: &self.cancellables)

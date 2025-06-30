@@ -40,7 +40,7 @@ public final class VideoRecordBuilder: Builder<VideoRecordComponent>, VideoRecor
     public func build(withListener listener: VideoRecordListener) -> VideoRecordRouting {
         let component = VideoRecordComponent(dependency: dependency)
         let recordingManager = VideoRecordingManager()
-        let viewController = VideoRecordViewController(recordingManager: recordingManager)
+        let viewController = VideoRecordViewController()
         let interactor = VideoRecordInteractor(
             presenter: viewController,
             component: component,
