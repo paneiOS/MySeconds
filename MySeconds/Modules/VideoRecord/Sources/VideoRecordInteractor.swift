@@ -138,10 +138,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 extension VideoRecordInteractor {
     func initAlbum() {
         do {
-            if let videos = try self.videoDraftStorage?.loadAll(type: VideoDraft.self) {
-                _ = videos.sorted {
-                    $0.createdAt > $1.createdAt
-                }
+            if let videos = try self.videoDraftStorage?.loadAll(type: VideoDraft.self).sorted(by: { $0.createdAt > $1.createdAt }) {
                 self.videoSubject.send(videos)
             } else {
                 self.videoSubject.send([])
@@ -162,6 +159,11 @@ extension VideoRecordInteractor {
     }
 
     func didTapRecord() {
+        if self.isRecordingSubject.value {
+            self.recordingManager.cancelRecording()
+            return
+        }
+
         let duration = TimeInterval(durationOptions[safe: currentDurationIndex] ?? 1)
 
         self.isRecordingSubject.send(true)
@@ -172,12 +174,9 @@ extension VideoRecordInteractor {
                 let url = try await self.recordingManager.recordVideo(duration: duration)
 
                 self.isRecordingSubject.send(false)
-                self.recordDurationSubject.send(0)
-
                 await self.saveVideo(url: url)
             } catch {
                 self.isRecordingSubject.send(false)
-                self.recordDurationSubject.send(0)
 
                 if let cameraError = error as? CameraError {
                     switch cameraError {
