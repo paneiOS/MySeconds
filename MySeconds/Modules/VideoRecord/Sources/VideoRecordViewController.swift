@@ -58,11 +58,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        self.updatePreviewLayout()
-    }
-
     override func setupUI() {
         self.view.backgroundColor = .white
         self.view.addSubviews(self.recordControlView, self.cameraPreview, self.permissionView)
