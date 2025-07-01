@@ -42,11 +42,11 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     weak var listener: VideoRecordPresentableListener?
 
     private let recordControlView: RecordControlView
-    private var cameraPreview: UIView = .init()
+    private var cameraPreview = CameraPreviewView()
     private let permissionView = CameraPermissionView()
-
-    private var previewLayer: AVCaptureVideoPreviewLayer?
     private var currentAspectRatio: AspectRatio = .oneToOne
+
+    private var cameraPreviewHeightConstraint: Constraint?
 
     override init() {
         self.recordControlView = RecordControlView(videos: [], maxAlbumCount: 15)
@@ -73,8 +73,8 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
         }
 
         self.cameraPreview.snp.makeConstraints {
-            $0.top.equalTo(self.view.safeAreaLayoutGuide).offset(62)
-            $0.bottom.equalTo(self.recordControlView.snp.top).offset(-62)
+            $0.top.equalTo(self.view.safeAreaLayoutGuide)
+            $0.bottom.equalTo(self.recordControlView.snp.top)
             $0.leading.trailing.equalToSuperview()
         }
     }
@@ -177,17 +177,12 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
                 self.permissionView.isHidden = isAuthorized
 
-                if isAuthorized, self.previewLayer == nil, let listener = self.listener {
-                    let session = listener.captureSession
-                    let layer = AVCaptureVideoPreviewLayer(session: session)
-                    layer.videoGravity = .resizeAspectFill
-                    self.cameraPreview.layer.insertSublayer(layer, at: 0)
-                    self.previewLayer = layer
-                    self.updatePreviewLayout()
+                if isAuthorized {
+                    let session = self.listener?.captureSession
+                    self.cameraPreview.session = session
                     self.listener?.startSession()
                 } else {
-                    self.previewLayer?.removeFromSuperlayer()
-                    self.previewLayer = nil
+                    self.cameraPreview.removeSession()
                     self.listener?.stopSession()
                 }
             })
@@ -198,23 +193,9 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .sink(receiveValue: { [weak self] ratio in
                 guard let self else { return }
                 self.currentAspectRatio = ratio
-                self.updatePreviewLayout()
+                self.cameraPreview.aspectRatio = self.currentAspectRatio.ratio
             })
             .store(in: &self.cancellables)
-    }
-
-    private func updatePreviewLayout() {
-        guard let previewLayer else { return }
-
-        let width = self.cameraPreview.bounds.width
-        let height = width * self.currentAspectRatio.ratio
-
-        previewLayer.frame = CGRect(
-            x: 0,
-            y: (self.cameraPreview.bounds.height - height) / 2,
-            width: width,
-            height: height
-        )
     }
 
     func navigationConfig() -> NavigationConfig {
