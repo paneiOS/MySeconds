@@ -11,13 +11,6 @@ public enum AspectRatio: String, CaseIterable {
     case oneToOne = "1:1"
     case fourToThree = "4:3"
 
-    var preset: AVCaptureSession.Preset {
-        switch self {
-        case .oneToOne: .high
-        case .fourToThree: .vga640x480
-        }
-    }
-
     public var ratio: CGFloat {
         switch self {
         case .oneToOne:
@@ -58,7 +51,7 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
 
     private func configureSession(aspectRatio: AspectRatio) -> Result<Void, CameraError> {
         self.session.beginConfiguration()
-        self.session.sessionPreset = aspectRatio.preset
+        self.session.sessionPreset = .high
 
         if let input = self.videoDeviceInput {
             self.session.removeInput(input)
@@ -155,12 +148,6 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
             self.session.addInput(currentInput)
         }
 
-        self.session.commitConfiguration()
-    }
-
-    public func updateAspectRatio(aspectRatio: AspectRatio) {
-        self.session.beginConfiguration()
-        self.session.sessionPreset = aspectRatio.preset
         self.session.commitConfiguration()
     }
 
