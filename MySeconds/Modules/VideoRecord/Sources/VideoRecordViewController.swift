@@ -140,9 +140,9 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
         self.listener?.ratioButtonTextPublisher
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] seconds in
+            .sink(receiveValue: { [weak self] text in
                 guard let self else { return }
-                self.recordControlView.setRatioButtonText(text: seconds)
+                self.recordControlView.setRatioButtonText(text: text)
             })
             .store(in: &cancellables)
 
