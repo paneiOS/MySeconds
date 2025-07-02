@@ -30,11 +30,6 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     private let component: VideoRecordComponent
     private let recordingManager: VideoRecordingManagerProtocol
 
-    private let timerButtonTextSubject = PassthroughSubject<Int, Never>()
-    public var timerButtonTextPublisher: AnyPublisher<Int, Never> {
-        self.timerButtonTextSubject.eraseToAnyPublisher()
-    }
-
     private let aspectRatioSubject = CurrentValueSubject<AspectRatio, Never>(.oneToOne)
     public var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> {
         self.aspectRatioSubject.eraseToAnyPublisher()
@@ -45,8 +40,8 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.isRecordingSubject.eraseToAnyPublisher()
     }
 
-    private let recordDurationSubject = PassthroughSubject<TimeInterval, Never>()
-    public var recordDurationPublisher: AnyPublisher<TimeInterval, Never> {
+    private let recordDurationSubject = CurrentValueSubject<Int, Never>(1)
+    public var recordDurationPublisher: AnyPublisher<Int, Never> {
         self.recordDurationSubject.eraseToAnyPublisher()
     }
 
@@ -62,6 +57,10 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 
     public var captureSession: AVCaptureSession {
         self.recordingManager.session
+    }
+
+    public var recordDuration: Int {
+        self.recordDurationSubject.value
     }
 
     private var currentDurationIndex = 0
@@ -159,11 +158,9 @@ extension VideoRecordInteractor {
             self.recordingManager.cancelRecording()
             return
         }
-
-        let duration = TimeInterval(durationOptions[safe: currentDurationIndex] ?? 1)
-
+        
+        let duration = TimeInterval(self.recordDurationSubject.value)
         self.isRecordingSubject.send(true)
-        self.recordDurationSubject.send(duration)
 
         Task {
             do {
@@ -199,7 +196,7 @@ extension VideoRecordInteractor {
     func didTapTimer() {
         self.currentDurationIndex = (self.currentDurationIndex + 1) % self.durationOptions.count
         let selected = self.durationOptions[safe: self.currentDurationIndex] ?? 1
-        self.timerButtonTextSubject.send(selected)
+        self.recordDurationSubject.send(selected)
     }
 
     func didTapAlbum() {
