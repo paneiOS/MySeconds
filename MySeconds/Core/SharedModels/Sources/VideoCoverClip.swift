@@ -16,7 +16,14 @@ public struct VideoCoverClip: Clip {
     public var thumbnail: UIImage?
     public var type: CoverType
 
-    public enum CoverType: String {
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case date
+        case duration
+        case type
+    }
+
+    public enum CoverType: String, Codable {
         case intro = "인트로"
         case outro = "아웃트로"
     }
@@ -37,5 +44,30 @@ public struct VideoCoverClip: Clip {
         self.duration = duration
         self.thumbnail = thumbnail
         self.type = type
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decode(UUID.self, forKey: .id)
+        let date = try container.decodeIfPresent(Date.self, forKey: .date)
+        let duration = try container.decode(TimeInterval.self, forKey: .duration)
+        let type = try container.decode(CoverType.self, forKey: .type)
+        self.init(
+            id: id,
+            title: nil,
+            description: nil,
+            date: date,
+            duration: duration,
+            thumbnail: nil,
+            type: type
+        )
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encodeIfPresent(self.date, forKey: .date)
+        try container.encode(self.duration, forKey: .duration)
+        try container.encode(self.type, forKey: .type)
     }
 }

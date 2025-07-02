@@ -10,38 +10,33 @@ import UIKit
 import ModernRIBs
 
 import BaseRIBsKit
+import SharedModels
 
-public protocol VideoRecordDependency: Dependency {
-    var initialAlbumThumbnail: UIImage? { get }
-    var initialAlbumCount: Int { get }
-}
+public protocol VideoRecordDependency: Dependency {}
 
 public final class VideoRecordComponent: Component<VideoRecordDependency> {
-    public var initialAlbumThumbnail: UIImage? {
-        dependency.initialAlbumThumbnail
-    }
+    public let clips: [CompositionClip]
 
-    public var initialAlbumCount: Int {
-        dependency.initialAlbumCount
+    public init(dependency: VideoRecordDependency, clips: [CompositionClip]) {
+        self.clips = clips
+        super.init(dependency: dependency)
     }
 }
-
-extension VideoRecordComponent: VideoRecordDependency {}
 
 // MARK: - Builder
 
 public protocol VideoRecordBuildable: Buildable {
-    func build(withListener listener: VideoRecordListener) -> VideoRecordRouting
+    func build(withListener listener: VideoRecordListener, clips: [CompositionClip]) -> VideoRecordRouting
 }
 
-public final class VideoRecordBuilder: Builder<VideoRecordComponent>, VideoRecordBuildable {
+public final class VideoRecordBuilder: Builder<VideoRecordDependency>, VideoRecordBuildable {
 
-    override public init(dependency: VideoRecordComponent) {
+    override public init(dependency: VideoRecordDependency) {
         super.init(dependency: dependency)
     }
 
-    public func build(withListener listener: VideoRecordListener) -> VideoRecordRouting {
-        let component = VideoRecordComponent(dependency: dependency)
+    public func build(withListener listener: VideoRecordListener, clips: [CompositionClip]) -> VideoRecordRouting {
+        let component = VideoRecordComponent(dependency: dependency, clips: clips)
         let viewController = VideoRecordViewController()
         let interactor = VideoRecordInteractor(presenter: viewController, component: component)
         interactor.listener = listener

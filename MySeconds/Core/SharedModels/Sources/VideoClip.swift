@@ -9,7 +9,7 @@ import UIKit
 
 import UtilsKit
 
-public protocol Clip: Hashable {
+public protocol Clip: Codable, Hashable {
     var id: UUID { get }
     var duration: TimeInterval { get }
     var thumbnail: UIImage? { get }
@@ -24,6 +24,13 @@ public struct VideoClip: Clip {
 
     public var url: URL {
         VideoClip.clipsFolder.appendingPathComponent(self.fileName)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case fileName
+        case createdAt
+        case duration
     }
 
     public init(

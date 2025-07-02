@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum CompositionClip: Hashable {
+public enum CompositionClip: Codable, Hashable {
     case cover(VideoCoverClip)
     case video(VideoClip)
 }

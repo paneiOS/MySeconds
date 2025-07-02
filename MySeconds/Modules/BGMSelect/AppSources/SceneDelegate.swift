@@ -54,5 +54,9 @@ final class MockBGMSelectDependency: BGMSelectDependency {
 }
 
 final class MockBGMSelectListener: BGMSelectListener {
+    func apply(bgm: BGMSelect.BGM) {
+        print("apply 탭")
+    }
+
     func closeBGMSelect() {}
 }

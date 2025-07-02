@@ -11,6 +11,7 @@ import UIKit
 import ModernRIBs
 
 import BaseRIBsKit
+import SharedModels
 
 public protocol VideoRecordRouting: ViewableRouting {}
 
@@ -18,7 +19,9 @@ protocol VideoRecordPresentable: Presentable {
     var listener: VideoRecordPresentableListener? { get set }
 }
 
-public protocol VideoRecordListener: AnyObject {}
+public protocol VideoRecordListener: AnyObject {
+    func showVideoCreation(clips: [CompositionClip])
+}
 
 final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordInteractable, VideoRecordPresentableListener {
 
@@ -44,19 +47,25 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.recordDurationSubject.eraseToAnyPublisher()
     }
 
-    private let albumSubject = PassthroughSubject<(UIImage?, Int), Never>()
-    public var albumPublisher: AnyPublisher<(UIImage?, Int), Never> {
-        self.albumSubject.eraseToAnyPublisher()
-    }
+//    private let albumSubject = PassthroughSubject<(UIImage?, Int), Never>()
+//    public var albumPublisher: AnyPublisher<(UIImage?, Int), Never> {
+//        self.albumSubject.eraseToAnyPublisher()
+//    }
 
-    private let thumbnailSubject = CurrentValueSubject<UIImage?, Never>(nil)
-    private let albumCountSubject = CurrentValueSubject<Int, Never>(0)
+//    private let thumbnailSubject = CurrentValueSubject<UIImage?, Never>(nil)
+//    private let albumCountSubject = CurrentValueSubject<Int, Never>(0)
+    private let clipsSubject = CurrentValueSubject<[CompositionClip], Never>([])
+    public var clipsPublisher: AnyPublisher<[CompositionClip], Never> {
+        self.clipsSubject.eraseToAnyPublisher()
+    }
 
     private let videoRatios: [String] = ["1:1", "4:3"]
     private var currentRatioIndex: Int = 0
     private var maxRecordingTime: TimeInterval = 1
     private let durationOptions: [TimeInterval] = [1, 2, 3]
     private var recordWorkItem: DispatchWorkItem?
+
+    private var clips: [CompositionClip] = []
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -82,21 +91,24 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     }
 
     private func bind() {
-        self.thumbnailSubject
-            .combineLatest(self.albumCountSubject)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] thumbnail, count in
-                guard let self else { return }
-                self.albumSubject.send((thumbnail, count))
-            })
-            .store(in: &self.cancellables)
+//        self.thumbnailSubject
+//            .combineLatest(self.albumCountSubject)
+//            .receive(on: DispatchQueue.main)
+//            .sink(receiveValue: { [weak self] thumbnail, count in
+//                guard let self else { return }
+//                self.albumSubject.send((thumbnail, count))
+//            })
+//            .store(in: &self.cancellables)
     }
 }
 
 extension VideoRecordInteractor {
     func initAlbum() {
-        self.thumbnailSubject.send(self.component.initialAlbumThumbnail)
-        self.albumCountSubject.send(self.component.initialAlbumCount)
+//        self.thumbnailSubject.send(self.component.initialAlbumThumbnail)
+//        self.albumCountSubject.send(self.component.initialAlbumCount)
+
+        self.clipsSubject.send(self.component.clips)
+        self.clips = self.component.clips
 
         let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
         self.timerButtonTextSubject.send(maxRecordingTime)
@@ -116,7 +128,7 @@ extension VideoRecordInteractor {
 
             let work = DispatchWorkItem { [weak self] in
                 guard let self else { return }
-                self.recordDidFinish()
+//                self.recordDidFinish()
                 self.isRecordingSubject.send(false)
             }
             self.recordWorkItem = work
@@ -152,23 +164,23 @@ extension VideoRecordInteractor {
     }
 
     func didTapAlbum() {
-        print("Tap Album")
+        self.listener?.showVideoCreation(clips: self.clips)
     }
 
     // TODO: 샘플앱을 위한 테스트 메서든 추후 수정 필요
-    func recordDidFinish() {
-
-        let newCount = self.albumCountSubject.value + 1
-        self.albumCountSubject.send(newCount)
-
-        let colorIndex = newCount % self.sampleColors.count
-        let chosenColor = self.sampleColors[colorIndex]
-        let thumbnailSize = CGSize(width: 64, height: 64)
-
-        let colorImage = UIGraphicsImageRenderer(size: thumbnailSize).image { ctx in
-            chosenColor.setFill()
-            ctx.fill(CGRect(origin: .zero, size: thumbnailSize))
-        }
-        self.thumbnailSubject.send(colorImage)
-    }
+//    func recordDidFinish() {
+//
+//        let newCount = self.albumCountSubject.value + 1
+//        self.albumCountSubject.send(newCount)
+//
+//        let colorIndex = newCount % self.sampleColors.count
+//        let chosenColor = self.sampleColors[colorIndex]
+//        let thumbnailSize = CGSize(width: 64, height: 64)
+//
+//        let colorImage = UIGraphicsImageRenderer(size: thumbnailSize).image { ctx in
+//            chosenColor.setFill()
+//            ctx.fill(CGRect(origin: .zero, size: thumbnailSize))
+//        }
+//        self.thumbnailSubject.send(colorImage)
+//    }
 }

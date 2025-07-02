@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class VideoDraftStorage: VideoDraftStoring {
+public final class VideoDraftStorage: VideoDraftStorageDelegate {
     public enum Error: Swift.Error {
         case directoryNotFound
         case fileNotFound

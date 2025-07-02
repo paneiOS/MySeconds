@@ -16,9 +16,11 @@ import SharedModels
 import SignUp
 import UtilsKit
 import VideoCreation
+import VideoRecord
 
 protocol RootInteractable: Interactable,
     LoginListener,
+    VideoRecordListener,
     VideoCreationListener,
     SignUpListener,
     CoverClipCreationListener,
@@ -35,6 +37,7 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
     private var loginRouter: LoginRouting?
     private var signUpRouter: SignUpRouting?
     private var videoCreationRouter: VideoCreationRouting?
+    private var videoRecordRouter: VideoRecordRouting?
     private var coverClipCreationRouter: CoverClipCreationRouting?
     private var bgmSelectRouter: BGMSelectRouting?
 
@@ -65,10 +68,18 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
         self.loginRouter = nil
     }
 
-    func routeToVideoCreation(clips: [CompositionClip]) {
+    func routeToVideoRecord(clips: [CompositionClip]) {
         self.popToSignUp()
         self.popToLogin()
 
+        guard self.videoRecordRouter == nil else { return }
+        let videoRecordRouter = self.component.videoRecordBuilder.build(withListener: self.interactor, clips: clips)
+        self.attachChild(videoRecordRouter)
+        self.videoRecordRouter = videoRecordRouter
+        self.rootNavigationController?.pushViewController(videoRecordRouter.uiviewController, animated: true)
+    }
+
+    func routeToVideoCreation(clips: [CompositionClip]) {
         guard self.videoCreationRouter == nil else { return }
         let videoCreationRouter = self.component.videoCreationBuilder.build(withListener: self.interactor, clips: clips)
         self.attachChild(videoCreationRouter)

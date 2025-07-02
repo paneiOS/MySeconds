@@ -13,6 +13,7 @@ import SnapKit
 
 import MySecondsKit
 import ResourceKit
+import SharedModels
 
 protocol VideoRecordPresentableListener: AnyObject {
     var timerButtonTextPublisher: AnyPublisher<String, Never> { get }
@@ -20,7 +21,8 @@ protocol VideoRecordPresentableListener: AnyObject {
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
 
-    var albumPublisher: AnyPublisher<(UIImage?, Int), Never> { get }
+//    var albumPublisher: AnyPublisher<(UIImage?, Int), Never> { get }
+    var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
 
     func initAlbum()
     func didTapRecord()
@@ -30,7 +32,7 @@ protocol VideoRecordPresentableListener: AnyObject {
     func didTapAlbum()
 
     // TODO: Sample App 테스트 위한 메서드
-    func recordDidFinish()
+//    func recordDidFinish()
 }
 
 final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
@@ -134,13 +136,29 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.listener?.albumPublisher
+//        self.listener?.albumPublisher
+//            .receive(on: DispatchQueue.main)
+//            .sink(receiveValue: { [weak self] thumbnail, count in
+//                guard let self else { return }
+//                self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
+//            })
+//            .store(in: &cancellables)
+
+        self.listener?.clipsPublisher
+            .compactMap { clips in
+                clips.compactMap { clip in
+                    if case let .video(videoClip) = clip { videoClip }
+                    else { nil }
+                }
+            }
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] thumbnail, count in
+            .sink(receiveValue: { [weak self] videoClips in
                 guard let self else { return }
-                self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
+                if let lastVideoClip = videoClips.last {
+                    self.recordControlView.updateAlbum(thumbnail: lastVideoClip.thumbnail, count: videoClips.count)
+                }
             })
-            .store(in: &cancellables)
+            .store(in: &self.cancellables)
     }
 
     func navigationConfig() -> NavigationConfig {

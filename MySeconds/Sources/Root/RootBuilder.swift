@@ -14,10 +14,13 @@ import Login
 import SignUp
 import SocialLoginKit
 import VideoCreation
+import VideoDraftStorage
+import VideoRecord
 
 protocol RootDependency: Dependency {
     var socialLoginService: SocialLoginService { get }
     var firestore: Firestore { get }
+    var storage: VideoDraftStorageDelegate { get }
 }
 
 final class RootComponent: Component<RootDependency> {}
@@ -33,6 +36,16 @@ extension RootComponent: LoginDependency {
 
     var loginBuilder: LoginBuildable {
         LoginBuilder(dependency: self)
+    }
+
+    var storage: VideoDraftStorageDelegate {
+        dependency.storage
+    }
+}
+
+extension RootComponent: VideoRecordDependency {
+    var videoRecordBuilder: VideoRecordBuildable {
+        VideoRecordBuilder(dependency: self)
     }
 }
 
@@ -78,7 +91,7 @@ final class RootBuilder: Builder<RootDependency>, RootBuildable {
         let navigationController = UINavigationController(rootViewController: viewController)
         navigationController.modalPresentationStyle = .fullScreen
 
-        let interactor = RootInteractor(presenter: viewController)
+        let interactor = RootInteractor(presenter: viewController, component: component)
         let router = RootRouter(
             interactor: interactor,
             viewController: navigationController,

@@ -10,7 +10,7 @@ import XCTest
 
 final class VideoDraftStorageTests: XCTestCase {
 
-    private var storage: VideoDraftStoring?
+    private var storage: VideoDraftStorageDelegate?
     private let directoryName: String = "TestVideoDrafts"
 
     override func setUpWithError() throws {

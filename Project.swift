@@ -68,7 +68,6 @@ let project = Project(
             dependencies: [
                 //                .project(target: "SharedModels", path: "MySeconds/Core/SharedModels"),
 //                .project(target: "SocialLoginKit", path: "MySeconds/Core/SocialLoginKit"),
-//                .project(target: "VideoDraftStorage", path: "MySeconds/Core/VideoDraftStorage"),
 //
 //                .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
 //                .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
@@ -80,6 +79,7 @@ let project = Project(
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
                 .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation"),
+                .project(target: "VideoDraftStorage", path: "MySeconds/Core/VideoDraftStorage"),
                 .project(target: "VideoRecord", path: "MySeconds/Modules/VideoRecord")
             ],
             settings: .settings(
