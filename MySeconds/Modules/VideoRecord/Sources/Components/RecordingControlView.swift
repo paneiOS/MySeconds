@@ -273,6 +273,10 @@ final class RecordControlView: UIView {
     func setRecordingState(_ isRecording: Bool) {
         self.albumStack.isHidden = isRecording
         self.buttonStack.isHidden = isRecording
+
+        if !isRecording {
+            self.recordDuration = 0
+        }
     }
 
     func updateAlbum(videos: [VideoDraft]) {

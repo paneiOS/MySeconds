@@ -173,13 +173,10 @@ extension VideoRecordInteractor {
         Task {
             do {
                 let url = try await self.recordingManager.recordVideo(duration: duration)
-
                 self.isRecordingSubject.send(false)
-                self.recordDurationSubject.send(0)
                 await self.saveVideo(url: url)
             } catch {
                 self.isRecordingSubject.send(false)
-                self.recordDurationSubject.send(0)
                 if let cameraError = error as? CameraError {
                     switch cameraError {
                     case .cancelled:
