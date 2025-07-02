@@ -12,14 +12,14 @@ import ResourceKit
 
 class CameraPermissionView: UIView {
     private var cancellables = Set<AnyCancellable>()
-
+    
     private let cameraImageView: UIImageView = {
         let imageView = UIImageView(image: ResourceKitAsset.cameraOff.image)
         imageView.tintColor = .neutral400
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
-
+    
     private let titleLabel: UILabel = {
         let label: UILabel = .init()
         label.attributedText = .makeAttributedString(
@@ -30,7 +30,7 @@ class CameraPermissionView: UIView {
         )
         return label
     }()
-
+    
     private let descriptionLabel: UILabel = {
         let label: UILabel = .init()
         label.attributedText = .makeAttributedString(
@@ -42,7 +42,7 @@ class CameraPermissionView: UIView {
         label.numberOfLines = 0
         return label
     }()
-
+    
     private let openSettinButton: UIButton = {
         let button: UIButton = .init()
         var configuration: UIButton.Configuration = .plain()
@@ -54,18 +54,18 @@ class CameraPermissionView: UIView {
         button.configuration = configuration
         return button
     }()
-
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.setupUI()
         self.bind()
     }
-
+    
     required init?(coder: NSCoder) { nil }
-
+    
     private func setupUI() {
         self.backgroundColor = .white
-
+        
         let stackView: UIStackView = {
             let stackView = UIStackView(arrangedSubviews: [
                 cameraImageView,
@@ -79,9 +79,9 @@ class CameraPermissionView: UIView {
             stackView.distribution = .equalSpacing
             return stackView
         }()
-
+        
         self.addSubview(stackView)
-
+        
         stackView.snp.makeConstraints {
             $0.center.equalToSuperview()
         }
@@ -89,22 +89,18 @@ class CameraPermissionView: UIView {
             $0.size.equalTo(48)
         }
     }
-
+    
     private func bind() {
         self.openSettinButton
             .publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-                self.openSettings()
+                if let appSettingsUrl = URL(string: UIApplication.openSettingsURLString) {
+                    if UIApplication.shared.canOpenURL(appSettingsUrl) {
+                        UIApplication.shared.open(appSettingsUrl, options: [:], completionHandler: nil)
+                    }
+                }
             })
             .store(in: &self.cancellables)
-    }
-
-    private func openSettings() {
-        if let appSettingsUrl = URL(string: UIApplication.openSettingsURLString) {
-            if UIApplication.shared.canOpenURL(appSettingsUrl) {
-                UIApplication.shared.open(appSettingsUrl, options: [:], completionHandler: nil)
-            }
-        }
-    }
+    }    
 }
