@@ -11,11 +11,25 @@ import ModernRIBs
 
 import BaseRIBsKit
 import SharedModels
+import VideoDraftStorage
+import VideoRecordingManager
 
-public protocol VideoRecordDependency: Dependency {}
+public protocol VideoRecordDependency: Dependency {
+    var videoDraftStorage: VideoDraftStorage { get }
+    var maxAlbumCount: Int { get }
+}
 
 public final class VideoRecordComponent: Component<VideoRecordDependency> {
     public let clips: [CompositionClip]
+
+    public var videoDraftStorage: VideoDraftStorage {
+        dependency.videoDraftStorage
+    }
+
+    public var maxAlbumCount: Int {
+        dependency.maxAlbumCount
+    }
+
 
     public init(dependency: VideoRecordDependency, clips: [CompositionClip]) {
         self.clips = clips
@@ -39,6 +53,11 @@ public final class VideoRecordBuilder: Builder<VideoRecordDependency>, VideoReco
         let component = VideoRecordComponent(dependency: dependency, clips: clips)
         let viewController = VideoRecordViewController()
         let interactor = VideoRecordInteractor(presenter: viewController, component: component)
+        let interactor = VideoRecordInteractor(
+            presenter: viewController,
+            component: component,
+            recordingManager: recordingManager
+        )
         interactor.listener = listener
         return VideoRecordRouter(interactor: interactor, viewController: viewController)
     }

@@ -5,6 +5,7 @@
 //  Created by chungwussup on 05/19/2025.
 //
 
+import AVFoundation
 import Combine
 import UIKit
 
@@ -14,41 +15,65 @@ import SnapKit
 import MySecondsKit
 import ResourceKit
 import SharedModels
+import VideoDraftStorage
+import VideoRecordingManager
 
 protocol VideoRecordPresentableListener: AnyObject {
-    var timerButtonTextPublisher: AnyPublisher<String, Never> { get }
     var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
-
-//    var albumPublisher: AnyPublisher<(UIImage?, Int), Never> { get }
+    var videosPublisher: AnyPublisher<[VideoDraft], Never> { get }
+    var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> { get }
+    var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> { get }
     var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
 
     func initAlbum()
+    func startSession()
+    func stopSession()
     func didTapRecord()
     func didTapFlip()
     func didTapRatio()
     func didTapTimer()
     func didTapAlbum()
-
-    // TODO: Sample App 테스트 위한 메서드
-//    func recordDidFinish()
 }
 
 final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
 
     weak var listener: VideoRecordPresentableListener?
 
-    private let recordControlView = RecordControlView(count: 15)
+    private let recordControlView: RecordControlView
+    private var cameraPreview = CameraPreviewView()
+    private let permissionView = CameraPermissionView()
+    private var currentAspectRatio: AspectRatio = .oneToOne
+
+    init(maxAlbumCount: Int) {
+        self.recordControlView = RecordControlView(videos: [], maxAlbumCount: maxAlbumCount)
+        super.init()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        nil
+    }
 
     override func setupUI() {
         self.view.backgroundColor = .white
-        self.view.addSubviews(self.recordControlView)
+        self.view.addSubviews(self.recordControlView, self.cameraPreview, self.permissionView)
+
+        self.permissionView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
 
         self.recordControlView.snp.makeConstraints {
             $0.height.equalTo(136)
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalTo(self.view.safeAreaLayoutGuide)
+        }
+
+        self.cameraPreview.snp.makeConstraints {
+            $0.top.equalTo(self.view.safeAreaLayoutGuide)
+            $0.bottom.equalTo(self.recordControlView.snp.top)
+            $0.leading.trailing.equalToSuperview()
         }
     }
 
@@ -84,7 +109,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.listener?.didTapRatio()
-
             })
             .store(in: &cancellables)
 
@@ -157,6 +181,41 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 if let lastVideoClip = videoClips.last {
                     self.recordControlView.updateAlbum(thumbnail: lastVideoClip.thumbnail, count: videoClips.count)
                 }
+            })
+            .store(in: &self.cancellables)
+
+        self.listener?.videosPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] videos in
+                guard let self else { return }
+                self.recordControlView.updateAlbum(videos: videos)
+            })
+            .store(in: &cancellables)
+
+        self.listener?.cameraAuthorizationPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] isAuthorized in
+                guard let self else { return }
+
+                self.permissionView.isHidden = isAuthorized
+
+                if isAuthorized {
+                    let session = self.listener?.captureSession
+                    self.cameraPreview.session = session
+                    self.listener?.startSession()
+                } else {
+                    self.cameraPreview.removeSession()
+                    self.listener?.stopSession()
+                }
+            })
+            .store(in: &self.cancellables)
+
+        self.listener?.aspectRatioPublisher
+            .receive(on: DispatchQueue.main)
+            .sink(receiveValue: { [weak self] ratio in
+                guard let self else { return }
+                self.currentAspectRatio = ratio
+                self.cameraPreview.aspectRatio = self.currentAspectRatio.ratio
             })
             .store(in: &self.cancellables)
     }
