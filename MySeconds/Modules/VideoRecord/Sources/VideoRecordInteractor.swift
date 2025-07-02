@@ -35,14 +35,15 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.timerButtonTextSubject.eraseToAnyPublisher()
     }
 
-    private let ratioButtonTextSubject = CurrentValueSubject<String, Never>("1:1")
-    public var ratioButtonTextPublisher: AnyPublisher<String, Never> {
-        self.ratioButtonTextSubject.eraseToAnyPublisher()
+    private let aspectRatioSubject = CurrentValueSubject<AspectRatio, Never>(.oneToOne)
+    public var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> {
+        self.aspectRatioSubject.eraseToAnyPublisher()
     }
 
-    private let aspectRatioSubject = CurrentValueSubject<AspectRatio, Never>(.oneToOne)
-    var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> {
-        self.aspectRatioSubject.eraseToAnyPublisher()
+    public var ratioButtonTextPublisher: AnyPublisher<String, Never> {
+        self.aspectRatioSubject
+            .map(\.rawValue)
+            .eraseToAnyPublisher()
     }
 
     private let isRecordingSubject = CurrentValueSubject<Bool, Never>(false)
@@ -199,7 +200,6 @@ extension VideoRecordInteractor {
         self.currentAspectRatioIndex = (self.currentAspectRatioIndex + 1) % self.availableRatios.count
         let newAspectRatio = self.availableRatios[safe: self.currentAspectRatioIndex] ?? .oneToOne
         self.aspectRatioSubject.send(newAspectRatio)
-        self.ratioButtonTextSubject.send(newAspectRatio.rawValue)
     }
 
     func didTapTimer() {
