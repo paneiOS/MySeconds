@@ -72,7 +72,7 @@ public final class VideoDraftStorage: VideoDraftStoring {
         let data = try JSONEncoder().encode(items)
         try data.write(to: self.videoDraftsFileURL, options: .atomic)
     }
-    
+
     // MARK: - Private
 
     private func videoFileURLPath(fileName: String) -> URL {
