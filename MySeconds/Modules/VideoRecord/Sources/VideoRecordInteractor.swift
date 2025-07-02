@@ -204,7 +204,7 @@ extension VideoRecordInteractor {
 
     func didTapTimer() {
         self.currentDurationIndex = (self.currentDurationIndex + 1) % self.durationOptions.count
-        let selected = self.durationOptions[self.currentDurationIndex]
+        let selected = self.durationOptions[safe: self.currentDurationIndex] ?? 1
         self.timerButtonTextSubject.send(selected)
     }
 
