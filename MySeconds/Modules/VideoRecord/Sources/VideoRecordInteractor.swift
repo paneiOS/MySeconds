@@ -71,7 +71,8 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 
     private var currentDurationIndex = 0
     private let durationOptions: [Int] = [1, 2, 3]
-    private var currentAspectRatio: AspectRatio = .oneToOne
+    private let availableRatios: [AspectRatio] = [.oneToOne, .fourToThree]
+    private var currentAspectRatioIndex: Int = 0
 
     private let videoSubject = CurrentValueSubject<[VideoDraft], Never>([])
 
@@ -198,9 +199,10 @@ extension VideoRecordInteractor {
     }
 
     func didTapRatio() {
-        self.currentAspectRatio = self.currentAspectRatio.next()
-        self.aspectRatioSubject.send(self.currentAspectRatio)
-        self.ratioButtonTextSubject.send(self.currentAspectRatio.rawValue)
+        self.currentAspectRatioIndex = (self.currentAspectRatioIndex + 1) % self.availableRatios.count
+        let newAspectRatio = self.availableRatios[safe: self.currentAspectRatioIndex] ?? .oneToOne
+        self.aspectRatioSubject.send(newAspectRatio)
+        self.ratioButtonTextSubject.send(newAspectRatio.rawValue)
     }
 
     func didTapTimer() {

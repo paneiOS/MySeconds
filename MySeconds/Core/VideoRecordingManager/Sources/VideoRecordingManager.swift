@@ -19,13 +19,6 @@ public enum AspectRatio: String, CaseIterable {
             4.0 / 3.0
         }
     }
-
-    public func next() -> AspectRatio {
-        let allCases = Self.allCases
-        guard let index = allCases.firstIndex(of: self) else { return self }
-        let nextIndex = allCases.index(after: index)
-        return nextIndex < allCases.endIndex ? allCases[nextIndex] : allCases[allCases.startIndex]
-    }
 }
 
 public enum CameraError: Error {
