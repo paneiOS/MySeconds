@@ -41,10 +41,20 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     weak var listener: VideoRecordPresentableListener?
 
-    private let recordControlView = RecordControlView(videos: [], maxAlbumCount: 15)
+    private let recordControlView: RecordControlView
     private var cameraPreview = CameraPreviewView()
     private let permissionView = CameraPermissionView()
     private var currentAspectRatio: AspectRatio = .oneToOne
+
+    init(maxAlbumCount: Int) {
+        self.recordControlView = RecordControlView(videos: [], maxAlbumCount: maxAlbumCount)
+        super.init()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        nil
+    }
 
     override func setupUI() {
         self.view.backgroundColor = .white

@@ -47,6 +47,10 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 
 final class MockVideoRecordDependency: VideoRecordDependency {
+    var maxAlbumCount: Int {
+        15
+    }
+
     var videoDraftStorage: VideoDraftStorage = {
         do {
             return try VideoDraftStorage()

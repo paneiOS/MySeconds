@@ -15,11 +15,16 @@ import VideoRecordingManager
 
 public protocol VideoRecordDependency: Dependency {
     var videoDraftStorage: VideoDraftStorage { get }
+    var maxAlbumCount: Int { get }
 }
 
 public final class VideoRecordComponent: Component<VideoRecordDependency> {
     public var videoDraftStorage: VideoDraftStorage {
         dependency.videoDraftStorage
+    }
+
+    public var maxAlbumCount: Int {
+        dependency.maxAlbumCount
     }
 }
 
@@ -40,7 +45,7 @@ public final class VideoRecordBuilder: Builder<VideoRecordComponent>, VideoRecor
     public func build(withListener listener: VideoRecordListener) -> VideoRecordRouting {
         let component = VideoRecordComponent(dependency: dependency)
         let recordingManager = VideoRecordingManager()
-        let viewController = VideoRecordViewController()
+        let viewController = VideoRecordViewController(maxAlbumCount: component.maxAlbumCount)
         let interactor = VideoRecordInteractor(
             presenter: viewController,
             component: component,
