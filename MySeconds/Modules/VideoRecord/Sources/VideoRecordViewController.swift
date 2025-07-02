@@ -20,7 +20,6 @@ import VideoRecordingManager
 protocol VideoRecordPresentableListener: AnyObject {
     var captureSession: AVCaptureSession { get }
     var timerButtonTextPublisher: AnyPublisher<Int, Never> { get }
-    var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
     var videosPublisher: AnyPublisher<[VideoDraft], Never> { get }
@@ -136,14 +135,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
 
-        self.listener?.ratioButtonTextPublisher
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] text in
-                guard let self else { return }
-                self.recordControlView.setRatioButtonText(text: text)
-            })
-            .store(in: &cancellables)
-
         self.listener?.isRecordingPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] isRecording in
@@ -192,6 +183,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 guard let self else { return }
                 self.currentAspectRatio = ratio
                 self.cameraPreview.aspectRatio = self.currentAspectRatio.ratio
+                self.recordControlView.setRatioButtonText(text: ratio.rawValue)
             })
             .store(in: &self.cancellables)
     }

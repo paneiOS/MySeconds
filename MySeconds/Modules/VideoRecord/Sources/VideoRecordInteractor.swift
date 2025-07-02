@@ -40,12 +40,6 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.aspectRatioSubject.eraseToAnyPublisher()
     }
 
-    public var ratioButtonTextPublisher: AnyPublisher<String, Never> {
-        self.aspectRatioSubject
-            .map(\.rawValue)
-            .eraseToAnyPublisher()
-    }
-
     private let isRecordingSubject = CurrentValueSubject<Bool, Never>(false)
     public var isRecordingPublisher: AnyPublisher<Bool, Never> {
         self.isRecordingSubject.eraseToAnyPublisher()
