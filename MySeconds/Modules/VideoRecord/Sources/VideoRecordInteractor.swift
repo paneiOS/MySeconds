@@ -35,7 +35,7 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.timerButtonTextSubject.eraseToAnyPublisher()
     }
 
-    private let ratioButtonTextSubject = PassthroughSubject<String, Never>()
+    private let ratioButtonTextSubject = CurrentValueSubject<String, Never>("1:1")
     public var ratioButtonTextPublisher: AnyPublisher<String, Never> {
         self.ratioButtonTextSubject.eraseToAnyPublisher()
     }

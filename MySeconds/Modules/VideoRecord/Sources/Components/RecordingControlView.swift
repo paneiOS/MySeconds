@@ -59,13 +59,6 @@ final class RecordControlView: UIView {
         button.layer.cornerRadius = Constants.controlButtonSize / 2
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.neutral200.cgColor
-        var configuration: UIButton.Configuration = .plain()
-        configuration.attributedTitle = .init(.makeAttributedString(
-            text: "1:1",
-            font: .systemFont(ofSize: 16),
-            textColor: .neutral950
-        ))
-        button.configuration = configuration
         return button
     }()
 
@@ -263,11 +256,13 @@ final class RecordControlView: UIView {
     }
 
     func setRatioButtonText(text: String) {
-        self.ratioButton.setAttributedTitle(NSAttributedString.makeAttributedString(
+        var config: UIButton.Configuration = .plain()
+        config.attributedTitle = .init(NSAttributedString.makeAttributedString(
             text: text,
             font: .systemFont(ofSize: 16),
             textColor: .neutral950
-        ), for: .normal)
+        ))
+        self.ratioButton.configuration = config
     }
 
     func setRecordingState(_ isRecording: Bool) {
