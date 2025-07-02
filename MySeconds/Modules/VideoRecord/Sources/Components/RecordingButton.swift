@@ -34,13 +34,7 @@ final class RecordingButton: UIButton {
         fatalError("init(coder:) has not been implemented")
     }
 
-    private var recordDuration: TimeInterval = 0 {
-        didSet {
-            self.progressLayer?.removeFromSuperlayer()
-            self.progressLayer = nil
-            self.setupProgressLayer(duration: self.recordDuration)
-        }
-    }
+    private var recordDuration: TimeInterval = 0
 
     private func commonInit() {
         self.backgroundColor = .red600
@@ -55,7 +49,7 @@ final class RecordingButton: UIButton {
     override func layoutSubviews() {
         super.layoutSubviews()
         if self.progressLayer == nil {
-            self.setupProgressLayer(duration: self.recordDuration)
+            self.setupProgressLayer(duration: 0)
         }
     }
 
@@ -63,7 +57,11 @@ final class RecordingButton: UIButton {
         self.recordDuration = duration
     }
 
-    private func setupProgressLayer(duration: TimeInterval) {
+    public func setupProgressLayer(duration: TimeInterval) {
+        self.progressLayer?.removeFromSuperlayer()
+        self.progressLayer?.removeAllAnimations()
+        self.progressLayer = nil
+
         let progressSize = self.buttonSize + 2 * self.progressPadding
         let padding = self.progressPadding
 

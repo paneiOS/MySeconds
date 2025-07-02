@@ -16,11 +16,13 @@ import SocialLoginKit
 import VideoCreation
 import VideoDraftStorage
 import VideoRecord
+import VideoRecordingManager
 
 protocol RootDependency: Dependency {
     var socialLoginService: SocialLoginService { get }
     var firestore: Firestore { get }
-    var storage: VideoDraftStorageDelegate { get }
+    var videoDraftStorage: VideoDraftStorageDelegate { get }
+    var videoRecordingManager: VideoRecordingManagerProtocol { get }
 }
 
 final class RootComponent: Component<RootDependency> {}
@@ -37,13 +39,17 @@ extension RootComponent: LoginDependency {
     var loginBuilder: LoginBuildable {
         LoginBuilder(dependency: self)
     }
-
-    var storage: VideoDraftStorageDelegate {
-        dependency.storage
-    }
 }
 
 extension RootComponent: VideoRecordDependency {
+    var videoDraftStorage: VideoDraftStorageDelegate {
+        dependency.videoDraftStorage
+    }
+
+    var videoRecordingManager: VideoRecordingManagerProtocol {
+        dependency.videoRecordingManager
+    }
+
     var videoRecordBuilder: VideoRecordBuildable {
         VideoRecordBuilder(dependency: self)
     }

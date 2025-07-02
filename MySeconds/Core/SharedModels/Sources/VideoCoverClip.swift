@@ -13,8 +13,12 @@ public struct VideoCoverClip: Clip {
     public var description: NSAttributedString?
     public var date: Date?
     public var duration: TimeInterval
-    public var thumbnail: UIImage?
+    public var thumbnailData: Data?
     public var type: CoverType
+
+    public var thumbnail: UIImage? {
+        self.thumbnailData.flatMap { UIImage(data: $0) }
+    }
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -42,7 +46,7 @@ public struct VideoCoverClip: Clip {
         self.description = description
         self.date = date
         self.duration = duration
-        self.thumbnail = thumbnail
+        self.thumbnailData = thumbnail?.jpegData(compressionQuality: 0.8)
         self.type = type
     }
 

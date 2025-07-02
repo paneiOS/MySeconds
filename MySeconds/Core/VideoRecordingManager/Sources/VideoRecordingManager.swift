@@ -46,7 +46,7 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         self.session.beginConfiguration()
         self.session.sessionPreset = .high
 
-        if let input = self.videoDeviceInput {
+        for input in self.session.inputs {
             self.session.removeInput(input)
         }
 

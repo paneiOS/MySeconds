@@ -27,26 +27,13 @@ public protocol VideoRecordListener: AnyObject {
 }
 
 final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordInteractable, VideoRecordPresentableListener {
-
-    private let videoDraftStorage = try? VideoDraftStorage()
-
     private let component: VideoRecordComponent
     private let recordingManager: VideoRecordingManagerProtocol
-
-    private let timerButtonTextSubject = PassthroughSubject<Int, Never>()
-    public var timerButtonTextPublisher: AnyPublisher<Int, Never> {
-        self.timerButtonTextSubject.eraseToAnyPublisher()
-    }
+    private let videoDraftStorage: VideoDraftStorageDelegate
 
     private let aspectRatioSubject = CurrentValueSubject<AspectRatio, Never>(.oneToOne)
     public var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> {
         self.aspectRatioSubject.eraseToAnyPublisher()
-    }
-
-    public var ratioButtonTextPublisher: AnyPublisher<String, Never> {
-        self.aspectRatioSubject
-            .map(\.rawValue)
-            .eraseToAnyPublisher()
     }
 
     private let isRecordingSubject = CurrentValueSubject<Bool, Never>(false)
@@ -54,32 +41,20 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.isRecordingSubject.eraseToAnyPublisher()
     }
 
-    private let recordDurationSubject = PassthroughSubject<TimeInterval, Never>()
+    private let recordDurationSubject: CurrentValueSubject<TimeInterval, Never>
     public var recordDurationPublisher: AnyPublisher<TimeInterval, Never> {
         self.recordDurationSubject.eraseToAnyPublisher()
     }
 
-//    private let albumSubject = PassthroughSubject<(UIImage?, Int), Never>()
-//    public var albumPublisher: AnyPublisher<(UIImage?, Int), Never> {
-//        self.albumSubject.eraseToAnyPublisher()
-//    }
-
-//    private let thumbnailSubject = CurrentValueSubject<UIImage?, Never>(nil)
-//    private let albumCountSubject = CurrentValueSubject<Int, Never>(0)
     private let clipsSubject = CurrentValueSubject<[CompositionClip], Never>([])
     public var clipsPublisher: AnyPublisher<[CompositionClip], Never> {
         self.clipsSubject.eraseToAnyPublisher()
     }
 
-    private let videosSubject = PassthroughSubject<[VideoDraft], Never>()
-    public var videosPublisher: AnyPublisher<[VideoDraft], Never> {
-        self.videosSubject.eraseToAnyPublisher()
-    }
-
-    private let videoRatios: [String] = ["1:1", "4:3"]
+    private let videoRatios: [AspectRatio] = [.oneToOne, .fourToThree]
     private var currentRatioIndex: Int = 0
-    private var maxRecordingTime: TimeInterval = 1
     private let durationOptions: [TimeInterval] = [1, 2, 3]
+    private var currentDurationIndex = 0
     private var recordWorkItem: DispatchWorkItem?
     private let cameraAuthorizationSubject = PassthroughSubject<Bool, Never>()
     public var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> {
@@ -90,13 +65,6 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
         self.recordingManager.session
     }
 
-    private var currentDurationIndex = 0
-    private let durationOptions: [Int] = [1, 2, 3]
-    private let availableRatios: [AspectRatio] = [.oneToOne, .fourToThree]
-    private var currentAspectRatioIndex: Int = 0
-
-    private let videoSubject = CurrentValueSubject<[VideoDraft], Never>([])
-
     private var clips: [CompositionClip] = []
 
     private var cancellables = Set<AnyCancellable>()
@@ -106,89 +74,69 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 
     init(
         presenter: VideoRecordPresentable,
-        component: VideoRecordComponent,
-        recordingManager: VideoRecordingManagerProtocol
+        component: VideoRecordComponent
     ) {
         self.component = component
-        self.recordingManager = recordingManager
+        self.recordingManager = component.videoRecordingManager
+        self.videoDraftStorage = component.videoDraftStorage
+
+        self.recordDurationSubject = .init(1)
+
         super.init(presenter: presenter)
         presenter.listener = self
-
-        self.bind()
-    }
-
-    private func bind() {
-//        self.thumbnailSubject
-//            .combineLatest(self.albumCountSubject)
-//            .receive(on: DispatchQueue.main)
-//            .sink(receiveValue: { [weak self] thumbnail, count in
-//                guard let self else { return }
-//                self.albumSubject.send((thumbnail, count))
-//            })
-//            .store(in: &self.cancellables)
-
-        self.videoSubject
-            .sink(receiveValue: { [weak self] videos in
-                guard let self else { return }
-                self.videosSubject.send(videos)
-            })
-            .store(in: &self.cancellables)
-
-        Task {
-            let isAuthorized = await self.recordingManager.requestAuthorization(aspectRatio: .oneToOne)
-            self.cameraAuthorizationSubject.send(isAuthorized)
-        }
     }
 
     private func saveVideo(url: URL) async {
-        guard let thumbnail = url.generateThumbnail(),
-              let thumbnailData = thumbnail.jpegData(compressionQuality: 0.8) else {
+        guard let thumbnail = url.generateThumbnail() else {
             print("썸네일 생성 실패")
             return
         }
 
         do {
-            let duration = try await url.videoDuration()
-
-            let draft = VideoDraft(
-                duration: duration,
-                thumbnail: thumbnailData
+            // 1. VideoClip 생성
+            let videoClip = VideoClip(
+                duration: self.recordDurationSubject.value,
+                thumbnail: thumbnail
             )
 
-            let filePath = try self.videoDraftStorage?.saveVideoDraft(sourceURL: url, fileName: draft.fileBaseName)
-            var drafts = try self.videoDraftStorage?.loadAll(type: VideoDraft.self) ?? []
-            drafts.append(draft)
-            try self.videoDraftStorage?.updateBackup(drafts)
+            // 2. mp4 파일 복사 및 원본 삭제
+            try self.videoDraftStorage.saveVideoDraft(
+                sourceURL: url,
+                fileName: videoClip.fileName
+            )
 
-            self.videoSubject.send(drafts)
-            print("저장 성공 \(filePath?.lastPathComponent ?? "")")
+            // 3. 기존 CompositionClip 목록 불러오기
+            var drafts = try self.videoDraftStorage.loadAll(type: CompositionClip.self)
+
+            // 4. 새로 생성한 VideoClip → CompositionClip.video()로 감싸서 추가
+            drafts.append(.video(videoClip))
+
+            // 5. 전체 백업 업데이트
+            try self.videoDraftStorage.updateBackup(drafts)
+
+            // 6. 현재 클립 목록도 갱신
+            self.clipsSubject.send(drafts)
+
+            print("✅ 저장 성공: \(videoClip.fileName)")
         } catch {
-            print("저장 실패", error)
+            print("❌ 저장 실패", error)
         }
     }
 }
 
 extension VideoRecordInteractor {
     func initAlbum() {
-//        self.thumbnailSubject.send(self.component.initialAlbumThumbnail)
-//        self.albumCountSubject.send(self.component.initialAlbumCount)
+        Task {
+            let isAuthorized = await self.recordingManager.requestAuthorization(aspectRatio: .oneToOne)
+            self.cameraAuthorizationSubject.send(isAuthorized)
+        }
 
-        self.clipsSubject.send(self.component.clips)
-        self.clips = self.component.clips
-
-        let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
-        self.timerButtonTextSubject.send(maxRecordingTime)
-        self.ratioButtonTextSubject.send(self.videoRatios[self.currentRatioIndex])
-
-
+        self.clipsSubject.send(self.clips)
         do {
-            if let videos = try self.videoDraftStorage?.loadAll(type: VideoDraft.self).sorted(by: { $0.createdAt > $1.createdAt }) {
-                self.videoSubject.send(videos)
-            } else {
-                self.videoSubject.send([])
-            }
+            let clips = try self.videoDraftStorage.loadAll(type: CompositionClip.self)
+            self.clipsSubject.send(clips)
         } catch {
-            self.videoSubject.send([])
+            self.clipsSubject.send([])
         }
     }
 }
@@ -239,35 +187,18 @@ extension VideoRecordInteractor {
     }
 
     func didTapRatio() {
-        self.currentAspectRatioIndex = (self.currentAspectRatioIndex + 1) % self.availableRatios.count
-        let newAspectRatio = self.availableRatios[safe: self.currentAspectRatioIndex] ?? .oneToOne
+        self.currentRatioIndex = (self.currentRatioIndex + 1) % self.videoRatios.count
+        let newAspectRatio = self.videoRatios[safe: self.currentRatioIndex] ?? .oneToOne
         self.aspectRatioSubject.send(newAspectRatio)
     }
 
     func didTapTimer() {
         self.currentDurationIndex = (self.currentDurationIndex + 1) % self.durationOptions.count
         let selected = self.durationOptions[safe: self.currentDurationIndex] ?? 1
-        self.timerButtonTextSubject.send(selected)
+        self.recordDurationSubject.send(selected)
     }
 
     func didTapAlbum() {
-        self.listener?.showVideoCreation(clips: self.clips)
+        self.listener?.showVideoCreation(clips: self.clipsSubject.value)
     }
-
-    // TODO: 샘플앱을 위한 테스트 메서든 추후 수정 필요
-//    func recordDidFinish() {
-//
-//        let newCount = self.albumCountSubject.value + 1
-//        self.albumCountSubject.send(newCount)
-//
-//        let colorIndex = newCount % self.sampleColors.count
-//        let chosenColor = self.sampleColors[colorIndex]
-//        let thumbnailSize = CGSize(width: 64, height: 64)
-//
-//        let colorImage = UIGraphicsImageRenderer(size: thumbnailSize).image { ctx in
-//            chosenColor.setFill()
-//            ctx.fill(CGRect(origin: .zero, size: thumbnailSize))
-//        }
-//        self.thumbnailSubject.send(colorImage)
-//    }
 }

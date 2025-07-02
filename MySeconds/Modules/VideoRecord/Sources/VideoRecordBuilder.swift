@@ -15,24 +15,26 @@ import VideoDraftStorage
 import VideoRecordingManager
 
 public protocol VideoRecordDependency: Dependency {
-    var videoDraftStorage: VideoDraftStorage { get }
-    var maxAlbumCount: Int { get }
+    var videoDraftStorage: VideoDraftStorageDelegate { get }
+    var videoRecordingManager: VideoRecordingManagerProtocol { get }
 }
 
 public final class VideoRecordComponent: Component<VideoRecordDependency> {
     public let clips: [CompositionClip]
+    public let maxAlbumCount: Int
 
-    public var videoDraftStorage: VideoDraftStorage {
+    public var videoDraftStorage: VideoDraftStorageDelegate {
         dependency.videoDraftStorage
     }
 
-    public var maxAlbumCount: Int {
-        dependency.maxAlbumCount
+    public var videoRecordingManager: VideoRecordingManagerProtocol {
+        dependency.videoRecordingManager
     }
 
-
-    public init(dependency: VideoRecordDependency, clips: [CompositionClip]) {
+    public init(dependency: VideoRecordDependency, clips: [CompositionClip], maxAlbumCount: Int) {
         self.clips = clips
+        self.maxAlbumCount = maxAlbumCount
+
         super.init(dependency: dependency)
     }
 }
@@ -40,7 +42,7 @@ public final class VideoRecordComponent: Component<VideoRecordDependency> {
 // MARK: - Builder
 
 public protocol VideoRecordBuildable: Buildable {
-    func build(withListener listener: VideoRecordListener, clips: [CompositionClip]) -> VideoRecordRouting
+    func build(withListener listener: VideoRecordListener, clips: [CompositionClip], maxAlbumCount: Int) -> VideoRecordRouting
 }
 
 public final class VideoRecordBuilder: Builder<VideoRecordDependency>, VideoRecordBuildable {
@@ -49,14 +51,12 @@ public final class VideoRecordBuilder: Builder<VideoRecordDependency>, VideoReco
         super.init(dependency: dependency)
     }
 
-    public func build(withListener listener: VideoRecordListener, clips: [CompositionClip]) -> VideoRecordRouting {
-        let component = VideoRecordComponent(dependency: dependency, clips: clips)
-        let viewController = VideoRecordViewController()
-        let interactor = VideoRecordInteractor(presenter: viewController, component: component)
+    public func build(withListener listener: VideoRecordListener, clips: [CompositionClip], maxAlbumCount: Int) -> VideoRecordRouting {
+        let component = VideoRecordComponent(dependency: dependency, clips: clips, maxAlbumCount: maxAlbumCount)
+        let viewController = VideoRecordViewController(maxAlbumCount: maxAlbumCount)
         let interactor = VideoRecordInteractor(
             presenter: viewController,
-            component: component,
-            recordingManager: recordingManager
+            component: component
         )
         interactor.listener = listener
         return VideoRecordRouter(interactor: interactor, viewController: viewController)

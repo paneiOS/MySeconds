@@ -16,12 +16,6 @@ let project = Project(
             product: .framework,
             bundleId: "com.panestudio.VideoRecord",
             deploymentTargets: .iOS("17.0"),
-            infoPlist: .extendingDefault(
-                with: [
-                    "NSCameraUsageDescription": "영상 촬영을 위해 카메라 접근 권한이 필요합니다.",
-                    "NSMicrophoneUsageDescription": "영상 녹화 중 음성을 녹음하기 위해 마이크 접근 권한이 필요합니다."
-                ]
-            ),
             sources: ["Sources/**"],
             resources: [],
             dependencies: [

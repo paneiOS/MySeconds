@@ -73,7 +73,11 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
         self.popToLogin()
 
         guard self.videoRecordRouter == nil else { return }
-        let videoRecordRouter = self.component.videoRecordBuilder.build(withListener: self.interactor, clips: clips)
+        let videoRecordRouter = self.component.videoRecordBuilder.build(
+            withListener: self.interactor,
+            clips: clips,
+            maxAlbumCount: 15
+        )
         self.attachChild(videoRecordRouter)
         self.videoRecordRouter = videoRecordRouter
         self.rootNavigationController?.pushViewController(videoRecordRouter.uiviewController, animated: true)

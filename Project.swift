@@ -37,7 +37,9 @@ let project = Project(
                             "CFBundleTypeRole": "Editor",
                             "CFBundleURLSchemes": ["com.googleusercontent.apps.120605294852-s7fhvg2713civjkojb7utjjbnsa7apmt"]
                         ]
-                    ]
+                    ],
+                    "NSCameraUsageDescription": "영상 촬영을 위해 카메라 접근 권한이 필요합니다.",
+                    "NSMicrophoneUsageDescription": "영상 녹화 중 음성을 녹음하기 위해 마이크 접근 권한이 필요합니다."
                 ]
             ),
             sources: ["MySeconds/Sources/**"],
@@ -70,13 +72,13 @@ let project = Project(
 //                .project(target: "SocialLoginKit", path: "MySeconds/Core/SocialLoginKit"),
 //
 //                .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
-//                .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
 //                .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
 //                .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
 //
                 .project(target: "BGMSelect", path: "MySeconds/Modules/BGMSelect"),
                 .project(target: "CoverClipCreation", path: "MySeconds/Modules/CoverClipCreation"),
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
+                .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
                 .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation"),
                 .project(target: "VideoDraftStorage", path: "MySeconds/Core/VideoDraftStorage"),

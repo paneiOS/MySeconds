@@ -101,7 +101,9 @@ extension SceneDelegate {
         // MARK: - 경고창을 무시하고 사용하는 이유는 Mock데이터이며 async방식으로 처리하기엔 MockData치고 부담스러움
 
         let durationInSeconds = asset.duration.seconds
-        return VideoClip(fileName: filename, duration: durationInSeconds)
+
+        // TODO: - 썸네일 넣어야함...
+        return VideoClip(duration: durationInSeconds, thumbnail: nil)
     }
 
     func makeIntroClip() -> VideoCoverClip {
@@ -154,6 +156,14 @@ final class MockVideoCreationComponent: VideoCreationDependency {
 }
 
 final class MockVideoCreationListener: VideoCreationListener {
+    func didSelectCoverClip(clip: SharedModels.VideoCoverClip) {
+        print("didSelectCoverClip")
+    }
+
+    func bgmSelectButtonTapped() {
+        print("bgmSelectButtonTapped")
+    }
+
     func videoCreationDidFinish() {
         print("videoCreationDidFinish 호출됨")
     }

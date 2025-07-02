@@ -12,6 +12,7 @@ import SnapKit
 
 import MySecondsKit
 import ResourceKit
+import SharedModels
 import VideoDraftStorage
 
 final class RecordControlView: UIView {
@@ -86,13 +87,7 @@ final class RecordControlView: UIView {
         return button
     }()
 
-    private var maxAlbumCount: Int {
-        didSet {
-            self.albumCountLabel.text = "\(self.videos.count) / \(self.maxAlbumCount)"
-            self.updateAlbum(videos: self.videos)
-        }
-    }
-
+    private var maxAlbumCount: Int
     private let albumButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .neutral100
@@ -143,26 +138,25 @@ final class RecordControlView: UIView {
     private var cancellables = Set<AnyCancellable>()
     private var progressLayer: CAShapeLayer?
 
-    var recordDuration: TimeInterval = 0 {
+    var recordDuration: TimeInterval {
         didSet {
             self.recordButton.changeDuration(duration: self.recordDuration)
         }
     }
 
-    private var videos: [VideoDraft]
+    private var videoClips: [VideoClip]
 
-    public init(videos: [VideoDraft], maxAlbumCount: Int) {
+    public init(videoClips: [VideoClip], maxAlbumCount: Int, recordDuration: TimeInterval) {
         self.maxAlbumCount = maxAlbumCount
-        self.videos = videos
+        self.recordDuration = recordDuration
+        self.videoClips = videoClips
         super.init(frame: .zero)
         self.setupUI()
         self.bind()
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { nil }
 
     private func setupUI() {
         backgroundColor = .white
@@ -207,7 +201,6 @@ final class RecordControlView: UIView {
 
     private func bind() {
         let actions: [(UIButton, PassthroughSubject<Void, Never>)] = [
-            (recordButton, recordTapSubject),
             (ratioButton, ratioTapSubject),
             (timerButton, timerTapSubject),
             (cameraFlipButton, flipTapSubject),
@@ -221,6 +214,14 @@ final class RecordControlView: UIView {
                 .subscribe(subject)
                 .store(in: &self.cancellables)
         }
+
+        self.recordButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.recordButton.setupProgressLayer(duration: self.recordDuration)
+                self.recordTapSubject.send(())
+            })
+            .store(in: &self.cancellables)
     }
 
     private func makeTimerAttributedText(seconds: String) -> NSAttributedString {
@@ -267,15 +268,11 @@ final class RecordControlView: UIView {
     func setRecordingState(_ isRecording: Bool) {
         self.albumStack.isHidden = isRecording
         self.buttonStack.isHidden = isRecording
-
-        if !isRecording {
-            self.recordDuration = 0
-        }
     }
 
-    func updateAlbum(videos: [VideoDraft]) {
+    func updateAlbum(videos: [VideoClip]) {
         if let thumbnail = videos.last?.thumbnail {
-            self.albumButton.setImage(UIImage(data: thumbnail), for: .normal)
+            self.albumButton.setImage(thumbnail, for: .normal)
             self.albumButton.tintColor = .clear
         } else {
             let image = ResourceKitAsset.loader.image

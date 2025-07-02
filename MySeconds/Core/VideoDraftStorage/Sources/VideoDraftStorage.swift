@@ -29,14 +29,13 @@ public final class VideoDraftStorage: VideoDraftStorageDelegate {
 
     // MARK: - Public
 
-    public func saveVideoDraft(sourceURL: URL, fileName: String) throws -> URL {
+    public func saveVideoDraft(sourceURL: URL, fileName: String) throws {
         guard self.fileManager.fileExists(atPath: sourceURL.path) else {
             throw Error.fileNotFound
         }
         let filePath = self.videoFileURLPath(fileName: fileName)
         try self.fileManager.copyItem(at: sourceURL, to: filePath)
         try? self.fileManager.removeItem(at: sourceURL)
-        return filePath
     }
 
     public func loadVideo(fileName: String) throws -> URL {

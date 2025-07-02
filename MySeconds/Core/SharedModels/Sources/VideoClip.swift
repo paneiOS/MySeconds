@@ -12,15 +12,20 @@ import UtilsKit
 public protocol Clip: Codable, Hashable {
     var id: UUID { get }
     var duration: TimeInterval { get }
-    var thumbnail: UIImage? { get }
+    var thumbnailData: Data? { get }
 }
 
 public struct VideoClip: Clip {
     public let id: UUID
-    public let fileName: String
     public let createdAt: Date
-    public var thumbnail: UIImage?
+    public let fileName: String
     public let duration: TimeInterval
+
+    public var thumbnailData: Data?
+
+    public var thumbnail: UIImage? {
+        self.thumbnailData.flatMap { UIImage(data: $0) }
+    }
 
     public var url: URL {
         VideoClip.clipsFolder.appendingPathComponent(self.fileName)
@@ -28,23 +33,23 @@ public struct VideoClip: Clip {
 
     private enum CodingKeys: String, CodingKey {
         case id
-        case fileName
         case createdAt
+        case fileName
         case duration
+        case thumbnailData
     }
 
     public init(
-        id: UUID = .init(),
-        fileName: String,
-        createdAt: Date = .init(),
         duration: TimeInterval,
-        thumbnail: UIImage? = nil
+        thumbnail: UIImage?
     ) {
-        self.id = id
-        self.fileName = fileName
-        self.createdAt = createdAt
+        let uuid: UUID = .init()
+        let date: Date = .init()
+        self.id = uuid
+        self.createdAt = date
+        self.fileName = date.formattedString(format: "yyyyMMdd_HHmmssSSS") + "_" + self.id.uuidString
         self.duration = duration
-        self.thumbnail = thumbnail
+        self.thumbnailData = thumbnail?.jpegData(compressionQuality: 0.8)
     }
 
     private static let clipsFolder: URL = {
@@ -66,8 +71,4 @@ public struct VideoClip: Clip {
         }
         return folder
     }()
-
-    public var fileBaseName: String {
-        self.createdAt.formattedString(format: "yyyyMMdd_HHmmssSSS") + "_" + self.id.uuidString
-    }
 }

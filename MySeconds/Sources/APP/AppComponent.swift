@@ -13,17 +13,21 @@ import ModernRIBs
 import Login
 import SocialLoginKit
 import VideoDraftStorage
+import VideoRecord
+import VideoRecordingManager
 
-final class AppComponent: Component<EmptyDependency>, RootDependency, LoginDependency {
-    let socialLoginService: SocialLoginService
+final class AppComponent: Component<EmptyDependency>, RootDependency, LoginDependency, VideoRecordDependency {
     let firestore: Firestore
-    let storage: VideoDraftStorageDelegate
+    let socialLoginService: SocialLoginService
+    let videoDraftStorage: VideoDraftStorageDelegate
+    let videoRecordingManager: VideoRecordingManagerProtocol
 
     init() {
         do {
             self.firestore = .firestore()
             self.socialLoginService = DefaultSocialLoginService()
-            self.storage = try VideoDraftStorage()
+            self.videoDraftStorage = try VideoDraftStorage()
+            self.videoRecordingManager = VideoRecordingManager()
             super.init(dependency: EmptyComponent())
         } catch {
             // TODO: - 알럿을 이용한 재시작 로직 혹은 종료

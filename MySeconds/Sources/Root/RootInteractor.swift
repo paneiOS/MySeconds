@@ -74,11 +74,11 @@ extension RootInteractor: RootInteractable {
         switch result {
         case .success:
             if self.tempUserID == -99 {
-                let loadedClips = (try? self.component.storage.loadAll(type: CompositionClip.self)) ?? []
+                let loadedClips = (try? self.component.videoDraftStorage.loadAll(type: CompositionClip.self)) ?? []
                 self.router?.routeToVideoRecord(clips: loadedClips)
             } else {
                 do {
-                    try self.component.storage.deleteAll()
+                    try self.component.videoDraftStorage.deleteAll()
                 } catch {
                     // TODO: - 기획이 필요해보임
                     print("pane_ 스토리지 데이터 삭제 실패")
@@ -94,11 +94,11 @@ extension RootInteractor: RootInteractable {
 
     func sendUserInfo(with userInfo: AdditionalUserInfo) {
         if self.tempUserID == -99 {
-            let loadedClips = (try? self.component.storage.loadAll(type: CompositionClip.self)) ?? []
+            let loadedClips = (try? self.component.videoDraftStorage.loadAll(type: CompositionClip.self)) ?? []
             self.router?.routeToVideoRecord(clips: loadedClips)
         } else {
             do {
-                try self.component.storage.deleteAll()
+                try self.component.videoDraftStorage.deleteAll()
             } catch {
                 // TODO: - 기획이 필요해보임
                 print("pane_ 스토리지 데이터 삭제 실패")

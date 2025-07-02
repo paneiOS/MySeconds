@@ -19,13 +19,12 @@ import VideoDraftStorage
 import VideoRecordingManager
 
 protocol VideoRecordPresentableListener: AnyObject {
-    var ratioButtonTextPublisher: AnyPublisher<String, Never> { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<TimeInterval, Never> { get }
-    var videosPublisher: AnyPublisher<[VideoDraft], Never> { get }
     var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> { get }
     var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> { get }
     var clipsPublisher: AnyPublisher<[CompositionClip], Never> { get }
+    var captureSession: AVCaptureSession { get }
 
     func initAlbum()
     func startSession()
@@ -47,7 +46,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     private var currentAspectRatio: AspectRatio = .oneToOne
 
     init(maxAlbumCount: Int) {
-        self.recordControlView = RecordControlView(videos: [], maxAlbumCount: maxAlbumCount)
+        self.recordControlView = RecordControlView(videoClips: [], maxAlbumCount: maxAlbumCount, recordDuration: 1.0)
         super.init()
     }
 
@@ -128,22 +127,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
     }
 
     private func bindStateBindings() {
-        self.listener?.timerButtonTextPublisher
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] text in
-                guard let self else { return }
-                self.recordControlView.setTimerButtonText(seconds: text)
-            })
-            .store(in: &cancellables)
-
-        self.listener?.ratioButtonTextPublisher
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] text in
-                guard let self else { return }
-                self.recordControlView.setRatioButtonText(text: text)
-            })
-            .store(in: &cancellables)
-
         self.listener?.isRecordingPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] isRecording in
@@ -157,40 +140,27 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .sink(receiveValue: { [weak self] duration in
                 guard let self else { return }
                 self.recordControlView.recordDuration = duration
+                self.recordControlView.setTimerButtonText(seconds: Int(duration))
             })
             .store(in: &cancellables)
 
-//        self.listener?.albumPublisher
-//            .receive(on: DispatchQueue.main)
-//            .sink(receiveValue: { [weak self] thumbnail, count in
-//                guard let self else { return }
-//                self.recordControlView.updateAlbum(thumbnail: thumbnail, count: count)
-//            })
-//            .store(in: &cancellables)
-
         self.listener?.clipsPublisher
+            .filter { !$0.isEmpty }
             .compactMap { clips in
                 clips.compactMap { clip in
-                    if case let .video(videoClip) = clip { videoClip }
-                    else { nil }
+                    if case let .video(videoClip) = clip {
+                        videoClip
+                    } else {
+                        nil
+                    }
                 }
             }
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] videoClips in
                 guard let self else { return }
-                if let lastVideoClip = videoClips.last {
-                    self.recordControlView.updateAlbum(thumbnail: lastVideoClip.thumbnail, count: videoClips.count)
-                }
+                self.recordControlView.updateAlbum(videos: videoClips)
             })
             .store(in: &self.cancellables)
-
-        self.listener?.videosPublisher
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] videos in
-                guard let self else { return }
-                self.recordControlView.updateAlbum(videos: videos)
-            })
-            .store(in: &cancellables)
 
         self.listener?.cameraAuthorizationPublisher
             .receive(on: DispatchQueue.main)
@@ -216,6 +186,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 guard let self else { return }
                 self.currentAspectRatio = ratio
                 self.cameraPreview.aspectRatio = self.currentAspectRatio.ratio
+                self.recordControlView.setRatioButtonText(text: ratio.rawValue)
             })
             .store(in: &self.cancellables)
     }
