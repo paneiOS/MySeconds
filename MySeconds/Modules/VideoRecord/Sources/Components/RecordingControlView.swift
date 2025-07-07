@@ -51,7 +51,7 @@ final class RecordControlView: UIView {
         self.albumTapSubject.eraseToAnyPublisher()
     }
 
-    private let recordButton = RecordingButton(buttonSize: Constants.recordButtonSize, progressPadding: 5)
+    private let recordingButton: RecordingButton = .init(progressPadding: 5)
 
     private lazy var ratioButton: UIButton = {
         let button = UIButton()
@@ -86,12 +86,7 @@ final class RecordControlView: UIView {
         return button
     }()
 
-    private var maxAlbumCount: Int {
-        didSet {
-            self.albumCountLabel.text = "\(self.videos.count) / \(self.maxAlbumCount)"
-            self.updateAlbum(videos: self.videos)
-        }
-    }
+    private var maxAlbumCount: Int
 
     private let albumButton: UIButton = {
         let button = UIButton()
@@ -143,30 +138,24 @@ final class RecordControlView: UIView {
     private var cancellables = Set<AnyCancellable>()
     private var progressLayer: CAShapeLayer?
 
-    var recordDuration: TimeInterval = 0 {
-        didSet {
-            self.recordButton.changeDuration(duration: self.recordDuration)
-        }
-    }
+    var recordDuration: TimeInterval
 
     private var videos: [VideoDraft]
 
-    public init(videos: [VideoDraft], maxAlbumCount: Int) {
+    public init(videos: [VideoDraft], maxAlbumCount: Int, recordDuration: TimeInterval) {
         self.maxAlbumCount = maxAlbumCount
+        self.recordDuration = recordDuration
         self.videos = videos
+        
         super.init(frame: .zero)
         self.setupUI()
         self.bind()
     }
 
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { nil }
 
     private func setupUI() {
         backgroundColor = .white
-
         [self.albumButton, self.albumCountLabel].forEach { self.albumStack.addArrangedSubview($0) }
         self.albumButton.snp.makeConstraints {
             $0.size.equalTo(Constants.recordButtonSize)
@@ -196,8 +185,8 @@ final class RecordControlView: UIView {
             $0.top.bottom.equalToSuperview().inset(Constants.verticalInset)
         }
 
-        addSubview(self.recordButton)
-        self.recordButton.snp.makeConstraints {
+        addSubview(self.recordingButton)
+        self.recordingButton.snp.makeConstraints {
             $0.center.equalToSuperview()
             $0.size.equalTo(Constants.recordButtonSize)
         }
@@ -206,21 +195,41 @@ final class RecordControlView: UIView {
     }
 
     private func bind() {
-        let actions: [(UIButton, PassthroughSubject<Void, Never>)] = [
-            (recordButton, recordTapSubject),
-            (ratioButton, ratioTapSubject),
-            (timerButton, timerTapSubject),
-            (cameraFlipButton, flipTapSubject),
-            (albumButton, albumTapSubject)
-        ]
-
-        for (button, subject) in actions {
-            button
-                .publisher(for: .touchUpInside)
-                .map { _ in () }
-                .subscribe(subject)
-                .store(in: &self.cancellables)
-        }
+        self.recordingButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.recordingButton.startProgressAnimation(duration: self.recordDuration)
+                self.recordTapSubject.send(())
+            })
+            .store(in: &self.cancellables)
+        
+        self.ratioButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.ratioTapSubject.send(())
+            })
+            .store(in: &self.cancellables)
+        
+        self.timerButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.timerTapSubject.send(())
+            })
+            .store(in: &self.cancellables)
+        
+        self.cameraFlipButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.flipTapSubject.send(())
+            })
+            .store(in: &self.cancellables)
+        
+        self.albumButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.albumTapSubject.send(())
+            })
+            .store(in: &self.cancellables)
     }
 
     private func makeTimerAttributedText(seconds: String) -> NSAttributedString {
@@ -267,10 +276,6 @@ final class RecordControlView: UIView {
     func setRecordingState(_ isRecording: Bool) {
         self.albumStack.isHidden = isRecording
         self.buttonStack.isHidden = isRecording
-
-        if !isRecording {
-            self.recordDuration = 0
-        }
     }
 
     func updateAlbum(videos: [VideoDraft]) {
@@ -294,14 +299,14 @@ final class RecordControlView: UIView {
 
             self.buttonStack.isUserInteractionEnabled = false
             self.buttonStack.alpha = 0.5
-            self.recordButton.isUserInteractionEnabled = false
-            self.recordButton.alpha = 0.5
+            self.recordingButton.isUserInteractionEnabled = false
+            self.recordingButton.alpha = 0.5
 
             self.progressLayer?.opacity = 0.5
             self.addSubview(self.tooltipView)
             self.tooltipView.snp.makeConstraints {
-                $0.centerX.equalTo(self.recordButton)
-                $0.bottom.equalTo(self.recordButton.snp.top).offset(-8)
+                $0.centerX.equalTo(self.recordingButton)
+                $0.bottom.equalTo(self.recordingButton.snp.top).offset(-8)
             }
 
             self.tooltipView.show(
@@ -311,8 +316,8 @@ final class RecordControlView: UIView {
         } else {
             self.buttonStack.isUserInteractionEnabled = true
             self.buttonStack.alpha = 1.0
-            self.recordButton.isUserInteractionEnabled = true
-            self.recordButton.alpha = 1.0
+            self.recordingButton.isUserInteractionEnabled = true
+            self.recordingButton.alpha = 1.0
 
             self.progressLayer?.opacity = 1.0
 

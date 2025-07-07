@@ -19,14 +19,14 @@ import VideoRecordingManager
 
 protocol VideoRecordPresentableListener: AnyObject {
     var recordDuration: Int { get }
-    
+
     var captureSession: AVCaptureSession { get }
     var isRecordingPublisher: AnyPublisher<Bool, Never> { get }
     var recordDurationPublisher: AnyPublisher<Int, Never> { get }
     var videosPublisher: AnyPublisher<[VideoDraft], Never> { get }
     var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> { get }
     var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> { get }
-    
+
     func initAlbum()
     func startSession()
     func stopSession()
@@ -38,50 +38,48 @@ protocol VideoRecordPresentableListener: AnyObject {
 }
 
 final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
-    
+
     weak var listener: VideoRecordPresentableListener?
-    
+
     private let recordControlView: RecordControlView
     private var cameraPreview = CameraPreviewView()
     private let permissionView = CameraPermissionView()
     private var currentAspectRatio: AspectRatio = .oneToOne
-    
+
     init(maxAlbumCount: Int) {
-        self.recordControlView = RecordControlView(videos: [], maxAlbumCount: maxAlbumCount)
+        self.recordControlView = RecordControlView(videos: [], maxAlbumCount: maxAlbumCount, recordDuration: 1.0)
         super.init()
     }
-    
+
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        nil
-    }
-    
+    required init?(coder: NSCoder) { nil }
+
     override func setupUI() {
         self.view.backgroundColor = .white
         self.view.addSubviews(self.recordControlView, self.cameraPreview, self.permissionView)
-        
+
         self.permissionView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
-        
+
         self.recordControlView.snp.makeConstraints {
             $0.height.equalTo(136)
             $0.leading.trailing.equalToSuperview()
             $0.bottom.equalTo(self.view.safeAreaLayoutGuide)
         }
-        
+
         self.cameraPreview.snp.makeConstraints {
             $0.top.equalTo(self.view.safeAreaLayoutGuide)
             $0.bottom.equalTo(self.recordControlView.snp.top)
             $0.leading.trailing.equalToSuperview()
         }
     }
-    
+
     override func bind() {
         self.bindViewEvents()
         self.bindStateBindings()
     }
-    
+
     private func bindViewEvents() {
         self.viewDidLoadPublisher
             .sink(receiveValue: { [weak self] _ in
@@ -89,40 +87,40 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.listener?.initAlbum()
             })
             .store(in: &cancellables)
-        
+
         self.recordControlView.recordTapPublisher
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-                
+
                 if let duration = self.listener?.recordDuration {
                     self.recordControlView.recordDuration = TimeInterval(duration)
                 }
                 self.listener?.didTapRecord()
-                
+
             })
             .store(in: &cancellables)
-        
+
         self.recordControlView.flipTapPublisher
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.listener?.didTapFlip()
             })
             .store(in: &cancellables)
-        
+
         self.recordControlView.ratioTapPublisher
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.listener?.didTapRatio()
             })
             .store(in: &cancellables)
-        
+
         self.recordControlView.timerTapPublisher
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.listener?.didTapTimer()
             })
             .store(in: &cancellables)
-        
+
         self.recordControlView.albumTapPublisher
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
@@ -130,9 +128,9 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &cancellables)
     }
-    
+
     private func bindStateBindings() {
-        
+
         self.listener?.isRecordingPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] isRecording in
@@ -140,7 +138,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.recordControlView.setRecordingState(isRecording)
             })
             .store(in: &cancellables)
-        
+
         self.listener?.recordDurationPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] duration in
@@ -148,7 +146,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.recordControlView.setTimerButtonText(seconds: duration)
             })
             .store(in: &cancellables)
-        
+
         self.listener?.videosPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] videos in
@@ -156,14 +154,14 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.recordControlView.updateAlbum(videos: videos)
             })
             .store(in: &cancellables)
-        
+
         self.listener?.cameraAuthorizationPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] isAuthorized in
                 guard let self else { return }
-                
+
                 self.permissionView.isHidden = isAuthorized
-                
+
                 if isAuthorized {
                     let session = self.listener?.captureSession
                     self.cameraPreview.session = session
@@ -174,7 +172,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 }
             })
             .store(in: &self.cancellables)
-        
+
         self.listener?.aspectRatioPublisher
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] ratio in
@@ -185,7 +183,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             })
             .store(in: &self.cancellables)
     }
-    
+
     func navigationConfig() -> NavigationConfig {
         NavigationConfig(
             leftButtonType: .logo,

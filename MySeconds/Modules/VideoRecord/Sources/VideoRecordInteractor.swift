@@ -158,7 +158,7 @@ extension VideoRecordInteractor {
             self.recordingManager.cancelRecording()
             return
         }
-        
+
         let duration = TimeInterval(self.recordDurationSubject.value)
         self.isRecordingSubject.send(true)
 
