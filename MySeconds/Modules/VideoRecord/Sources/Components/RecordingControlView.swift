@@ -146,7 +146,7 @@ final class RecordControlView: UIView {
         self.maxAlbumCount = maxAlbumCount
         self.recordDuration = recordDuration
         self.videos = videos
-        
+
         super.init(frame: .zero)
         self.setupUI()
         self.bind()
@@ -202,28 +202,28 @@ final class RecordControlView: UIView {
                 self.recordTapSubject.send(())
             })
             .store(in: &self.cancellables)
-        
+
         self.ratioButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.ratioTapSubject.send(())
             })
             .store(in: &self.cancellables)
-        
+
         self.timerButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.timerTapSubject.send(())
             })
             .store(in: &self.cancellables)
-        
+
         self.cameraFlipButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
                 self.flipTapSubject.send(())
             })
             .store(in: &self.cancellables)
-        
+
         self.albumButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
