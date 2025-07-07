@@ -9,6 +9,7 @@ import ProjectDescription
 
 let project = Project(
     name: "VideoCreation",
+    options: .options(automaticSchemesOptions: .disabled),
     targets: [
         .target(
             name: "VideoCreation",
@@ -22,6 +23,7 @@ let project = Project(
             dependencies: [
                 .external(name: "SnapKit"),
                 .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
+                .project(target: "BGMSelect", path: "../BGMSelect"),
                 .project(target: "CoverClipCreation", path: "../CoverClipCreation"),
                 .project(target: "MySecondsKit", path: "../MySecondsKit"),
                 .project(target: "ResourceKit", path: "../ResourceKit"),
@@ -104,6 +106,15 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "VideoCreationApp",
+            shared: true,
+            hidden: true,
+            buildAction: .buildAction(targets: ["VideoCreationModuleApp"]),
+            runAction: .runAction(executable: "VideoCreationModuleApp")
         )
     ]
 )

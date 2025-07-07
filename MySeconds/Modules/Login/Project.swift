@@ -9,6 +9,7 @@ import ProjectDescription
 
 let project = Project(
     name: "Login",
+    options: .options(automaticSchemesOptions: .disabled),
     targets: [
         .target(
             name: "Login",
@@ -18,10 +19,6 @@ let project = Project(
             deploymentTargets: .iOS("17.0"),
             sources: ["Sources/**"],
             dependencies: [
-                .external(name: "FirebaseAuth"),
-                .external(name: "FirebaseFirestore"),
-                .external(name: "GoogleSignIn"),
-
                 .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
                 .project(target: "MySecondsKit", path: "../MySecondsKit"),
                 .project(target: "ResourceKit", path: "../ResourceKit")
@@ -91,27 +88,19 @@ let project = Project(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
-                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds",
+                    "OTHER_LDFLAGS": "$(inherited) -ObjC"
                 ]
             )
-        ),
-        .target(
-            name: "LoginTests",
-            destinations: .iOS,
-            product: .unitTests,
-            bundleId: "com.panestudio.myseconds",
-            infoPlist: .default,
-            sources: ["Tests/**"],
-            dependencies: [
-                .target(name: "Login")
-            ],
-            settings: .settings(
-                base: [
-                    "CODE_SIGN_STYLE": "Manual",
-                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
-                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
-                ]
-            )
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "LoginApp",
+            shared: true,
+            hidden: true,
+            buildAction: .buildAction(targets: ["LoginModuleApp"]),
+            runAction: .runAction(executable: "LoginModuleApp")
         )
     ]
 )
