@@ -31,7 +31,7 @@ final class RecordingButton: UIButton {
         self.progressPadding = progressPadding
 
         super.init(frame: .zero)
-        self.makeUI()
+        self.setupUI()
     }
 
     required init?(coder: NSCoder) { nil }
@@ -43,7 +43,7 @@ final class RecordingButton: UIButton {
 
     // MARK: - func
 
-    private func makeUI() {
+    private func setupUI() {
         self.backgroundColor = .red600
         let shape = CAShapeLayer()
         shape.fillColor = UIColor.clear.cgColor
