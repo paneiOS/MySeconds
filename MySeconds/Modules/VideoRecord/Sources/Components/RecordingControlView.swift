@@ -73,20 +73,9 @@ final class RecordingControlView: UIView {
         return control
     }()
 
-    private let albumPlaceholderView: UIImageView = {
-        let imageView: UIImageView = .init(
-            image: ResourceKitAsset.loader.image
-                .resized(to: CGSize(width: 32, height: 32))
-                .withRenderingMode(.alwaysTemplate)
-        )
-        imageView.tintColor = .neutral300
-        return imageView
-    }()
-
     private let albumThumbnailView: UIImageView = {
         let imageView: UIImageView = .init()
-        imageView.contentMode = .scaleAspectFill
-        imageView.isHidden = true
+        imageView.tintColor = .neutral300
         return imageView
     }()
 
@@ -159,10 +148,7 @@ final class RecordingControlView: UIView {
             $0.size.equalTo(Constants.recordButtonSize)
         }
 
-        self.albumControlView.addSubviews(self.albumPlaceholderView, self.albumThumbnailView)
-        self.albumPlaceholderView.snp.makeConstraints {
-            $0.center.equalToSuperview()
-        }
+        self.albumControlView.addSubview(self.albumThumbnailView)
         self.albumThumbnailView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
@@ -284,9 +270,15 @@ extension RecordingControlView {
     }
 
     func setThumbnail(image: UIImage?) {
-        self.albumThumbnailView.image = image
-        self.albumThumbnailView.isHidden = image == nil
-        self.albumPlaceholderView.isHidden = image != nil
+        if let image {
+            self.albumThumbnailView.contentMode = .scaleAspectFill
+            self.albumThumbnailView.image = image
+        } else {
+            self.albumThumbnailView.contentMode = .center
+            self.albumThumbnailView.image = ResourceKitAsset.loader.image
+                .resized(to: CGSize(width: 32, height: 32))
+                .withRenderingMode(.alwaysTemplate)
+        }
     }
 
     func setAlbumCountText(currentCount: Int, maxCount: Int) {
