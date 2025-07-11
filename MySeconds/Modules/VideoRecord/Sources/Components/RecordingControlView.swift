@@ -133,25 +133,12 @@ final class RecordingControlView: UIView {
 
     private var cancellables = Set<AnyCancellable>()
     private var progressLayer: CAShapeLayer?
-
     private var time: TimeInterval?
 
-//    private var videos: [VideoDraft]?
-//    private var maxAlbumCount: Int
-//    private let recordDurations: [TimeInterval]
-//    private var recordDurationIndex: Int = 0
-//    private let ratios: [AspectRatio]
-//    private var ratiosIndex: Int = 0
-
     override public init(frame: CGRect) {
-//        self.videos = configuration.videos
-//        self.maxAlbumCount = configuration.maxAlbumCount
-//        self.recordDurations = configuration.recordDurations
-//        self.ratios = configuration.ratios
 
         super.init(frame: frame)
         self.setupUI()
-//        self.setupAttribute()
         self.bind()
     }
 
@@ -213,30 +200,10 @@ final class RecordingControlView: UIView {
         }
     }
 
-//    private func setupAttribute() {
-//        self.albumCountLabel.attributedText = .makeAttributedString(
-//            text: "\(self.videos.count) / \(self.maxAlbumCount)",
-//            font: .systemFont(ofSize: 14, weight: .medium),
-//            alignment: .center
-//        )
-//
-//        let timerText = self.makeTimerAttributedText(text: self.recordDurations[self.recordDurationIndex])
-//        self.timerButton.setAttributedTitle(timerText, for: .normal)
-//
-//        let ratioText: NSAttributedString = .makeAttributedString(
-//            text: self.ratios[self.ratiosIndex].rawValue,
-//            font: .systemFont(ofSize: 16),
-//            textColor: .neutral950
-//        )
-//        self.ratioButton.setAttributedTitle(ratioText, for: .normal)
-//    }
-
     private func bind() {
         self.recordingButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-//                guard let self, let duration = self.recordDurations[safe: self.recordDurationIndex] else { return }
-//                self.recordingButton.startProgressAnimation(duration: duration)
                 self.recordTapSubject.send()
             })
             .store(in: &self.cancellables)
@@ -269,7 +236,9 @@ final class RecordingControlView: UIView {
             })
             .store(in: &self.cancellables)
     }
+}
 
+extension RecordingControlView {
     func setTimer(time: TimeInterval) {
         self.time = time
         self.setTimerButtonText(text: "\(Int(time))")
