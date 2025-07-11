@@ -78,7 +78,11 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     private let recordingControlView: RecordingControlView = .init()
     private var cameraPreview = CameraPreviewView()
-    private let permissionView = CameraPermissionView()
+    private let permissionView = {
+        let view: CameraPermissionView = .init()
+        view.isHidden = true
+        return view
+    }()
 
     weak var listener: VideoRecordPresentableListener?
 
@@ -141,9 +145,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .receive(on: DispatchQueue.main)
             .sink(receiveValue: { [weak self] isAuthorized in
                 guard let self else { return }
-
                 self.permissionView.isHidden = isAuthorized
-
                 if isAuthorized {
                     let session = self.listener?.captureSession
                     self.cameraPreview.session = session
