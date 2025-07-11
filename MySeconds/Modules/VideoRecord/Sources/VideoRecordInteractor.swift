@@ -24,6 +24,8 @@ protocol VideoRecordPresentable: Presentable {
 
 public protocol VideoRecordListener: AnyObject {
     func showVideoCreation(clips: [CompositionClip])
+    func showAlbumRIB()
+    func showMenuRIB()
 }
 
 final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordInteractable, VideoRecordPresentableListener {
@@ -224,7 +226,16 @@ extension VideoRecordInteractor {
         self.recordDurationSubject.send(time)
     }
 
-    func didTapAlbum() {
+    func didTapThumbnailButton() {
+        guard self.clipsSubject.value.count - self.coverClipsCount > 0 else { return }
         self.listener?.showVideoCreation(clips: self.clipsSubject.value)
+    }
+
+    func didTapAlbumButton() {
+        self.listener?.showAlbumRIB()
+    }
+
+    func didTapMenuButton() {
+        self.listener?.showMenuRIB()
     }
 }
