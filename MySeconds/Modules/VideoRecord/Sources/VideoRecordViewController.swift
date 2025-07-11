@@ -82,17 +82,6 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
 
     weak var listener: VideoRecordPresentableListener?
 
-//    override func viewWillAppear(_ animated: Bool) {
-//        super.viewWillAppear(animated)
-//        self.navigationController?.navigationBar.isHidden = true
-//    }
-//
-//    override func viewWillDisappear(_ animated: Bool) {
-//        super.viewWillDisappear(animated)
-//        self.navigationController?.navigationBar.isHidden = false
-    ////        self.navigationController?.setNavigationBarHidden(false, animated: true)
-//    }
-
     override func setupUI() {
         self.view.backgroundColor = .white
 
