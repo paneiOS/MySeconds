@@ -10,21 +10,32 @@ import UIKit
 import ModernRIBs
 
 import BaseRIBsKit
+import SharedModels
 import VideoDraftStorage
 import VideoRecordingManager
 
 public protocol VideoRecordDependency: Dependency {
-    var videoDraftStorage: VideoDraftStorage { get }
-    var maxAlbumCount: Int { get }
+    var videoDraftStorage: VideoDraftStorageDelegate { get }
+    var videoRecordingManager: VideoRecordingManagerProtocol { get }
 }
 
 public final class VideoRecordComponent: Component<VideoRecordDependency> {
-    public var videoDraftStorage: VideoDraftStorage {
+    private let clips: [CompositionClip]
+    public let recordingOptions: RecordingOptions
+
+    public var videoDraftStorage: VideoDraftStorageDelegate {
         dependency.videoDraftStorage
     }
 
-    public var maxAlbumCount: Int {
-        dependency.maxAlbumCount
+    public var videoRecordingManager: VideoRecordingManagerProtocol {
+        dependency.videoRecordingManager
+    }
+
+    public init(dependency: VideoRecordDependency, clips: [CompositionClip], recordingOptions: RecordingOptions) {
+        self.clips = clips
+        self.recordingOptions = recordingOptions
+
+        super.init(dependency: dependency)
     }
 }
 
@@ -33,23 +44,28 @@ extension VideoRecordComponent: VideoRecordDependency {}
 // MARK: - Builder
 
 public protocol VideoRecordBuildable: Buildable {
-    func build(withListener listener: VideoRecordListener) -> VideoRecordRouting
+    func build(withListener listener: VideoRecordListener, clips: [CompositionClip], recordingOptions: RecordingOptions) -> VideoRecordRouting
 }
 
-public final class VideoRecordBuilder: Builder<VideoRecordComponent>, VideoRecordBuildable {
+public final class VideoRecordBuilder: Builder<VideoRecordDependency>, VideoRecordBuildable {
 
-    override public init(dependency: VideoRecordComponent) {
+    override public init(dependency: VideoRecordDependency) {
         super.init(dependency: dependency)
     }
 
-    public func build(withListener listener: VideoRecordListener) -> VideoRecordRouting {
-        let component = VideoRecordComponent(dependency: dependency)
-        let recordingManager = VideoRecordingManager()
-        let viewController = VideoRecordViewController(maxAlbumCount: component.maxAlbumCount)
+    public func build(withListener listener: VideoRecordListener, clips: [CompositionClip], recordingOptions: RecordingOptions) -> VideoRecordRouting {
+        let component = VideoRecordComponent(dependency: dependency, clips: clips, recordingOptions: recordingOptions)
+        if clips.isEmpty {
+            let drafts: [CompositionClip] = [
+                .cover(.init(title: nil, description: nil, type: .intro)),
+                .cover(.init(title: nil, description: nil, type: .outro))
+            ]
+            try? component.videoDraftStorage.updateBackup(drafts)
+        }
+        let viewController = VideoRecordViewController()
         let interactor = VideoRecordInteractor(
             presenter: viewController,
-            component: component,
-            recordingManager: recordingManager
+            component: component
         )
         interactor.listener = listener
         return VideoRecordRouter(interactor: interactor, viewController: viewController)

@@ -37,7 +37,9 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: []
+            dependencies: [
+                .project(target: "SharedModels", path: "../../Core/SharedModels")
+            ]
         )
     ]
 )

@@ -11,7 +11,7 @@ import UIKit
 final class CameraPreviewView: UIView {
     private let previewView = PreviewLayerView()
 
-    public var aspectRatio: CGFloat = 1.0 {
+    public var ratioType: CGFloat = 1.0 {
         didSet {
             setNeedsLayout()
         }
@@ -41,7 +41,7 @@ final class CameraPreviewView: UIView {
         super.layoutSubviews()
 
         let width = bounds.width
-        let height = width * self.aspectRatio
+        let height = width * self.ratioType
         let originY = max((bounds.height - height) / 2.0, 0)
 
         UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseInOut]) {

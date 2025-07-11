@@ -7,7 +7,7 @@
 
 import Foundation
 
-public final class VideoDraftStorage: VideoDraftStoring {
+public final class VideoDraftStorage: VideoDraftStorageDelegate {
     public enum Error: Swift.Error {
         case directoryNotFound
         case fileNotFound
@@ -22,21 +22,20 @@ public final class VideoDraftStorage: VideoDraftStoring {
         guard let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
             throw Error.directoryNotFound
         }
-        self.baseDirectoryURL = base.appendingPathComponent(directoryName, isDirectory: true)
+        self.baseDirectoryURL = base.appendingPathComponent("VideoClips", isDirectory: true)
         self.videoDraftsFileURL = self.baseDirectoryURL.appendingPathComponent("VideoDrafts.json")
         try self.fileManager.createDirectory(at: self.baseDirectoryURL, withIntermediateDirectories: true)
     }
 
     // MARK: - Public
 
-    public func saveVideoDraft(sourceURL: URL, fileName: String) throws -> URL {
+    public func saveVideoDraft(sourceURL: URL, fileName: String) throws {
         guard self.fileManager.fileExists(atPath: sourceURL.path) else {
             throw Error.fileNotFound
         }
         let filePath = self.videoFileURLPath(fileName: fileName)
         try self.fileManager.copyItem(at: sourceURL, to: filePath)
         try? self.fileManager.removeItem(at: sourceURL)
-        return filePath
     }
 
     public func loadVideo(fileName: String) throws -> URL {

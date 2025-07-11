@@ -68,11 +68,7 @@ final class RecordingButton: UIButton {
     }
 
     public func startProgressAnimation(duration: TimeInterval) {
-        guard let shape = progressLayer,
-              shape.animation(forKey: "progress") == nil else {
-            self.cancelProgressAnimation()
-            return
-        }
+        guard let shape = progressLayer else { return }
         shape.strokeStart = 0
         shape.strokeEnd = 1
         CATransaction.begin()
@@ -90,7 +86,7 @@ final class RecordingButton: UIButton {
         CATransaction.commit()
     }
 
-    private func cancelProgressAnimation() {
+    public func cancelProgressAnimation() {
         self.progressLayer?.removeAnimation(forKey: "progress")
         self.progressLayer?.strokeStart = 0
         self.progressLayer?.strokeEnd = 1

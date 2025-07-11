@@ -93,8 +93,7 @@ class CameraPermissionView: UIView {
     private func bind() {
         self.openSettinButton
             .publisher(for: .touchUpInside)
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
+            .sink(receiveValue: { _ in
                 if let appSettingsUrl = URL(string: UIApplication.openSettingsURLString) {
                     if UIApplication.shared.canOpenURL(appSettingsUrl) {
                         UIApplication.shared.open(appSettingsUrl, options: [:], completionHandler: nil)

@@ -12,8 +12,10 @@ import ModernRIBs
 
 import MySecondsKit
 import ResourceKit
+import SharedModels
 import VideoDraftStorage
 import VideoRecord
+import VideoRecordingManager
 
 final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -29,15 +31,23 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        let videoRecordBuilder = VideoRecordBuilder(
-            dependency: .init(
-                dependency: MockVideoRecordDependency()
-            )
+        let dependency: MockVideoRecordDependency = .init()
+        let videoRecordBuilder = VideoRecordBuilder(dependency: dependency)
+
+        let recordingOptions: RecordingOptions = .init(
+            coverClipsCount: 2,
+            maxVideoClipsCount: 15,
+            recordDurations: [1.0, 2.0, 3.0],
+            ratioTypes: [.oneToOne, .threeToFour]
         )
-
-        let videoRecordRouter = videoRecordBuilder.build(withListener: self.mockListener)
+        let videoRecordRouter = videoRecordBuilder.build(
+            withListener: self.mockListener,
+            clips: [],
+            recordingOptions: recordingOptions
+        )
         self.router = videoRecordRouter
-
+        videoRecordRouter.load()
+        videoRecordRouter.interactable.activate()
         let root = videoRecordRouter.viewControllable.uiviewController
         let naviController = MSNavigationController(rootViewController: root)
 
@@ -47,17 +57,21 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 }
 
 final class MockVideoRecordDependency: VideoRecordDependency {
-    var maxAlbumCount: Int {
-        15
-    }
-
-    var videoDraftStorage: VideoDraftStorage = {
+    var videoDraftStorage: VideoDraftStorageDelegate = {
         do {
             return try VideoDraftStorage()
         } catch {
             fatalError("초기화실패 mock error: \(error)")
         }
     }()
+
+    var videoRecordingManager: VideoRecordingManagerProtocol {
+        VideoRecordingManager()
+    }
 }
 
-final class MockVideoRecordListener: VideoRecordListener {}
+final class MockVideoRecordListener: VideoRecordListener {
+    func showVideoCreation(clips: [CompositionClip]) {
+        print("clips", clips.count)
+    }
+}

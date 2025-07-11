@@ -12,6 +12,7 @@ import UIKit
 import ModernRIBs
 
 import BaseRIBsKit
+import SharedModels
 import VideoDraftStorage
 import VideoRecordingManager
 
@@ -21,52 +22,56 @@ protocol VideoRecordPresentable: Presentable {
     var listener: VideoRecordPresentableListener? { get set }
 }
 
-public protocol VideoRecordListener: AnyObject {}
+public protocol VideoRecordListener: AnyObject {
+    func showVideoCreation(clips: [CompositionClip])
+}
 
 final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordInteractable, VideoRecordPresentableListener {
+    private let cameraAuthorizationSubject = PassthroughSubject<Bool, Never>()
+    var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> {
+        self.cameraAuthorizationSubject.eraseToAnyPublisher()
+    }
 
-    private let videoDraftStorage = try? VideoDraftStorage()
+    private let thumbnailSubject = PassthroughSubject<UIImage?, Never>()
+    var thumbnailPublisher: AnyPublisher<UIImage?, Never> {
+        self.thumbnailSubject.eraseToAnyPublisher()
+    }
 
-    private let component: VideoRecordComponent
-    private let recordingManager: VideoRecordingManagerProtocol
-
-    private let aspectRatioSubject = CurrentValueSubject<AspectRatio, Never>(.oneToOne)
-    public var aspectRatioPublisher: AnyPublisher<AspectRatio, Never> {
-        self.aspectRatioSubject.eraseToAnyPublisher()
+    private let albumCountSubject = PassthroughSubject<(Int, Int), Never>()
+    var albumCountPublisher: AnyPublisher<(Int, Int), Never> {
+        self.albumCountSubject.eraseToAnyPublisher()
     }
 
     private let isRecordingSubject = CurrentValueSubject<Bool, Never>(false)
-    public var isRecordingPublisher: AnyPublisher<Bool, Never> {
+    var isRecordingPublisher: AnyPublisher<Bool, Never> {
         self.isRecordingSubject.eraseToAnyPublisher()
     }
 
-    private let recordDurationSubject = CurrentValueSubject<Int, Never>(1)
-    public var recordDurationPublisher: AnyPublisher<Int, Never> {
+    private let ratioTypeSubject = PassthroughSubject<RatioType, Never>()
+    var ratioTypePublisher: AnyPublisher<RatioType, Never> {
+        self.ratioTypeSubject.eraseToAnyPublisher()
+    }
+
+    private let recordDurationSubject = PassthroughSubject<TimeInterval, Never>()
+    var recordDurationPublisher: AnyPublisher<TimeInterval, Never> {
         self.recordDurationSubject.eraseToAnyPublisher()
     }
 
-    private let videosSubject = PassthroughSubject<[VideoDraft], Never>()
-    public var videosPublisher: AnyPublisher<[VideoDraft], Never> {
-        self.videosSubject.eraseToAnyPublisher()
-    }
-
-    private let cameraAuthorizationSubject = PassthroughSubject<Bool, Never>()
-    public var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> {
-        self.cameraAuthorizationSubject.eraseToAnyPublisher()
-    }
+    private let clipsSubject = CurrentValueSubject<[CompositionClip], Never>([])
 
     public var captureSession: AVCaptureSession {
         self.recordingManager.session
     }
 
-    public var recordDuration: Int {
-        self.recordDurationSubject.value
-    }
+    private let recordingManager: VideoRecordingManagerProtocol
+    private let videoDraftStorage: VideoDraftStorageDelegate
 
-    private var currentDurationIndex = 0
-    private let durationOptions: [Int] = [1, 2, 3]
-    private let availableRatios: [AspectRatio] = [.oneToOne, .fourToThree]
-    private var currentAspectRatioIndex: Int = 0
+    private let recordDurations: [TimeInterval]
+    private var durationIndex: Int = 0
+    private let ratioTypes: [RatioType]
+    private var ratioIndex: Int = 0
+    private let coverClipsCount: Int
+    private let maxVideoClipsCount: Int
 
     private let videoSubject = CurrentValueSubject<[VideoDraft], Never>([])
 
@@ -77,70 +82,90 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
 
     init(
         presenter: VideoRecordPresentable,
-        component: VideoRecordComponent,
-        recordingManager: VideoRecordingManagerProtocol
+        component: VideoRecordComponent
     ) {
-        self.component = component
-        self.recordingManager = recordingManager
+        self.videoDraftStorage = component.videoDraftStorage
+        self.recordingManager = component.videoRecordingManager
+        self.recordDurations = component.recordingOptions.recordDurations
+        self.ratioTypes = component.recordingOptions.ratioTypes
+        self.coverClipsCount = component.recordingOptions.coverClipsCount
+        self.maxVideoClipsCount = component.recordingOptions.maxVideoClipsCount
         super.init(presenter: presenter)
         presenter.listener = self
 
         self.bind()
     }
 
-    private func bind() {
-        self.videoSubject
-            .sink(receiveValue: { [weak self] videos in
-                guard let self else { return }
-                self.videosSubject.send(videos)
-            })
-            .store(in: &self.cancellables)
-
-        Task {
-            let isAuthorized = await self.recordingManager.requestAuthorization(aspectRatio: .oneToOne)
-            self.cameraAuthorizationSubject.send(isAuthorized)
-        }
-    }
-
     private func saveVideo(url: URL) async {
-        guard let thumbnail = url.generateThumbnail(),
-              let thumbnailData = thumbnail.jpegData(compressionQuality: 0.8) else {
+        guard let thumbnail = url.generateThumbnail() else {
             print("썸네일 생성 실패")
             return
         }
-
+        guard let recordDuration = self.recordDurations[safe: self.durationIndex] else {
+            return
+        }
         do {
-            let duration = try await url.videoDuration()
-
-            let draft = VideoDraft(
-                duration: duration,
-                thumbnail: thumbnailData
+            let videoClip = VideoClip(
+                duration: recordDuration,
+                thumbnail: thumbnail
             )
-
-            let filePath = try self.videoDraftStorage?.saveVideoDraft(sourceURL: url, fileName: draft.fileBaseName)
-            var drafts = try self.videoDraftStorage?.loadAll(type: VideoDraft.self) ?? []
-            drafts.append(draft)
-            try self.videoDraftStorage?.updateBackup(drafts)
-
-            self.videoSubject.send(drafts)
-            print("저장 성공 \(filePath?.lastPathComponent ?? "")")
+            try self.videoDraftStorage.saveVideoDraft(
+                sourceURL: url,
+                fileName: videoClip.fileName
+            )
+            var clips = try self.videoDraftStorage.loadAll(type: CompositionClip.self)
+            // outro -1, 인덱스 0부터 시작 -1
+            let videoIndex = clips.count - 2
+            clips.insert(.video(videoClip), at: videoIndex)
+            try self.videoDraftStorage.updateBackup(clips)
+            self.clipsSubject.send(clips)
+            print("✅ 저장 개수: \(clips.count)")
+            print("✅ 저장 성공: \(videoClip.fileName)")
         } catch {
-            print("저장 실패", error)
+            print("❌ 저장 실패", error)
         }
     }
 }
 
 extension VideoRecordInteractor {
-    func initAlbum() {
-        do {
-            if let videos = try self.videoDraftStorage?.loadAll(type: VideoDraft.self).sorted(by: { $0.createdAt > $1.createdAt }) {
-                self.videoSubject.send(videos)
-            } else {
-                self.videoSubject.send([])
-            }
-        } catch {
-            self.videoSubject.send([])
+    func initVideoRecordRIB() {
+        Task {
+            let isAuthorized = await self.recordingManager.requestAuthorization(ratioType: .oneToOne)
+            self.cameraAuthorizationSubject.send(isAuthorized)
         }
+
+        if let clips = try? self.videoDraftStorage.loadAll(type: CompositionClip.self) {
+            self.clipsSubject.send(clips)
+        }
+
+        if let duration = self.recordDurations[safe: self.durationIndex] {
+            self.recordDurationSubject.send(duration)
+        }
+
+        if let ratio = self.ratioTypes[safe: self.ratioIndex] {
+            self.ratioTypeSubject.send(ratio)
+        }
+    }
+
+    func bind() {
+        self.clipsSubject
+            .sink(receiveValue: { [weak self] clips in
+                guard let self else { return }
+                let videoClips = clips.compactMap { clip -> VideoClip? in
+                    if case let .video(videoClip) = clip {
+                        videoClip
+                    } else {
+                        nil
+                    }
+                }
+                if let lastVideo = videoClips.last {
+                    self.thumbnailSubject.send(lastVideo.thumbnail)
+                } else {
+                    self.thumbnailSubject.send(nil)
+                }
+                self.albumCountSubject.send((clips.count - self.coverClipsCount, self.maxVideoClipsCount))
+            })
+            .store(in: &self.cancellables)
     }
 }
 
@@ -154,21 +179,17 @@ extension VideoRecordInteractor {
     }
 
     func didTapRecord() {
-        if self.isRecordingSubject.value {
+        guard !self.isRecordingSubject.value else {
             self.recordingManager.cancelRecording()
             return
         }
-
-        let duration = TimeInterval(self.recordDurationSubject.value)
+        guard let duration = self.recordDurations[safe: self.durationIndex] else { return }
         self.isRecordingSubject.send(true)
-
         Task {
             do {
                 let url = try await self.recordingManager.recordVideo(duration: duration)
-                self.isRecordingSubject.send(false)
                 await self.saveVideo(url: url)
             } catch {
-                self.isRecordingSubject.send(false)
                 if let cameraError = error as? CameraError {
                     switch cameraError {
                     case .cancelled:
@@ -180,6 +201,10 @@ extension VideoRecordInteractor {
                     print("녹화 에러 \(error)")
                 }
             }
+            // TODO: - 딜레이가 느껴짐, 개선필요
+            // 저장로직을 백그라운드로 돌리면 실패시 처리가 부자연스러움
+            // 현재처럼 딜레이를 느낄지, 실패할 확률이 적으니 예외처리를 부자연스럽게 가져갈지 선택해야함
+            self.isRecordingSubject.send(false)
         }
     }
 
@@ -188,18 +213,18 @@ extension VideoRecordInteractor {
     }
 
     func didTapRatio() {
-        self.currentAspectRatioIndex = (self.currentAspectRatioIndex + 1) % self.availableRatios.count
-        let newAspectRatio = self.availableRatios[safe: self.currentAspectRatioIndex] ?? .oneToOne
-        self.aspectRatioSubject.send(newAspectRatio)
+        self.ratioIndex = (self.ratioIndex + 1) % self.ratioTypes.count
+        guard let ratio = self.ratioTypes[safe: ratioIndex] else { return }
+        self.ratioTypeSubject.send(ratio)
     }
 
     func didTapTimer() {
-        self.currentDurationIndex = (self.currentDurationIndex + 1) % self.durationOptions.count
-        let selected = self.durationOptions[safe: self.currentDurationIndex] ?? 1
-        self.recordDurationSubject.send(selected)
+        self.durationIndex = (self.durationIndex + 1) % self.recordDurations.count
+        guard let time = self.recordDurations[safe: self.durationIndex] else { return }
+        self.recordDurationSubject.send(time)
     }
 
     func didTapAlbum() {
-        // 앨범 화면 이동
+        self.listener?.showVideoCreation(clips: self.clipsSubject.value)
     }
 }
