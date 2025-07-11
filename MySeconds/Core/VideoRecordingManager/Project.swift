@@ -2,19 +2,19 @@
 //  Project.swift
 //  MySeconds
 //
-//  Created by pane on 05/28/2025.
+//  Created by chungwussup on 06/25/2025.
 //
 
 import ProjectDescription
 
 let project = Project(
-    name: "SharedModels",
+    name: "VideoRecordingManager",
     targets: [
         .target(
-            name: "SharedModels",
+            name: "VideoRecordingManager",
             destinations: .iOS,
             product: .framework,
-            bundleId: "com.panestudio.SharedModels",
+            bundleId: "com.panestudio.VideoRecordingManager",
             deploymentTargets: .iOS("17.0"),
             infoPlist: .default,
             sources: ["Sources/**"],
@@ -38,7 +38,7 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .project(target: "UtilsKit", path: "../../Modules/UtilsKit")
+                .project(target: "SharedModels", path: "../../Core/SharedModels")
             ]
         )
     ]

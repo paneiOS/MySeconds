@@ -1,11 +1,35 @@
+//
+//  Project.swift
+//  MySeconds
+//
+//  Created by chungwussup on 05/19/2025.
+//
+
 import ProjectDescription
 
 let project = Project(
-    name: "MySeconds",
-    options: .options(automaticSchemesOptions: .disabled),
+    name: "VideoRecord",
     targets: [
         .target(
-            name: "MySeconds",
+            name: "VideoRecord",
+            destinations: .iOS,
+            product: .framework,
+            bundleId: "com.panestudio.VideoRecord",
+            deploymentTargets: .iOS("17.0"),
+            sources: ["Sources/**"],
+            resources: [],
+            dependencies: [
+                .external(name: "SnapKit"),
+                .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
+                .project(target: "MySecondsKit", path: "../MySecondsKit"),
+                .project(target: "ResourceKit", path: "../ResourceKit"),
+                .project(target: "VideoDraftStorage", path: "../../Core/VideoDraftStorage"),
+                .project(target: "VideoRecordingManager", path: "../../Core/VideoRecordingManager"),
+                .project(target: "UtilsKit", path: "../UtilsKit")
+            ]
+        ),
+        .target(
+            name: "VideoRecordModuleApp",
             destinations: .iOS,
             product: .app,
             bundleId: "com.panestudio.myseconds",
@@ -13,13 +37,6 @@ let project = Project(
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",
-                    "UIAppFonts": [
-                        "Fonts/DungGeunMo.ttf",
-                        "Fonts/Inklipquid.otf",
-                        "Fonts/Samulnori-Medium.otf",
-                        "Fonts/ParkDaHyun.ttf",
-                        "Fonts/YClover-Regular.otf"
-                    ],
                     "UIApplicationSceneManifest": [
                         "UIApplicationSupportsMultipleScenes": false,
                         "UISceneConfigurations": [
@@ -31,7 +48,6 @@ let project = Project(
                             ]
                         ]
                     ],
-                    "UIApplicationMainStoryboardFile": "",
                     "CFBundleURLTypes": [
                         [
                             "CFBundleTypeRole": "Editor",
@@ -42,18 +58,12 @@ let project = Project(
                     "NSMicrophoneUsageDescription": "영상 녹화 중 음성을 녹음하기 위해 마이크 접근 권한이 필요합니다."
                 ]
             ),
-            sources: ["MySeconds/Sources/**"],
-            resources: [
-                "MySeconds/Resources/**",
-                "MySeconds/Resources/GoogleService-Info.plist",
-                .folderReference(path: "MySeconds/Modules/ResourceKit/Resources/Fonts")
-            ],
-            entitlements: "MySeconds.entitlements",
+            sources: ["AppSources/**"],
             scripts: [
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --config "${SRCROOT}/.swiftlint.yml" --reporter xcode
+                    swiftlint lint --config "../../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -68,38 +78,33 @@ let project = Project(
                 )
             ],
             dependencies: [
-                //                .project(target: "SharedModels", path: "MySeconds/Core/SharedModels"),
-//                .project(target: "SocialLoginKit", path: "MySeconds/Core/SocialLoginKit"),
-//
-//                .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
-//                .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
-//                .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
-//
-//                .project(target: "BGMSelect", path: "MySeconds/Modules/BGMSelect"),
-                .project(target: "CoverClipCreation", path: "MySeconds/Modules/CoverClipCreation"),
-                .project(target: "Login", path: "MySeconds/Modules/Login"),
-                .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
-                .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
-                .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation"),
-                .project(target: "VideoDraftStorage", path: "MySeconds/Core/VideoDraftStorage"),
-                .project(target: "VideoRecord", path: "MySeconds/Modules/VideoRecord")
+                .target(name: "VideoRecord")
             ],
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
-                    "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
-        )
-    ],
-    schemes: [
-        .scheme(
-            name: "MySecondsApp",
-            shared: true,
-            buildAction: .buildAction(targets: ["MySeconds"]),
-            runAction: .runAction(executable: "MySeconds")
+        ),
+        .target(
+            name: "VideoRecordTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.panestudio.videorecord",
+            infoPlist: .default,
+            sources: ["Tests/**"],
+            dependencies: [
+                .target(name: "VideoRecord")
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                ]
+            )
         )
     ]
 )

@@ -9,6 +9,7 @@ import ProjectDescription
 
 let project = Project(
     name: "MySecondsKit",
+    options: .options(automaticSchemesOptions: .disabled),
     targets: [
         .target(
             name: "MySecondsKit",
@@ -105,6 +106,15 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "MySecondsKitApp",
+            shared: true,
+            hidden: true,
+            buildAction: .buildAction(targets: ["MySecondsKitModuleApp"]),
+            runAction: .runAction(executable: "MySecondsKitModuleApp")
         )
     ]
 )

@@ -9,6 +9,7 @@ import ProjectDescription
 
 let project = Project(
     name: "SignUp",
+    options: .options(automaticSchemesOptions: .disabled),
     targets: [
         .target(
             name: "SignUp",
@@ -20,11 +21,20 @@ let project = Project(
             sources: ["Sources/**"],
             resources: [],
             dependencies: [
+                .external(name: "FirebaseFirestore"),
+
                 .project(target: "BaseRIBsKit", path: "../BaseRIBsKit"),
                 .project(target: "MySecondsKit", path: "../MySecondsKit"),
                 .project(target: "ResourceKit", path: "../ResourceKit"),
                 .project(target: "UtilsKit", path: "../UtilsKit")
-            ]
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                ]
+            )
         ),
         .target(
             name: "SignUpModuleApp",
@@ -101,6 +111,15 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "SignUpApp",
+            shared: true,
+            hidden: true,
+            buildAction: .buildAction(targets: ["SignUpModuleApp"]),
+            runAction: .runAction(executable: "SignUpModuleApp")
         )
     ]
 )
