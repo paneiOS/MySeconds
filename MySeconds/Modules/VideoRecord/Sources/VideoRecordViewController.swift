@@ -34,21 +34,82 @@ protocol VideoRecordPresentableListener: AnyObject {
     func didTapFlip()
     func didTapRatio()
     func didTapTimer()
-    func didTapAlbum()
+    func didTapThumbnailButton()
+    func didTapAlbumButton()
+    func didTapMenuButton()
 }
 
-final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, NavigationConfigurable {
+public protocol CustomHeaderNavigation {}
+
+final class VideoRecordViewController: BaseViewController, VideoRecordPresentable, VideoRecordViewControllable, CustomHeaderNavigation {
+    private let headerView: UIView = .init()
+
+    private let logoView: UIImageView = {
+        let imageView: UIImageView = .init(image: ResourceKitAsset.mysecondsLogo.image
+            .resized(to: .init(width: 96, height: 32))
+            .withRenderingMode(.alwaysTemplate))
+        imageView.tintColor = .neutral400
+        return imageView
+    }()
+
+    private let albumButton: UIButton = {
+        let button: UIButton = .init()
+        button.setImage(
+            ResourceKitAsset.image.image
+                .resized(to: .init(width: 24, height: 24))
+                .withRenderingMode(.alwaysTemplate),
+            for: .normal
+        )
+        button.tintColor = .neutral400
+        return button
+    }()
+
+    private let menuButton: UIButton = {
+        let button: UIButton = .init()
+        button.setImage(
+            ResourceKitAsset.menu.image
+                .resized(to: .init(width: 24, height: 24))
+                .withRenderingMode(.alwaysTemplate),
+            for: .normal
+        )
+        button.tintColor = .neutral400
+        return button
+    }()
+
     private let recordingControlView: RecordingControlView = .init()
     private var cameraPreview = CameraPreviewView()
     private let permissionView = CameraPermissionView()
+
     weak var listener: VideoRecordPresentableListener?
 
     override func setupUI() {
         self.view.backgroundColor = .white
-        self.view.addSubviews(self.recordingControlView, self.cameraPreview, self.permissionView)
+
+        self.view.addSubviews(self.headerView, self.recordingControlView, self.cameraPreview, self.permissionView)
+        self.headerView.snp.makeConstraints {
+            $0.top.equalTo(self.view.safeAreaLayoutGuide)
+            $0.leading.trailing.equalToSuperview()
+            $0.height.equalTo(48)
+        }
+        self.headerView.addSubviews(self.logoView, self.albumButton, self.menuButton)
+        self.logoView.snp.makeConstraints {
+            $0.centerY.equalToSuperview()
+            $0.leading.equalToSuperview().inset(24)
+        }
+        self.menuButton.snp.makeConstraints {
+            $0.trailing.equalToSuperview().inset(16)
+            $0.centerY.equalToSuperview()
+            $0.size.equalTo(40)
+        }
+        self.albumButton.snp.makeConstraints {
+            $0.trailing.equalTo(self.menuButton.snp.leading)
+            $0.centerY.equalToSuperview()
+            $0.size.equalTo(40)
+        }
 
         self.permissionView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+            $0.top.equalTo(self.headerView.snp.bottom)
+            $0.leading.trailing.bottom.equalToSuperview()
         }
 
         self.recordingControlView.snp.makeConstraints {
@@ -58,7 +119,7 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
         }
 
         self.cameraPreview.snp.makeConstraints {
-            $0.top.equalTo(self.view.safeAreaLayoutGuide)
+            $0.top.equalTo(self.headerView.snp.bottom)
             $0.bottom.equalTo(self.recordingControlView.snp.top)
             $0.leading.trailing.equalToSuperview()
         }
@@ -71,47 +132,8 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
                 self.listener?.initVideoRecordRIB()
             })
             .store(in: &self.cancellables)
-
         self.bindState()
         self.bindActions()
-    }
-
-    private func bindActions() {
-        self.recordingControlView.timerTapPublisher
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
-                self.listener?.didTapTimer()
-            })
-            .store(in: &cancellables)
-
-        self.recordingControlView.ratioTapPublisher
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
-                self.listener?.didTapRatio()
-            })
-            .store(in: &cancellables)
-
-        self.recordingControlView.flipTapPublisher
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
-                self.listener?.didTapFlip()
-            })
-            .store(in: &cancellables)
-
-        self.recordingControlView.albumTapPublisher
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
-                self.listener?.didTapAlbum()
-            })
-            .store(in: &cancellables)
-
-        self.recordingControlView.recordTapPublisher
-            .sink(receiveValue: { [weak self] _ in
-                guard let self else { return }
-                self.listener?.didTapRecord()
-
-            })
-            .store(in: &cancellables)
     }
 
     private func bindState() {
@@ -179,21 +201,54 @@ final class VideoRecordViewController: BaseViewController, VideoRecordPresentabl
             .store(in: &cancellables)
     }
 
-    func navigationConfig() -> NavigationConfig {
-        NavigationConfig(
-            leftButtonType: .logo,
-            rightButtonTypes: [
-                .custom(
-                    image: ResourceKitAsset.image.image,
-                    tintColor: .neutral400,
-                    action: .push(UIViewController())
-                ),
-                .custom(
-                    image: ResourceKitAsset.menu.image,
-                    tintColor: .neutral400,
-                    action: .push(UIViewController())
-                )
-            ]
-        )
+    private func bindActions() {
+        self.recordingControlView.timerTapPublisher
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.didTapTimer()
+            })
+            .store(in: &cancellables)
+
+        self.recordingControlView.ratioTapPublisher
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.didTapRatio()
+            })
+            .store(in: &cancellables)
+
+        self.recordingControlView.flipTapPublisher
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.didTapFlip()
+            })
+            .store(in: &cancellables)
+
+        self.recordingControlView.albumTapPublisher
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.didTapThumbnailButton()
+            })
+            .store(in: &cancellables)
+
+        self.recordingControlView.recordTapPublisher
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.didTapRecord()
+            })
+            .store(in: &cancellables)
+
+        self.albumButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.didTapAlbumButton()
+            })
+            .store(in: &self.cancellables)
+
+        self.menuButton.publisher(for: .touchUpInside)
+            .sink(receiveValue: { [weak self] _ in
+                guard let self else { return }
+                self.listener?.didTapMenuButton()
+            })
+            .store(in: &self.cancellables)
     }
 }
