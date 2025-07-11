@@ -15,7 +15,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.panestudio.VideoDraftStorage",
-            infoPlist: .default,
+            deploymentTargets: .iOS("17.0"),
             sources: ["Sources/**"],
             resources: [],
             scripts: [
@@ -63,6 +63,7 @@ let project = Project(
         .scheme(
             name: "VideoDraftStorageTests",
             shared: true,
+            hidden: true,
             buildAction: .buildAction(targets: ["VideoDraftStorage", "VideoDraftStorageTests"]),
             testAction: .targets(["VideoDraftStorageTests"]),
             runAction: nil

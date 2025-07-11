@@ -9,6 +9,7 @@ import ProjectDescription
 
 let project = Project(
     name: "CoverClipCreation",
+    options: .options(automaticSchemesOptions: .disabled),
     targets: [
         .target(
             name: "CoverClipCreation",
@@ -64,6 +65,9 @@ let project = Project(
                 ]
             ),
             sources: ["AppSources/**"],
+            resources: [
+                .folderReference(path: "../ResourceKit/Resources/Fonts")
+            ],
             scripts: [
                 .pre(
                     script: """
@@ -110,6 +114,15 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "CoverClipCreationApp",
+            shared: true,
+            hidden: true,
+            buildAction: .buildAction(targets: ["CoverClipCreationModuleApp"]),
+            runAction: .runAction(executable: "CoverClipCreationModuleApp")
         )
     ]
 )

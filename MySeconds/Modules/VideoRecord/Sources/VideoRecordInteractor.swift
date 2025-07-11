@@ -5,12 +5,16 @@
 //  Created by chungwussup on 05/19/2025.
 //
 
+import AVFoundation
 import Combine
 import UIKit
 
 import ModernRIBs
 
 import BaseRIBsKit
+import SharedModels
+import VideoDraftStorage
+import VideoRecordingManager
 
 public protocol VideoRecordRouting: ViewableRouting {}
 
@@ -18,157 +22,220 @@ protocol VideoRecordPresentable: Presentable {
     var listener: VideoRecordPresentableListener? { get set }
 }
 
-public protocol VideoRecordListener: AnyObject {}
+public protocol VideoRecordListener: AnyObject {
+    func showVideoCreation(clips: [CompositionClip])
+    func showAlbumRIB()
+    func showMenuRIB()
+}
 
 final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordInteractable, VideoRecordPresentableListener {
-
-    private let component: VideoRecordComponent
-
-    private let timerButtonTextSubject = PassthroughSubject<String, Never>()
-    public var timerButtonTextPublisher: AnyPublisher<String, Never> {
-        self.timerButtonTextSubject.eraseToAnyPublisher()
+    private let cameraAuthorizationSubject = PassthroughSubject<Bool, Never>()
+    var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> {
+        self.cameraAuthorizationSubject.eraseToAnyPublisher()
     }
 
-    private let ratioButtonTextSubject = PassthroughSubject<String, Never>()
-    public var ratioButtonTextPublisher: AnyPublisher<String, Never> {
-        self.ratioButtonTextSubject.eraseToAnyPublisher()
+    private let thumbnailSubject = PassthroughSubject<UIImage?, Never>()
+    var thumbnailPublisher: AnyPublisher<UIImage?, Never> {
+        self.thumbnailSubject.eraseToAnyPublisher()
+    }
+
+    private let albumCountSubject = PassthroughSubject<(Int, Int), Never>()
+    var albumCountPublisher: AnyPublisher<(Int, Int), Never> {
+        self.albumCountSubject.eraseToAnyPublisher()
     }
 
     private let isRecordingSubject = CurrentValueSubject<Bool, Never>(false)
-    public var isRecordingPublisher: AnyPublisher<Bool, Never> {
+    var isRecordingPublisher: AnyPublisher<Bool, Never> {
         self.isRecordingSubject.eraseToAnyPublisher()
     }
 
+    private let ratioTypeSubject = PassthroughSubject<RatioType, Never>()
+    var ratioTypePublisher: AnyPublisher<RatioType, Never> {
+        self.ratioTypeSubject.eraseToAnyPublisher()
+    }
+
     private let recordDurationSubject = PassthroughSubject<TimeInterval, Never>()
-    public var recordDurationPublisher: AnyPublisher<TimeInterval, Never> {
+    var recordDurationPublisher: AnyPublisher<TimeInterval, Never> {
         self.recordDurationSubject.eraseToAnyPublisher()
     }
 
-    private let albumSubject = PassthroughSubject<(UIImage?, Int), Never>()
-    public var albumPublisher: AnyPublisher<(UIImage?, Int), Never> {
-        self.albumSubject.eraseToAnyPublisher()
+    private let clipsSubject = CurrentValueSubject<[CompositionClip], Never>([])
+
+    public var captureSession: AVCaptureSession {
+        self.recordingManager.session
     }
 
-    private let thumbnailSubject = CurrentValueSubject<UIImage?, Never>(nil)
-    private let albumCountSubject = CurrentValueSubject<Int, Never>(0)
+    private let recordingManager: VideoRecordingManagerProtocol
+    private let videoDraftStorage: VideoDraftStorageDelegate
 
-    private let videoRatios: [String] = ["1:1", "4:3"]
-    private var currentRatioIndex: Int = 0
-    private var maxRecordingTime: TimeInterval = 1
-    private let durationOptions: [TimeInterval] = [1, 2, 3]
-    private var recordWorkItem: DispatchWorkItem?
+    private let recordDurations: [TimeInterval]
+    private var durationIndex: Int = 0
+    private let ratioTypes: [RatioType]
+    private var ratioIndex: Int = 0
+    private let coverClipsCount: Int
+    private let maxVideoClipsCount: Int
+
+    private let videoSubject = CurrentValueSubject<[VideoDraft], Never>([])
 
     private var cancellables = Set<AnyCancellable>()
 
     weak var router: VideoRecordRouting?
     weak var listener: VideoRecordListener?
 
-    // TODO: 테스트를 위한 프로퍼티
-    private let sampleColors: [UIColor] = [
-        .black,
-        .red,
-        .blue,
-        .green,
-        .yellow,
-        .purple
-    ]
-
-    init(presenter: VideoRecordPresentable, component: VideoRecordComponent) {
-        self.component = component
+    init(
+        presenter: VideoRecordPresentable,
+        component: VideoRecordComponent
+    ) {
+        self.videoDraftStorage = component.videoDraftStorage
+        self.recordingManager = component.videoRecordingManager
+        self.recordDurations = component.recordingOptions.recordDurations
+        self.ratioTypes = component.recordingOptions.ratioTypes
+        self.coverClipsCount = component.recordingOptions.coverClipsCount
+        self.maxVideoClipsCount = component.recordingOptions.maxVideoClipsCount
         super.init(presenter: presenter)
         presenter.listener = self
 
         self.bind()
     }
 
-    private func bind() {
-        self.thumbnailSubject
-            .combineLatest(self.albumCountSubject)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] thumbnail, count in
+    private func saveVideo(url: URL) async {
+        guard let thumbnail = url.generateThumbnail() else {
+            print("썸네일 생성 실패")
+            return
+        }
+        guard let recordDuration = self.recordDurations[safe: self.durationIndex] else {
+            return
+        }
+        do {
+            let videoClip = VideoClip(
+                duration: recordDuration,
+                thumbnail: thumbnail
+            )
+            try self.videoDraftStorage.saveVideoDraft(
+                sourceURL: url,
+                fileName: videoClip.fileName
+            )
+            var clips = try self.videoDraftStorage.loadAll(type: CompositionClip.self)
+            // outro -1, 인덱스 0부터 시작 -1
+            let videoIndex = clips.count - 2
+            clips.insert(.video(videoClip), at: videoIndex)
+            try self.videoDraftStorage.updateBackup(clips)
+            self.clipsSubject.send(clips)
+            print("✅ 저장 개수: \(clips.count)")
+            print("✅ 저장 성공: \(videoClip.fileName)")
+        } catch {
+            print("❌ 저장 실패", error)
+        }
+    }
+}
+
+extension VideoRecordInteractor {
+    func initVideoRecordRIB() {
+        Task {
+            let isAuthorized = await self.recordingManager.requestAuthorization(ratioType: .oneToOne)
+            self.cameraAuthorizationSubject.send(isAuthorized)
+        }
+
+        if let clips = try? self.videoDraftStorage.loadAll(type: CompositionClip.self) {
+            self.clipsSubject.send(clips)
+        }
+
+        if let duration = self.recordDurations[safe: self.durationIndex] {
+            self.recordDurationSubject.send(duration)
+        }
+
+        if let ratio = self.ratioTypes[safe: self.ratioIndex] {
+            self.ratioTypeSubject.send(ratio)
+        }
+    }
+
+    func bind() {
+        self.clipsSubject
+            .sink(receiveValue: { [weak self] clips in
                 guard let self else { return }
-                self.albumSubject.send((thumbnail, count))
+                let videoClips = clips.compactMap { clip -> VideoClip? in
+                    if case let .video(videoClip) = clip {
+                        videoClip
+                    } else {
+                        nil
+                    }
+                }
+                if let lastVideo = videoClips.last {
+                    self.thumbnailSubject.send(lastVideo.thumbnail)
+                } else {
+                    self.thumbnailSubject.send(nil)
+                }
+                self.albumCountSubject.send((clips.count - self.coverClipsCount, self.maxVideoClipsCount))
             })
             .store(in: &self.cancellables)
     }
 }
 
 extension VideoRecordInteractor {
-    func initAlbum() {
-        self.thumbnailSubject.send(self.component.initialAlbumThumbnail)
-        self.albumCountSubject.send(self.component.initialAlbumCount)
-
-        let maxRecordingTime = "\(Int(self.maxRecordingTime))초"
-        self.timerButtonTextSubject.send(maxRecordingTime)
-        self.ratioButtonTextSubject.send(self.videoRatios[self.currentRatioIndex])
+    func startSession() {
+        self.recordingManager.startSession()
     }
-}
 
-extension VideoRecordInteractor {
+    func stopSession() {
+        self.recordingManager.stopSession()
+    }
+
     func didTapRecord() {
-        if self.isRecordingSubject.value {
-            self.recordWorkItem?.cancel()
-            self.isRecordingSubject.send(false)
-            self.recordDurationSubject.send(0)
-        } else {
-            self.recordDurationSubject.send(self.maxRecordingTime)
-            self.isRecordingSubject.send(true)
-
-            let work = DispatchWorkItem { [weak self] in
-                guard let self else { return }
-                self.recordDidFinish()
-                self.isRecordingSubject.send(false)
+        guard !self.isRecordingSubject.value else {
+            self.recordingManager.cancelRecording()
+            return
+        }
+        guard let duration = self.recordDurations[safe: self.durationIndex] else { return }
+        self.isRecordingSubject.send(true)
+        Task {
+            do {
+                let url = try await self.recordingManager.recordVideo(duration: duration)
+                await self.saveVideo(url: url)
+            } catch {
+                if let cameraError = error as? CameraError {
+                    switch cameraError {
+                    case .cancelled:
+                        print("사용자 취소")
+                    default:
+                        print("녹화 실패 \(cameraError)")
+                    }
+                } else {
+                    print("녹화 에러 \(error)")
+                }
             }
-            self.recordWorkItem = work
-            DispatchQueue.main.asyncAfter(deadline: .now() + self.maxRecordingTime, execute: work)
+            // TODO: - 딜레이가 느껴짐, 개선필요
+            // 저장로직을 백그라운드로 돌리면 실패시 처리가 부자연스러움
+            // 현재처럼 딜레이를 느낄지, 실패할 확률이 적으니 예외처리를 부자연스럽게 가져갈지 선택해야함
+            self.isRecordingSubject.send(false)
         }
     }
 
     func didTapFlip() {
-        print("Tap Flip")
+        self.recordingManager.switchCamera()
     }
 
     func didTapRatio() {
-        let nextIndex = (currentRatioIndex + 1) % self.videoRatios.count
-
-        self.videoRatios[safe: nextIndex].map { [weak self] newRatio in
-            guard let self else { return }
-            self.currentRatioIndex = nextIndex
-            self.ratioButtonTextSubject.send(newRatio)
-        }
+        self.ratioIndex = (self.ratioIndex + 1) % self.ratioTypes.count
+        guard let ratio = self.ratioTypes[safe: ratioIndex] else { return }
+        self.ratioTypeSubject.send(ratio)
     }
 
     func didTapTimer() {
-        let nextIndex = self.durationOptions
-            .firstIndex(of: self.maxRecordingTime)
-            .map { ($0 + 1) % self.durationOptions.count }
-            ?? 0
-
-        self.durationOptions[safe: nextIndex].map { [weak self] next in
-            guard let self else { return }
-            self.maxRecordingTime = next
-            self.timerButtonTextSubject.send("\(Int(next))초")
-        }
+        self.durationIndex = (self.durationIndex + 1) % self.recordDurations.count
+        guard let time = self.recordDurations[safe: self.durationIndex] else { return }
+        self.recordDurationSubject.send(time)
     }
 
-    func didTapAlbum() {
-        print("Tap Album")
+    func didTapThumbnailButton() {
+        guard self.clipsSubject.value.count - self.coverClipsCount > 0 else { return }
+        self.listener?.showVideoCreation(clips: self.clipsSubject.value)
     }
 
-    // TODO: 샘플앱을 위한 테스트 메서든 추후 수정 필요
-    func recordDidFinish() {
+    func didTapAlbumButton() {
+        self.listener?.showAlbumRIB()
+    }
 
-        let newCount = self.albumCountSubject.value + 1
-        self.albumCountSubject.send(newCount)
-
-        let colorIndex = newCount % self.sampleColors.count
-        let chosenColor = self.sampleColors[colorIndex]
-        let thumbnailSize = CGSize(width: 64, height: 64)
-
-        let colorImage = UIGraphicsImageRenderer(size: thumbnailSize).image { ctx in
-            chosenColor.setFill()
-            ctx.fill(CGRect(origin: .zero, size: thumbnailSize))
-        }
-        self.thumbnailSubject.send(colorImage)
+    func didTapMenuButton() {
+        self.listener?.showMenuRIB()
     }
 }

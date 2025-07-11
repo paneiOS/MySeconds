@@ -2,7 +2,7 @@ import ProjectDescription
 
 let project = Project(
     name: "MySeconds",
-    packages: [],
+    options: .options(automaticSchemesOptions: .disabled),
     targets: [
         .target(
             name: "MySeconds",
@@ -37,13 +37,16 @@ let project = Project(
                             "CFBundleTypeRole": "Editor",
                             "CFBundleURLSchemes": ["com.googleusercontent.apps.120605294852-s7fhvg2713civjkojb7utjjbnsa7apmt"]
                         ]
-                    ]
+                    ],
+                    "NSCameraUsageDescription": "영상 촬영을 위해 카메라 접근 권한이 필요합니다.",
+                    "NSMicrophoneUsageDescription": "영상 녹화 중 음성을 녹음하기 위해 마이크 접근 권한이 필요합니다."
                 ]
             ),
             sources: ["MySeconds/Sources/**"],
             resources: [
                 "MySeconds/Resources/**",
-                "MySeconds/Resources/GoogleService-Info.plist"
+                "MySeconds/Resources/GoogleService-Info.plist",
+                .folderReference(path: "MySeconds/Modules/ResourceKit/Resources/Fonts")
             ],
             entitlements: "MySeconds.entitlements",
             scripts: [
@@ -65,18 +68,20 @@ let project = Project(
                 )
             ],
             dependencies: [
-                .project(target: "SharedModels", path: "MySeconds/Core/SharedModels"),
-                .project(target: "VideoDraftStorage", path: "MySeconds/Core/VideoDraftStorage"),
-
-                .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
-                .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
-                .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
-                .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
-                .project(target: "BGMSelect", path: "MySeconds/Modules/BGMSelect"),
+                //                .project(target: "SharedModels", path: "MySeconds/Core/SharedModels"),
+//                .project(target: "SocialLoginKit", path: "MySeconds/Core/SocialLoginKit"),
+//
+//                .project(target: "BaseRIBsKit", path: "MySeconds/Modules/BaseRIBsKit"),
+//                .project(target: "ResourceKit", path: "MySeconds/Modules/ResourceKit"),
+//                .project(target: "UtilsKit", path: "MySeconds/Modules/UtilsKit"),
+//
+//                .project(target: "BGMSelect", path: "MySeconds/Modules/BGMSelect"),
                 .project(target: "CoverClipCreation", path: "MySeconds/Modules/CoverClipCreation"),
                 .project(target: "Login", path: "MySeconds/Modules/Login"),
+                .project(target: "MySecondsKit", path: "MySeconds/Modules/MySecondsKit"),
                 .project(target: "SignUp", path: "MySeconds/Modules/SignUp"),
                 .project(target: "VideoCreation", path: "MySeconds/Modules/VideoCreation"),
+                .project(target: "VideoDraftStorage", path: "MySeconds/Core/VideoDraftStorage"),
                 .project(target: "VideoRecord", path: "MySeconds/Modules/VideoRecord")
             ],
             settings: .settings(
@@ -87,23 +92,14 @@ let project = Project(
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
-        ),
-        .target(
-            name: "MySecondsTests",
-            destinations: .iOS,
-            product: .unitTests,
-            bundleId: "com.panestudio.myseconds",
-            infoPlist: .default,
-            sources: ["MySeconds/Tests/**"],
-            resources: [],
-            dependencies: [.target(name: "MySeconds")],
-            settings: .settings(
-                base: [
-                    "SWIFT_VERSION": "6.0",
-                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
-                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
-                ]
-            )
+        )
+    ],
+    schemes: [
+        .scheme(
+            name: "MySecondsApp",
+            shared: true,
+            buildAction: .buildAction(targets: ["MySeconds"]),
+            runAction: .runAction(executable: "MySeconds")
         )
     ]
 )
