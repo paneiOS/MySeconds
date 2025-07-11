@@ -7,16 +7,27 @@
 
 import UIKit
 
-public struct VideoCoverClip: Hashable {
+public struct VideoCoverClip: Clip {
     public let id: UUID
     public var title: NSAttributedString?
     public var description: NSAttributedString?
     public var date: Date?
     public var duration: TimeInterval
-    public var thumbnail: UIImage?
+    public var thumbnailData: Data?
     public var type: CoverType
 
-    public enum CoverType: String {
+    public var thumbnail: UIImage? {
+        self.thumbnailData.flatMap { UIImage(data: $0) }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case date
+        case duration
+        case type
+    }
+
+    public enum CoverType: String, Codable {
         case intro = "인트로"
         case outro = "아웃트로"
     }
@@ -35,7 +46,32 @@ public struct VideoCoverClip: Hashable {
         self.description = description
         self.date = date
         self.duration = duration
-        self.thumbnail = thumbnail
+        self.thumbnailData = thumbnail?.jpegData(compressionQuality: 0.8)
         self.type = type
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let id = try container.decode(UUID.self, forKey: .id)
+        let date = try container.decodeIfPresent(Date.self, forKey: .date)
+        let duration = try container.decode(TimeInterval.self, forKey: .duration)
+        let type = try container.decode(CoverType.self, forKey: .type)
+        self.init(
+            id: id,
+            title: nil,
+            description: nil,
+            date: date,
+            duration: duration,
+            thumbnail: nil,
+            type: type
+        )
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encodeIfPresent(self.date, forKey: .date)
+        try container.encode(self.duration, forKey: .duration)
+        try container.encode(self.type, forKey: .type)
     }
 }

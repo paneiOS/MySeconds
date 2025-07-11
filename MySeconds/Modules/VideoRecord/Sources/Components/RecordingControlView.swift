@@ -12,51 +12,29 @@ import SnapKit
 
 import MySecondsKit
 import ResourceKit
+import SharedModels
 import VideoDraftStorage
 
-final class RecordControlView: UIView {
+final class RecordingControlView: UIView {
+
+    // MARK: - Constants
 
     private enum Constants {
         static let recordButtonSize: CGFloat = 54
-        static let controlButtonSize: CGFloat = 48
-        static let recordCornerRadius: CGFloat = 32
+        static let secondaryButtonSize: CGFloat = 48
         static let horizontalInset: CGFloat = 24
         static let verticalInset: CGFloat = 16
         static let stackSpacing: CGFloat = 4
     }
 
-    private let recordTapSubject = PassthroughSubject<Void, Never>()
-    private let ratioTapSubject = PassthroughSubject<Void, Never>()
-    private let timerTapSubject = PassthroughSubject<Void, Never>()
-    private let flipTapSubject = PassthroughSubject<Void, Never>()
-    private let albumTapSubject = PassthroughSubject<Void, Never>()
-
-    var recordTapPublisher: AnyPublisher<Void, Never> {
-        self.recordTapSubject.eraseToAnyPublisher()
-    }
-
-    var ratioTapPublisher: AnyPublisher<Void, Never> {
-        self.ratioTapSubject.eraseToAnyPublisher()
-    }
-
-    var timerTapPublisher: AnyPublisher<Void, Never> {
-        self.timerTapSubject.eraseToAnyPublisher()
-    }
-
-    var flipTapPublisher: AnyPublisher<Void, Never> {
-        self.flipTapSubject.eraseToAnyPublisher()
-    }
-
-    var albumTapPublisher: AnyPublisher<Void, Never> {
-        self.albumTapSubject.eraseToAnyPublisher()
-    }
+    // MARK: - UI Properties
 
     private let recordingButton: RecordingButton = .init(progressPadding: 5)
 
     private lazy var ratioButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .neutral100
-        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.cornerRadius = Constants.secondaryButtonSize / 2
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.neutral200.cgColor
         return button
@@ -65,10 +43,9 @@ final class RecordControlView: UIView {
     private lazy var timerButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .neutral100
-        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.cornerRadius = Constants.secondaryButtonSize / 2
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.neutral200.cgColor
-        button.setAttributedTitle(self.makeTimerAttributedText(seconds: "1"), for: .normal)
         button.titleLabel?.numberOfLines = 2
         button.titleLabel?.textAlignment = .center
         return button
@@ -77,7 +54,7 @@ final class RecordControlView: UIView {
     private lazy var cameraFlipButton: UIButton = {
         let button = UIButton()
         button.backgroundColor = .neutral100
-        button.layer.cornerRadius = Constants.controlButtonSize / 2
+        button.layer.cornerRadius = Constants.secondaryButtonSize / 2
         button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.neutral200.cgColor
         let image = ResourceKitAsset.refreshCcw.image.withRenderingMode(.alwaysTemplate)
@@ -86,28 +63,23 @@ final class RecordControlView: UIView {
         return button
     }()
 
-    private var maxAlbumCount: Int
-
-    private let albumButton: UIButton = {
-        let button = UIButton()
-        button.backgroundColor = .neutral100
-        button.imageView?.contentMode = .scaleAspectFill
-        button.clipsToBounds = true
-        button.layer.cornerRadius = 8
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.neutral200.cgColor
-        return button
+    private let albumControlView: UIControl = {
+        let control: UIControl = .init()
+        control.backgroundColor = .neutral100
+        control.clipsToBounds = true
+        control.layer.cornerRadius = 8
+        control.layer.borderWidth = 1
+        control.layer.borderColor = UIColor.neutral200.cgColor
+        return control
     }()
 
-    private let albumCountLabel: UILabel = {
-        let label = UILabel()
-        label.attributedText = .makeAttributedString(
-            text: "0",
-            font: .systemFont(ofSize: 14, weight: .medium),
-            textColor: .neutral500
-        )
-        return label
+    private let albumThumbnailView: UIImageView = {
+        let imageView: UIImageView = .init()
+        imageView.tintColor = .neutral300
+        return imageView
     }()
+
+    private let albumCountLabel: UILabel = .init()
 
     private let tooltipView = TooltipView()
 
@@ -119,35 +91,42 @@ final class RecordControlView: UIView {
         return stack
     }()
 
-    private let rightVStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .vertical
-        stack.alignment = .center
-        stack.spacing = Constants.stackSpacing
-        return stack
-    }()
+    private let secondaryButtonView: UIView = .init()
 
-    private let buttonStack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = Constants.stackSpacing
-        return stack
-    }()
+    // MARK: - Properties
+
+    private let recordTapSubject = PassthroughSubject<Void, Never>()
+    var recordTapPublisher: AnyPublisher<Void, Never> {
+        self.recordTapSubject.eraseToAnyPublisher()
+    }
+
+    private let ratioTapSubject = PassthroughSubject<Void, Never>()
+    var ratioTapPublisher: AnyPublisher<Void, Never> {
+        self.ratioTapSubject.eraseToAnyPublisher()
+    }
+
+    private let timerTapSubject = PassthroughSubject<Void, Never>()
+    var timerTapPublisher: AnyPublisher<Void, Never> {
+        self.timerTapSubject.eraseToAnyPublisher()
+    }
+
+    private let flipTapSubject = PassthroughSubject<Void, Never>()
+    var flipTapPublisher: AnyPublisher<Void, Never> {
+        self.flipTapSubject.eraseToAnyPublisher()
+    }
+
+    private let albumTapSubject = PassthroughSubject<Void, Never>()
+    var albumTapPublisher: AnyPublisher<Void, Never> {
+        self.albumTapSubject.eraseToAnyPublisher()
+    }
 
     private var cancellables = Set<AnyCancellable>()
     private var progressLayer: CAShapeLayer?
+    private var time: TimeInterval?
 
-    var recordDuration: TimeInterval
+    override public init(frame: CGRect) {
 
-    private var videos: [VideoDraft]
-
-    public init(videos: [VideoDraft], maxAlbumCount: Int, recordDuration: TimeInterval) {
-        self.maxAlbumCount = maxAlbumCount
-        self.recordDuration = recordDuration
-        self.videos = videos
-
-        super.init(frame: .zero)
+        super.init(frame: frame)
         self.setupUI()
         self.bind()
     }
@@ -155,91 +134,110 @@ final class RecordControlView: UIView {
     required init?(coder: NSCoder) { nil }
 
     private func setupUI() {
-        backgroundColor = .white
-        [self.albumButton, self.albumCountLabel].forEach { self.albumStack.addArrangedSubview($0) }
-        self.albumButton.snp.makeConstraints {
-            $0.size.equalTo(Constants.recordButtonSize)
-        }
-        addSubview(self.albumStack)
+        self.backgroundColor = .white
+        self.addSubviews(self.albumStack, self.recordingButton, self.secondaryButtonView)
+
         self.albumStack.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(Constants.horizontalInset)
             $0.centerY.equalToSuperview()
         }
-
-        for button in [self.ratioButton, self.cameraFlipButton] {
-            self.rightVStack.addArrangedSubview(button)
-            button.snp.makeConstraints {
-                $0.size.equalTo(Constants.controlButtonSize)
-            }
+        for item in [self.albumControlView, self.albumCountLabel] {
+            self.albumStack.addArrangedSubview(item)
+        }
+        self.albumControlView.snp.makeConstraints {
+            $0.size.equalTo(Constants.recordButtonSize)
         }
 
-        self.buttonStack.addArrangedSubview(self.timerButton)
-        self.timerButton.snp.makeConstraints {
-            $0.size.equalTo(Constants.controlButtonSize)
-        }
-        self.buttonStack.addArrangedSubview(self.rightVStack)
-
-        addSubview(self.buttonStack)
-        self.buttonStack.snp.makeConstraints {
-            $0.trailing.equalToSuperview().inset(Constants.horizontalInset)
-            $0.top.bottom.equalToSuperview().inset(Constants.verticalInset)
+        self.albumControlView.addSubview(self.albumThumbnailView)
+        self.albumThumbnailView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
         }
 
-        addSubview(self.recordingButton)
         self.recordingButton.snp.makeConstraints {
             $0.center.equalToSuperview()
             $0.size.equalTo(Constants.recordButtonSize)
         }
 
-        self.albumCountLabel.text = "0 / \(self.maxAlbumCount)"
+        self.secondaryButtonView.snp.makeConstraints {
+            $0.top.bottom.equalToSuperview().inset(16)
+            $0.trailing.equalToSuperview().inset(24)
+        }
+        self.secondaryButtonView.addSubviews(self.timerButton, self.ratioButton, self.cameraFlipButton)
+        self.timerButton.snp.makeConstraints {
+            $0.leading.centerY.equalToSuperview()
+            $0.size.equalTo(Constants.secondaryButtonSize)
+        }
+        self.ratioButton.snp.makeConstraints {
+            $0.top.trailing.equalToSuperview()
+            $0.leading.equalTo(self.timerButton.snp.trailing)
+            $0.size.equalTo(Constants.secondaryButtonSize)
+        }
+        self.cameraFlipButton.snp.makeConstraints {
+            $0.top.equalTo(self.ratioButton.snp.bottom).offset(8)
+            $0.leading.equalTo(self.timerButton.snp.trailing)
+            $0.bottom.trailing.equalToSuperview()
+            $0.size.equalTo(Constants.secondaryButtonSize)
+        }
+
+        self.addSubview(self.tooltipView)
+        self.tooltipView.snp.makeConstraints {
+            $0.centerX.equalTo(self.recordingButton)
+            $0.bottom.equalTo(self.recordingButton.snp.top).offset(-8)
+        }
     }
 
     private func bind() {
         self.recordingButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-                self.recordingButton.startProgressAnimation(duration: self.recordDuration)
-                self.recordTapSubject.send(())
+                self.recordTapSubject.send()
             })
             .store(in: &self.cancellables)
 
         self.ratioButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-                self.ratioTapSubject.send(())
+                self.ratioTapSubject.send()
             })
             .store(in: &self.cancellables)
 
         self.timerButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-                self.timerTapSubject.send(())
+                self.timerTapSubject.send()
             })
             .store(in: &self.cancellables)
 
         self.cameraFlipButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-                self.flipTapSubject.send(())
+                self.flipTapSubject.send()
             })
             .store(in: &self.cancellables)
 
-        self.albumButton.publisher(for: .touchUpInside)
+        self.albumControlView.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
                 guard let self else { return }
-                self.albumTapSubject.send(())
+                self.albumTapSubject.send()
             })
             .store(in: &self.cancellables)
     }
+}
 
-    private func makeTimerAttributedText(seconds: String) -> NSAttributedString {
-        let title = "촬영\n\(seconds)초"
+extension RecordingControlView {
+    func setTimer(time: TimeInterval) {
+        self.time = time
+        self.setTimerButtonText(text: "\(Int(time))")
+    }
+
+    private func setTimerButtonText(text: String) {
+        let title = "촬영\n\(text)초"
         let attributeStrings: [(String, [NSAttributedString.Key: Any])] = [
             ("촬영", [
                 .font: UIFont.systemFont(ofSize: 10, weight: .medium),
                 .foregroundColor: UIColor.neutral500
             ]),
-            (seconds, [
+            (text, [
                 .font: UIFont.systemFont(ofSize: 16, weight: .bold),
                 .foregroundColor: UIColor.neutral800
             ]),
@@ -248,20 +246,18 @@ final class RecordControlView: UIView {
                 .foregroundColor: UIColor.neutral800
             ])
         ]
-        return NSAttributedString.makeAttributedString(
-            text: title,
-            font: UIFont.systemFont(ofSize: 16, weight: .bold),
-            textColor: .neutral800,
-            lineBreakMode: .byWordWrapping,
-            letterSpacingPercentage: 0,
-            alignment: .center,
-            additionalAttributes: attributeStrings
+        self.timerButton.setAttributedTitle(
+            .makeAttributedString(
+                text: title,
+                font: UIFont.systemFont(ofSize: 16, weight: .bold),
+                textColor: .neutral800,
+                lineBreakMode: .byWordWrapping,
+                letterSpacingPercentage: 0,
+                alignment: .center,
+                additionalAttributes: attributeStrings
+            ),
+            for: .normal
         )
-    }
-
-    func setTimerButtonText(seconds: Int) {
-        let attributed = self.makeTimerAttributedText(seconds: "\(seconds)")
-        self.timerButton.setAttributedTitle(attributed, for: .normal)
     }
 
     func setRatioButtonText(text: String) {
@@ -273,55 +269,47 @@ final class RecordControlView: UIView {
         self.ratioButton.setAttributedTitle(attributedText, for: .normal)
     }
 
-    func setRecordingState(_ isRecording: Bool) {
-        self.albumStack.isHidden = isRecording
-        self.buttonStack.isHidden = isRecording
-    }
-
-    func updateAlbum(videos: [VideoDraft]) {
-        if let thumbnail = videos.last?.thumbnail {
-            self.albumButton.setImage(UIImage(data: thumbnail), for: .normal)
-            self.albumButton.tintColor = .clear
+    func setThumbnail(image: UIImage?) {
+        if let image {
+            self.albumThumbnailView.contentMode = .scaleAspectFill
+            self.albumThumbnailView.image = image
         } else {
-            let image = ResourceKitAsset.loader.image
+            self.albumThumbnailView.contentMode = .center
+            self.albumThumbnailView.image = ResourceKitAsset.loader.image
                 .resized(to: CGSize(width: 32, height: 32))
                 .withRenderingMode(.alwaysTemplate)
-            self.albumButton.setImage(image, for: .normal)
-            self.albumButton.tintColor = .neutral300
         }
+    }
 
-        self.albumCountLabel.text = "\(videos.count) / \(self.maxAlbumCount)"
-
-        self.albumCountLabel.textColor = .neutral500
-
-        if videos.count >= self.maxAlbumCount {
-            self.albumCountLabel.textColor = .red500
-
-            self.buttonStack.isUserInteractionEnabled = false
-            self.buttonStack.alpha = 0.5
-            self.recordingButton.isUserInteractionEnabled = false
-            self.recordingButton.alpha = 0.5
-
-            self.progressLayer?.opacity = 0.5
-            self.addSubview(self.tooltipView)
-            self.tooltipView.snp.makeConstraints {
-                $0.centerX.equalTo(self.recordingButton)
-                $0.bottom.equalTo(self.recordingButton.snp.top).offset(-8)
-            }
-
+    func setAlbumCountText(currentCount: Int, maxCount: Int) {
+        let isPhotoCapturable: Bool = currentCount <= maxCount
+        guard isPhotoCapturable else { return }
+        self.albumCountLabel.attributedText = .makeAttributedString(
+            text: "\(currentCount) / \(maxCount)",
+            font: .systemFont(ofSize: 14, weight: .medium),
+            textColor: isPhotoCapturable ? .neutral500 : .red500
+        )
+        self.secondaryButtonView.alpha = isPhotoCapturable ? 1.0 : 0.5
+        self.recordingButton.alpha = isPhotoCapturable ? 1.0 : 0.5
+        self.progressLayer?.opacity = isPhotoCapturable ? 1.0 : 0.5
+        if isPhotoCapturable {
+            self.tooltipView.hide()
+        } else {
             self.tooltipView.show(
                 self,
                 text: "최대 컷에 도달했어요\n컷을 삭제하거나 만들기를 진행해주세요"
             )
+        }
+    }
+
+    func updateRecordingState(_ isRecording: Bool) {
+        guard let time else { return }
+        self.albumStack.isHidden = isRecording
+        self.secondaryButtonView.isHidden = isRecording
+        if isRecording {
+            self.recordingButton.startProgressAnimation(duration: time)
         } else {
-            self.buttonStack.isUserInteractionEnabled = true
-            self.buttonStack.alpha = 1.0
-            self.recordingButton.isUserInteractionEnabled = true
-            self.recordingButton.alpha = 1.0
-
-            self.progressLayer?.opacity = 1.0
-
-            self.tooltipView.hide()
+            self.recordingButton.cancelProgressAnimation()
         }
     }
 }

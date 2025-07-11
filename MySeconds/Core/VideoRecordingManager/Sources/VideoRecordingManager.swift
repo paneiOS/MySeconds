@@ -7,19 +7,7 @@
 
 import AVFoundation
 
-public enum AspectRatio: String, CaseIterable {
-    case oneToOne = "1:1"
-    case fourToThree = "4:3"
-
-    public var ratio: CGFloat {
-        switch self {
-        case .oneToOne:
-            1.0
-        case .fourToThree:
-            4.0 / 3.0
-        }
-    }
-}
+import SharedModels
 
 public enum CameraError: Error {
     case noDevice
@@ -42,7 +30,7 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         recordingTimer?.invalidate()
     }
 
-    private func configureSession(aspectRatio: AspectRatio) -> Result<Void, CameraError> {
+    private func configureSession(ratioType: RatioType) -> Result<Void, CameraError> {
         self.session.beginConfiguration()
         self.session.sessionPreset = .high
 
@@ -74,10 +62,10 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         return .success(())
     }
 
-    public func requestAuthorization(aspectRatio: AspectRatio) async -> Bool {
+    public func requestAuthorization(ratioType: RatioType) async -> Bool {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
-            switch self.configureSession(aspectRatio: aspectRatio) {
+            switch self.configureSession(ratioType: ratioType) {
             case .success:
                 return true
             case .failure:
@@ -92,7 +80,7 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
             }
 
             if granted {
-                switch self.configureSession(aspectRatio: aspectRatio) {
+                switch self.configureSession(ratioType: ratioType) {
                 case .success:
                     return true
                 case .failure:
