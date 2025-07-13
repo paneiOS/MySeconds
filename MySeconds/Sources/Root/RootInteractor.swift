@@ -23,8 +23,10 @@ protocol RootRouting: ViewableRouting {
     func routeToLogin()
     func routeToSignUp(uid: String)
     func routeToVideoCreation(clips: [CompositionClip])
+    func popToVideoCreation()
     func routeToVideoRecord(clips: [CompositionClip])
     func routeToCoverClipCreation(clip: VideoCoverClip)
+    func applyVideoCoverClip(clip: VideoCoverClip)
     func closeCoverClipCreation()
     func routeToBGMSelect(bgmDirectoryURL: URL)
     func apply(bgm: BGM)
@@ -70,6 +72,14 @@ final class RootInteractor: PresentableInteractor<RootPresentable>, RootPresenta
 }
 
 extension RootInteractor: RootInteractable {
+    func showAlbumRIB() {
+        // TODO: - 앨범구현
+    }
+
+    func showMenuRIB() {
+        // TODO: - 메뉴구현
+    }
+
     func didLogin(with result: LoginResult) {
         switch result {
         case .success:
@@ -111,6 +121,10 @@ extension RootInteractor: RootInteractable {
         self.router?.routeToCoverClipCreation(clip: clip)
     }
 
+    func applyVideoCoverClip(clip: VideoCoverClip) {
+        self.router?.applyVideoCoverClip(clip: clip)
+    }
+
     func closeCoverClipCreation() {
         self.router?.closeCoverClipCreation()
     }
@@ -130,5 +144,9 @@ extension RootInteractor: RootInteractable {
 
     func showVideoCreation(clips: [CompositionClip]) {
         self.router?.routeToVideoCreation(clips: clips)
+    }
+
+    func popToVideoCreation() {
+        self.router?.popToVideoCreation()
     }
 }

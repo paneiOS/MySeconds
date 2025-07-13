@@ -8,6 +8,7 @@
 import ModernRIBs
 
 import BGMSelect
+import ComponentsKit
 import CoverClipCreation
 import FirebaseFirestore
 import Login
@@ -96,7 +97,8 @@ final class RootBuilder: Builder<RootDependency>, RootBuildable {
         let viewController = RootViewController()
         let navigationController = UINavigationController(rootViewController: viewController)
         navigationController.modalPresentationStyle = .fullScreen
-
+        navigationController.setNavigationBarHidden(true, animated: false)
+        navigationController.interactivePopGestureRecognizer?.isEnabled = false
         let interactor = RootInteractor(presenter: viewController, component: component)
         let router = RootRouter(
             interactor: interactor,

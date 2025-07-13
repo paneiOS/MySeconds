@@ -2,32 +2,43 @@
 //  Project.swift
 //  MySeconds
 //
-//  Created by pane on 07/13/2025.
+//  Created by chungwussup on 05/19/2025.
 //
 
 import ProjectDescription
 import ProjectDescriptionHelpers
 
+nonisolated(unsafe) let module = Modules.Features.videoRecord.module
 let project = Project(
-    name: "MySeconds",
-    options: .options(automaticSchemesOptions: .disabled),
+    name: module.name,
     targets: [
         .target(
-            name: "MySeconds",
+            name: module.name,
+            destinations: .iOS,
+            product: .framework,
+            bundleId: module.bundleID,
+            deploymentTargets: .iOS("17.0"),
+            sources: ["Sources/**"],
+            resources: [],
+            dependencies: [
+                .external(name: "SnapKit"),
+                Modules.Shared.baseRIBsKit.dependency,
+                Modules.Shared.componentsKit.dependency,
+                Modules.Shared.resourceKit.dependency,
+                Modules.Shared.utilsKit.dependency,
+                Modules.Services.videoDraftStorage.dependency,
+                Modules.Services.videoRecordingManager.dependency
+            ]
+        ),
+        .target(
+            name: module.sampleAppName,
             destinations: .iOS,
             product: .app,
-            bundleId: "com.panestudio.myseconds",
+            bundleId: module.sampleBundleID,
             deploymentTargets: .iOS("17.0"),
             infoPlist: .extendingDefault(
                 with: [
                     "UILaunchStoryboardName": "LaunchScreen",
-                    "UIAppFonts": [
-                        "Fonts/DungGeunMo.ttf",
-                        "Fonts/Inklipquid.otf",
-                        "Fonts/Samulnori-Medium.otf",
-                        "Fonts/ParkDaHyun.ttf",
-                        "Fonts/YClover-Regular.otf"
-                    ],
                     "UIApplicationSceneManifest": [
                         "UIApplicationSupportsMultipleScenes": false,
                         "UISceneConfigurations": [
@@ -39,7 +50,6 @@ let project = Project(
                             ]
                         ]
                     ],
-                    "UIApplicationMainStoryboardFile": "",
                     "CFBundleURLTypes": [
                         [
                             "CFBundleTypeRole": "Editor",
@@ -50,18 +60,12 @@ let project = Project(
                     "NSMicrophoneUsageDescription": "영상 녹화 중 음성을 녹음하기 위해 마이크 접근 권한이 필요합니다."
                 ]
             ),
-            sources: ["MySeconds/Sources/**"],
-            resources: [
-                "MySeconds/Resources/**",
-                "MySeconds/Resources/GoogleService-Info.plist",
-                .folderReference(path: "MySeconds/Shared/ResourceKit/Resources/Fonts")
-            ],
-            entitlements: "MySeconds.entitlements",
+            sources: ["AppSources/**"],
             scripts: [
                 .pre(
                     script: """
                     export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
-                    swiftlint lint --config "${SRCROOT}/.swiftlint.yml" --reporter xcode
+                    swiftlint lint --config "../../../.swiftlint.yml"
                     """,
                     name: "SwiftLint",
                     basedOnDependencyAnalysis: false
@@ -76,29 +80,33 @@ let project = Project(
                 )
             ],
             dependencies: [
-                Modules.Features.bgmSelect.dependency,
-                Modules.Features.coverClipCreation.dependency,
-                Modules.Features.login.dependency,
-                Modules.Features.signUp.dependency,
-                Modules.Features.videoCreation.dependency,
-                Modules.Features.videoRecord.dependency
+                module.target
             ],
             settings: .settings(
                 base: [
                     "CODE_SIGN_STYLE": "Manual",
-                    "CODE_SIGN_IDENTITY": "Apple Development",
                     "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
                     "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
                 ]
             )
-        )
-    ],
-    schemes: [
-        .scheme(
-            name: "MySeconds",
-            shared: true,
-            buildAction: .buildAction(targets: ["MySeconds"]),
-            runAction: .runAction(executable: "MySeconds")
+        ),
+        .target(
+            name: module.testAppName,
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: module.testBundleID,
+            infoPlist: .default,
+            sources: ["Tests/**"],
+            dependencies: [
+                module.target
+            ],
+            settings: .settings(
+                base: [
+                    "CODE_SIGN_STYLE": "Manual",
+                    "DEVELOPMENT_TEAM": "CB95NTZJ5Z",
+                    "PROVISIONING_PROFILE_SPECIFIER": "MySeconds"
+                ]
+            )
         )
     ]
 )
