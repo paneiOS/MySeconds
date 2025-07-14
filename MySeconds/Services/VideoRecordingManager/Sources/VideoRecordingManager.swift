@@ -53,6 +53,13 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
         self.session.addInput(input)
         self.videoDeviceInput = input
 
+        // audio input
+        if let audioDevice = AVCaptureDevice.default(for: .audio),
+           let audioInput = try? AVCaptureDeviceInput(device: audioDevice),
+           self.session.canAddInput(audioInput) {
+            self.session.addInput(audioInput)
+        }
+        
         // output
         if self.session.canAddOutput(self.movieOutput) {
             self.session.addOutput(self.movieOutput)
