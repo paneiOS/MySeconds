@@ -47,7 +47,7 @@ open class BaseViewController: UIViewController, BaseViewControllable {
         self.setupUI()
         self.bind()
 
-        self.viewDidLoadSubject.send(())
+        self.viewDidLoadSubject.send()
     }
 
     // MARK: - Overridable Hooks

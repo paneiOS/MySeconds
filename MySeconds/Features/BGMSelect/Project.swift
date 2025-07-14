@@ -103,5 +103,14 @@ let project = Project(
                 ]
             )
         )
+    ],
+    schemes: [
+        .scheme(
+            name: "SignUpApp",
+            shared: true,
+            hidden: true,
+            buildAction: .buildAction(targets: ["SignUpModuleApp"]),
+            runAction: .runAction(executable: "SignUpModuleApp")
+        )
     ]
 )

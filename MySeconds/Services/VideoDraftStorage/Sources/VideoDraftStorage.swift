@@ -22,7 +22,7 @@ public final class VideoDraftStorage: VideoDraftStorageDelegate {
         guard let base = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
             throw Error.directoryNotFound
         }
-        self.baseDirectoryURL = base.appendingPathComponent(directoryName, isDirectory: true)
+        self.baseDirectoryURL = base.appendingPathComponent("VideoClips", isDirectory: true)
         self.videoDraftsFileURL = self.baseDirectoryURL.appendingPathComponent("VideoDrafts.json")
         try self.fileManager.createDirectory(at: self.baseDirectoryURL, withIntermediateDirectories: true)
     }

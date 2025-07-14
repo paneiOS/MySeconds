@@ -108,5 +108,14 @@ let project = Project(
                 ]
             )
         )
+    ],
+    schemes: [
+        .scheme(
+            name: "VideoCreationApp",
+            shared: true,
+            hidden: true,
+            buildAction: .buildAction(targets: ["VideoCreationModuleApp"]),
+            runAction: .runAction(executable: "VideoCreationModuleApp")
+        )
     ]
 )
