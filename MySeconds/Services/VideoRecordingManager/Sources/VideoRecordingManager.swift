@@ -59,7 +59,7 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
            self.session.canAddInput(audioInput) {
             self.session.addInput(audioInput)
         }
-        
+
         // output
         if self.session.canAddOutput(self.movieOutput) {
             self.session.addOutput(self.movieOutput)
@@ -119,24 +119,25 @@ public final class VideoRecordingManager: NSObject, VideoRecordingManagerProtoco
     }
 
     public func switchCamera() {
-        guard let currentInput = self.videoDeviceInput else { return }
+        DispatchQueue.global(qos: .userInitiated).async {
+            guard let currentInput = self.videoDeviceInput else { return }
+            let newPosition: AVCaptureDevice.Position = (currentInput.device.position == .back) ? .front : .back
 
-        let newPosition: AVCaptureDevice.Position = (currentInput.device.position == .back) ? .front : .back
+            guard let newDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition),
+                  let newInput = try? AVCaptureDeviceInput(device: newDevice) else { return }
 
-        guard let newDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition),
-              let newInput = try? AVCaptureDeviceInput(device: newDevice) else { return }
+            self.session.beginConfiguration()
+            self.session.removeInput(currentInput)
 
-        self.session.beginConfiguration()
-        self.session.removeInput(currentInput)
+            if self.session.canAddInput(newInput) {
+                self.session.addInput(newInput)
+                self.videoDeviceInput = newInput
+            } else {
+                self.session.addInput(currentInput)
+            }
 
-        if self.session.canAddInput(newInput) {
-            self.session.addInput(newInput)
-            self.videoDeviceInput = newInput
-        } else {
-            self.session.addInput(currentInput)
+            self.session.commitConfiguration()
         }
-
-        self.session.commitConfiguration()
     }
 
     public func recordVideo(duration: TimeInterval) async throws -> URL {
