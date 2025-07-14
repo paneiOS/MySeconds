@@ -55,7 +55,6 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
         self.component = component
         super.init(interactor: interactor, viewController: viewController)
         self.navigationController = viewController.uiviewController as? UINavigationController
-        self.navigationController?.delegate = self.navigationDelegateProxy
         interactor.router = self
 
         self.bindNavigationEvents()
@@ -64,22 +63,19 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
     func routeToLogin() {
         guard self.loginRouter == nil else { return }
         let loginRouter = self.component.loginBuilder.build(withListener: self.interactor)
-        self.attachChild(loginRouter)
         self.loginRouter = loginRouter
+        self.attachChild(loginRouter)
         self.navigationController?.pushViewController(loginRouter.uiviewController, animated: false)
     }
 
     func popToLogin() {
         guard let loginRouter else { return }
-        self.detachChild(loginRouter)
         self.navigationController?.popViewController(animated: false)
+        self.detachChild(loginRouter)
         self.loginRouter = nil
     }
 
     func routeToVideoRecord(clips: [CompositionClip]) {
-        self.popToSignUp()
-        self.popToLogin()
-
         guard self.videoRecordRouter == nil else { return }
         let recordingOptions: RecordingOptions = .init(
             coverClipsCount: 2,
@@ -93,23 +89,25 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
             recordingOptions: recordingOptions
         )
         videoRecordRouter.uiviewController.navigationOption = .hidesNavigationBar
-
-        let navigationController = UINavigationController(rootViewController: videoRecordRouter.uiviewController)
-        navigationController.modalPresentationStyle = .fullScreen
-        navigationController.delegate = self.navigationDelegateProxy
-        self.navigationController = navigationController
-
-        self.attachChild(videoRecordRouter)
         self.videoRecordRouter = videoRecordRouter
-        self.viewController.present(child: navigationController, animated: true)
+        self.attachChild(videoRecordRouter)
+
+        self.navigationController?.delegate = self.navigationDelegateProxy
+        self.navigationController?.interactivePopGestureRecognizer?.delegate = self.navigationDelegateProxy
+        Task { @MainActor in
+            self.navigationController?.setViewControllers([videoRecordRouter.uiviewController], animated: false)
+        }
+
+        self.popToSignUp()
+        self.popToLogin()
     }
 
     func routeToVideoCreation(clips: [CompositionClip]) {
         guard self.videoCreationRouter == nil else { return }
         let videoCreationRouter = self.component.videoCreationBuilder.build(withListener: self.interactor, clips: clips)
         videoCreationRouter.uiviewController.navigationOption = .showsNavigationBar
-        self.attachChild(videoCreationRouter)
         self.videoCreationRouter = videoCreationRouter
+        self.attachChild(videoCreationRouter)
 
         let backButton = self.backButton()
         backButton.addTarget(self, action: #selector(self.popToVideoCreation), for: .touchUpInside)
@@ -122,29 +120,33 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
             alignment: .center
         )
         videoCreationRouter.uiviewController.setAttributedTitle(title)
-
-        self.navigationController?.pushViewController(videoCreationRouter.uiviewController, animated: false)
+        self.navigationController?.pushViewController(videoCreationRouter.uiviewController, animated: true)
     }
 
     @objc func popToVideoCreation() {
         guard let videoCreationRouter else { return }
-        self.detachChild(videoCreationRouter)
+        CATransaction.begin()
+        CATransaction.setCompletionBlock { [weak self] in
+            guard let self else { return }
+            self.detachChild(videoCreationRouter)
+            self.videoCreationRouter = nil
+        }
         self.navigationController?.popViewController(animated: true)
-        self.videoCreationRouter = nil
+        CATransaction.commit()
     }
 
     func routeToSignUp(uid: String) {
         guard self.signUpRouter == nil else { return }
         let signUpRouter = self.component.signUpBuilder.build(withListener: self.interactor, uid: uid)
-        self.attachChild(signUpRouter)
         self.signUpRouter = signUpRouter
+        self.attachChild(signUpRouter)
         self.navigationController?.pushViewController(signUpRouter.uiviewController, animated: true)
     }
 
     func popToSignUp() {
         guard let signUpRouter else { return }
-        self.detachChild(signUpRouter)
         self.navigationController?.popViewController(animated: false)
+        self.detachChild(signUpRouter)
         self.signUpRouter = nil
     }
 
@@ -153,8 +155,8 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
         let coverClipCreationRouter = self.component.coverClipCreationBuilder.build(withListener: self.interactor, videoCoverClip: clip)
         let coverClipCreationViewController = coverClipCreationRouter.uiviewController
         coverClipCreationViewController.modalPresentationStyle = .overFullScreen
-        self.attachChild(coverClipCreationRouter)
         self.coverClipCreationRouter = coverClipCreationRouter
+        self.attachChild(coverClipCreationRouter)
         self.viewController.present(child: coverClipCreationRouter.viewControllable, animated: false)
     }
 
@@ -176,8 +178,8 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
         let bgmSelectRouter = self.component.bgmSelectBuilder.build(withListener: self.interactor, bgmDirectoryURL: bgmDirectoryURL)
         let bgmSelectViewController = bgmSelectRouter.uiviewController
         bgmSelectViewController.modalPresentationStyle = .overFullScreen
-        self.attachChild(bgmSelectRouter)
         self.bgmSelectRouter = bgmSelectRouter
+        self.attachChild(bgmSelectRouter)
         self.viewController.present(child: bgmSelectRouter.viewControllable, animated: false)
     }
 
@@ -197,12 +199,12 @@ final class RootRouter: LaunchRouter<RootInteractable, RootViewControllable>, Ro
     private func bindNavigationEvents() {
         self.navigationDelegateProxy.popedViewControllerPublisher
             .sink(receiveValue: { [weak self] poppedVC in
-                guard let self else { return }
-                if let videoCreationRouter,
-                   poppedVC === videoCreationRouter.uiviewController {
-                    self.detachChild(videoCreationRouter)
-                    self.videoCreationRouter = nil
+                guard let self,
+                      let videoCreationRouter,
+                      poppedVC === videoCreationRouter.uiviewController else {
+                    return
                 }
+                self.popToVideoCreation()
             })
             .store(in: &self.cancellables)
     }

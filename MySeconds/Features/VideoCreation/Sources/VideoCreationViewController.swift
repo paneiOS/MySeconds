@@ -210,11 +210,7 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
     var pendingPlayer: AVPlayer?
     private var fillLayer: CALayer?
     var clips: [CompositionClip] = []
-    private var lastIndex: Int = Constants.initialSelectedSegmentIndex {
-        didSet {
-            print("pane_lastIndex", self.lastIndex)
-        }
-    }
+    private var lastIndex: Int = Constants.initialSelectedSegmentIndex
 
     // MARK: - Override func
 

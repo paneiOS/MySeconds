@@ -40,3 +40,9 @@ public final class NavigationDelegateProxy: NSObject, UINavigationControllerDele
         self.poppedViewControllerSubject.send(fromViewController)
     }
 }
+
+extension NavigationDelegateProxy: UIGestureRecognizerDelegate {
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        true
+    }
+}

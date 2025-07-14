@@ -95,10 +95,9 @@ final class RootBuilder: Builder<RootDependency>, RootBuildable {
     func build() -> LaunchRouting {
         let component = RootComponent(dependency: self.dependency)
         let viewController = RootViewController()
-        let navigationController = UINavigationController(rootViewController: viewController)
+        let navigationController = UINavigationController()
         navigationController.modalPresentationStyle = .fullScreen
         navigationController.setNavigationBarHidden(true, animated: false)
-        navigationController.interactivePopGestureRecognizer?.isEnabled = false
         let interactor = RootInteractor(presenter: viewController, component: component)
         let router = RootRouter(
             interactor: interactor,
