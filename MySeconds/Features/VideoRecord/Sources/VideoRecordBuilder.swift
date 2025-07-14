@@ -56,11 +56,7 @@ public final class VideoRecordBuilder: Builder<VideoRecordDependency>, VideoReco
     public func build(withListener listener: VideoRecordListener, clips: [CompositionClip], recordingOptions: RecordingOptions) -> VideoRecordRouting {
         let component = VideoRecordComponent(dependency: dependency, clips: clips, recordingOptions: recordingOptions)
         if clips.isEmpty {
-            let drafts: [CompositionClip] = [
-                .cover(.init(title: nil, description: nil, type: .intro)),
-                .cover(.init(title: nil, description: nil, type: .outro))
-            ]
-            try? component.videoDraftStorage.updateBackup(drafts)
+            try? component.videoDraftStorage.updateClips([])
         }
         let viewController = VideoRecordViewController()
         let interactor = VideoRecordInteractor(

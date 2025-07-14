@@ -7,12 +7,14 @@
 
 import Foundation
 
-public protocol VideoDraftStorageDelegate {
+import SharedModels
+
+public protocol VideoDraftStorageDelegate: AnyObject {
     var baseDirectoryURL: URL { get }
-    func saveVideoDraft(sourceURL: URL, fileName: String) throws
-    func loadVideo(fileName: String) throws -> URL
+    func saveVideoClip(_ clip: VideoClip, at index: Int, into currentClips: [CompositionClip], sourceURL: URL) throws -> [CompositionClip]
+    func saveVideoCoverMetadata(_ clip: VideoCoverClip, into currentClips: [CompositionClip]) throws -> [CompositionClip]
     func loadAll<T: Decodable>(type: T.Type) throws -> [T]
     func deleteVideo(fileName: String) throws
     func deleteAll() throws
-    func updateBackup<T: Encodable>(_ items: [T]) throws
+    func updateClips(_ clips: [CompositionClip]) throws
 }

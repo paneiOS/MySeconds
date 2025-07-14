@@ -75,8 +75,6 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
     private let coverClipsCount: Int
     private let maxVideoClipsCount: Int
 
-    private let videoSubject = CurrentValueSubject<[VideoDraft], Never>([])
-
     private var cancellables = Set<AnyCancellable>()
 
     weak var router: VideoRecordRouting?
@@ -107,21 +105,25 @@ final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>
             return
         }
         do {
+            let uuid: UUID = .init()
+            let date: Date = .init()
             let videoClip = VideoClip(
+                id: uuid,
+                createdAt: date,
+                fileName: date.formattedString(format: "yyyyMMdd_HHmmssSSS") + "_" + uuid.uuidString,
                 duration: recordDuration,
                 thumbnail: thumbnail
             )
-            try self.videoDraftStorage.saveVideoDraft(
-                sourceURL: url,
-                fileName: videoClip.fileName
+            let currentClips = self.clipsSubject.value
+            let videoLastIndex = currentClips.count - self.coverClipsCount / 2
+            let updatedClips = try self.videoDraftStorage.saveVideoClip(
+                videoClip,
+                at: videoLastIndex,
+                into: currentClips,
+                sourceURL: url
             )
-            var clips = try self.videoDraftStorage.loadAll(type: CompositionClip.self)
-            // outro -1, 인덱스 0부터 시작 -1
-            let videoIndex = clips.count - 2
-            clips.insert(.video(videoClip), at: videoIndex)
-            try self.videoDraftStorage.updateBackup(clips)
-            self.clipsSubject.send(clips)
-            print("✅ 저장 개수: \(clips.count)")
+            self.clipsSubject.send(updatedClips)
+            print("✅ 저장 개수: \(updatedClips.count)")
             print("✅ 저장 성공: \(videoClip.fileName)")
         } catch {
             print("❌ 저장 실패", error)

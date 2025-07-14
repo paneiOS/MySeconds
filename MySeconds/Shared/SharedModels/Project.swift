@@ -39,9 +39,7 @@ let project = Project(
                     basedOnDependencyAnalysis: false
                 )
             ],
-            dependencies: [
-                Modules.Shared.utilsKit.module.dependency
-            ]
+            dependencies: []
         )
     ]
 )

@@ -18,7 +18,7 @@ extension VideoCreationViewController: UICollectionViewDelegate {
         case let .cover(coverClip):
             listener.didSelectCoverClip(clip: coverClip)
         case let .video(videoClip):
-            let player = AVPlayer(url: listener.directoryURL)
+            let player = AVPlayer(url: videoClip.filePath(directoryURL: listener.directoryURL))
             self.pendingPlayer = player
             let playerViewController = AVPlayerViewController()
             playerViewController.player = player

@@ -7,8 +7,6 @@
 
 import Foundation
 
-import UtilsKit
-
 public struct VideoDraft: Codable, Equatable {
     public let id: UUID
     public let createdAt: Date
@@ -25,9 +23,5 @@ public struct VideoDraft: Codable, Equatable {
         self.createdAt = createdAt
         self.duration = duration
         self.thumbnail = thumbnail
-    }
-
-    public var fileBaseName: String {
-        self.createdAt.formattedString(format: "yyyyMMdd_HHmmssSSS") + "_" + self.id.uuidString
     }
 }

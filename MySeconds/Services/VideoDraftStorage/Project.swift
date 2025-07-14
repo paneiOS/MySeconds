@@ -39,6 +39,7 @@ let project = Project(
                 )
             ],
             dependencies: [
+                Modules.Shared.sharedModels.dependency,
                 Modules.Shared.utilsKit.dependency
             ]
         ),

@@ -13,6 +13,7 @@ import ModernRIBs
 import BaseRIBsKit
 import BGMSelect
 import SharedModels
+import VideoDraftStorage
 
 public protocol VideoCreationRouting: ViewableRouting {
     func apply(bgm: BGM)
@@ -82,11 +83,8 @@ extension VideoCreationInteractor {
 
     func applyVideoCoverClip(clip: VideoCoverClip) {
         do {
-            var drafts = try self.component.videoDraftStorage.loadAll(type: CompositionClip.self)
-            let index = clip.type == .intro ? 0 : drafts.count - 1
-            drafts[index] = .cover(clip)
-            try self.component.videoDraftStorage.updateBackup(drafts)
-            self.clipsSubject.send(drafts)
+            let clips = try self.component.videoDraftStorage.saveVideoCoverMetadata(clip, into: self.clipsSubject.value)
+            self.clipsSubject.send(clips)
         } catch {
             print("적용 실패")
         }
