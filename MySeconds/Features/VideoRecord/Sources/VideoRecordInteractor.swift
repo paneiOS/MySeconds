@@ -192,6 +192,7 @@ extension VideoRecordInteractor {
         Task {
             do {
                 let url = try await self.recordingManager.recordVideo(duration: duration)
+                self.isRecordingSubject.send(false)
                 await self.saveVideo(url: url)
             } catch {
                 if let cameraError = error as? CameraError {
@@ -205,10 +206,6 @@ extension VideoRecordInteractor {
                     print("녹화 에러 \(error)")
                 }
             }
-            // TODO: - 딜레이가 느껴짐, 개선필요
-            // 저장로직을 백그라운드로 돌리면 실패시 처리가 부자연스러움
-            // 현재처럼 딜레이를 느낄지, 실패할 확률이 적으니 예외처리를 부자연스럽게 가져갈지 선택해야함
-            self.isRecordingSubject.send(false)
         }
     }
 
