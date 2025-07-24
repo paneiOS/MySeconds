@@ -32,6 +32,7 @@ extension VideoCreationViewController: UICollectionViewDelegate {
 
 extension VideoCreationViewController: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: any UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
+        self.removeView.isHidden = false
         guard let clip = clips[safe: indexPath.item] else { return [] }
         switch clip {
         case let .video(videoClip):
@@ -69,12 +70,20 @@ extension VideoCreationViewController: UICollectionViewDropDelegate {
         }
     }
 
+    func collectionView(_ collectionView: UICollectionView, dragSessionDidEnd session: UIDragSession) {
+        self.removeView.isHidden = true
+    }
+
     func collectionView(_ collectionView: UICollectionView, dropSessionDidEnter session: UIDropSession) {
         self.removeView.isHidden = false
     }
 
+    func collectionView(_ collectionView: UICollectionView, dragSessionWillBegin session: UIDragSession) {
+        self.longPressGestureRecognizer.isEnabled = false
+    }
+
     func collectionView(_ collectionView: UICollectionView, dropSessionDidEnd session: UIDropSession) {
-        self.removeView.isHidden = true
+        self.longPressGestureRecognizer.isEnabled = true
     }
 
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {

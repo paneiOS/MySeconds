@@ -204,6 +204,12 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
         return button
     }()
 
+    lazy var longPressGestureRecognizer: UILongPressGestureRecognizer = {
+        let gesture = UILongPressGestureRecognizer(target: self, action: #selector(self.handleLongPressGesture(_:)))
+        gesture.minimumPressDuration = 0.5
+        return gesture
+    }()
+
     // MARK: - Properties
 
     weak var listener: VideoCreationPresentableListener?
@@ -224,8 +230,8 @@ final class VideoCreationViewController: BaseViewController, VideoCreationPresen
 
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: self.resetButton)
 
+        self.view.addGestureRecognizer(self.longPressGestureRecognizer)
         self.view.addSubviews(self.totalView, self.removeView)
-
         self.totalView.snp.makeConstraints {
             $0.top.equalToSuperview()
             $0.leading.trailing.equalToSuperview().inset(24)
@@ -369,6 +375,7 @@ extension VideoCreationViewController {
     }
 
     @objc private func resetButtonTapped() {
+        // TODO: - 구현 예정
         print("pane_리셋버튼 탭")
     }
 }
@@ -382,9 +389,8 @@ extension VideoCreationViewController: UITextFieldDelegate {
 
 extension VideoCreationViewController: CAAnimationDelegate {
     func animationDidStop(_: CAAnimation, finished flag: Bool) {
-        if flag {
-            self.longPressDidComplete()
-        }
+        guard flag else { return }
+        self.longPressDidComplete()
     }
 
     private func startHoldAnimation() {
@@ -429,5 +435,28 @@ extension VideoCreationViewController: CAAnimationDelegate {
         snapShot.appendSections([.main])
         snapShot.appendItems(self.clips, toSection: .main)
         self.dataSource.apply(snapShot, animatingDifferences: true)
+    }
+
+    @objc private func handleLongPressGesture(_ gesture: UILongPressGestureRecognizer) {
+        let locationInCollection = gesture.location(in: self.collectionView)
+        switch gesture.state {
+        case .began:
+            if let _ = collectionView.indexPathForItem(at: locationInCollection) {
+                self.removeView.isHidden = false
+            }
+
+        case .ended, .cancelled:
+            let locationInView = gesture.location(in: self.view)
+            if !self.removeView.isHidden,
+               self.removeView.frame.contains(locationInView),
+               let indexPath = collectionView.indexPathForItem(at: locationInCollection) {
+                let clip = self.clips[indexPath.item]
+                self.listener?.delete(clip: clip)
+            }
+            self.removeView.isHidden = true
+
+        default:
+            break
+        }
     }
 }
