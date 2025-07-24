@@ -77,10 +77,8 @@ let project = Project(
             ],
             dependencies: [
                 Modules.Features.bgmSelect.dependency,
-                Modules.Features.coverClipCreation.dependency,
                 Modules.Features.login.dependency,
                 Modules.Features.signUp.dependency,
-                Modules.Features.videoCreation.dependency,
                 Modules.Features.videoRecord.dependency
             ],
             settings: .settings(

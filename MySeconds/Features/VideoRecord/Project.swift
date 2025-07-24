@@ -26,6 +26,7 @@ let project = Project(
                 Modules.Shared.componentsKit.dependency,
                 Modules.Shared.resourceKit.dependency,
                 Modules.Shared.utilsKit.dependency,
+                Modules.Features.videoCreation.dependency,
                 Modules.Services.videoDraftStorage.dependency,
                 Modules.Services.videoRecordingManager.dependency
             ]
