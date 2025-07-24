@@ -7,6 +7,7 @@
 
 import ModernRIBs
 
+import BGMSelect
 import CoverClipCreation
 import SharedModels
 import VideoDraftStorage
@@ -25,6 +26,12 @@ public final class VideoCreationComponent: Component<VideoCreationDependency> {
     public init(dependency: VideoCreationDependency, clips: [CompositionClip]) {
         self.clips = clips
         super.init(dependency: dependency)
+    }
+}
+
+extension VideoCreationComponent: BGMSelectDependency {
+    var bgmSelectBuilder: BGMSelectBuildable {
+        BGMSelectBuilder(dependency: self)
     }
 }
 

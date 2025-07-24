@@ -98,7 +98,7 @@ extension VideoCreationViewController: UICollectionViewDropDelegate {
             snap.appendItems(self.clips, toSection: .main)
             self.dataSource.apply(snap, animatingDifferences: true)
             coordinator.drop(item.dragItem, toItemAt: destination)
-            self.listener?.update(clips: self.clips)
+            self.listener?.updateClips(self.clips)
         }
         self.removeView.isHidden = true
     }
@@ -117,7 +117,7 @@ extension VideoCreationViewController: UIDropInteractionDelegate {
     public func dropInteraction(_ interaction: UIDropInteraction, performDrop session: UIDropSession) {
         if self.removeView.frame.contains(session.location(in: view)) {
             guard let clip = session.items.first?.localObject as? CompositionClip else { return }
-            self.listener?.delete(clip: clip)
+            self.listener?.deleteClip(clip)
             self.removeView.isHidden = true
         }
     }

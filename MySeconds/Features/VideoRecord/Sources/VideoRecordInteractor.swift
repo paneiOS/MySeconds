@@ -16,17 +16,23 @@ import SharedModels
 import VideoDraftStorage
 import VideoRecordingManager
 
-public protocol VideoRecordRouting: ViewableRouting {}
+public protocol VideoRecordRouting: ViewableRouting {
+    func routeToVideoCreation(clips: [CompositionClip])
+    func showAlbumRIB()
+    func showMenuRIB()
+    func routeToCoverClipCreation(clip: VideoCoverClip)
+    func routeToBGMSelect(bgmDirectoryURL: URL)
+    func popToVideoCreation()
+//    func applyVideoCoverClip(clip: VideoCoverClip)
+//    func routeToVideoCreation(clips: [CompositionClip])
+//    func popToVideoCreation()
+}
 
 protocol VideoRecordPresentable: Presentable {
     var listener: VideoRecordPresentableListener? { get set }
 }
 
-public protocol VideoRecordListener: AnyObject {
-    func showVideoCreation(clips: [CompositionClip])
-    func showAlbumRIB()
-    func showMenuRIB()
-}
+public protocol VideoRecordListener: AnyObject {}
 
 final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordInteractable, VideoRecordPresentableListener {
     private let cameraAuthorizationSubject = PassthroughSubject<Bool, Never>()
@@ -227,14 +233,32 @@ extension VideoRecordInteractor {
 
     func didTapThumbnailButton() {
         guard self.clipsSubject.value.count - self.coverClipsCount > 0 else { return }
-        self.listener?.showVideoCreation(clips: self.clipsSubject.value)
+        self.router?.routeToVideoCreation(clips: self.clipsSubject.value)
     }
 
     func didTapAlbumButton() {
-        self.listener?.showAlbumRIB()
+        self.router?.showAlbumRIB()
     }
 
     func didTapMenuButton() {
-        self.listener?.showMenuRIB()
+        self.router?.showMenuRIB()
     }
+
+    // MARK: - VideoCreation
+
+    func didSelectCoverClip(clip: VideoCoverClip) {
+        self.router?.routeToCoverClipCreation(clip: clip)
+    }
+
+    func popToVideoCreation() {
+        self.router?.popToVideoCreation()
+    }
+
+    func didUpdateClips(_ clips: [CompositionClip]) {
+        self.clipsSubject.send(clips)
+    }
+
+    func applyVideoCoverClip(clip: SharedModels.VideoCoverClip) {}
+
+    func closeCoverClipCreation() {}
 }

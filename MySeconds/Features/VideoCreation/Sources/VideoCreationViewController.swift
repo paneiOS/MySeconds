@@ -24,8 +24,8 @@ protocol VideoCreationPresentableListener: AnyObject {
     var selectedBGMPublisher: AnyPublisher<BGM?, Never> { get }
     var directoryURL: URL { get }
     func initClips()
-    func update(clips: [CompositionClip])
-    func delete(clip: CompositionClip)
+    func updateClips(_: [CompositionClip])
+    func deleteClip(_: CompositionClip)
     func didSelectCoverClip(clip: VideoCoverClip)
     func bgmSelectButtonTapped()
     func popToVideoCreation()
@@ -451,7 +451,9 @@ extension VideoCreationViewController: CAAnimationDelegate {
                self.removeView.frame.contains(locationInView),
                let indexPath = collectionView.indexPathForItem(at: locationInCollection) {
                 let clip = self.clips[indexPath.item]
-                self.listener?.delete(clip: clip)
+                self.listener?.deleteClip(clip)
+            } else {
+                self.listener?.updateClips(self.clips)
             }
             self.removeView.isHidden = true
 

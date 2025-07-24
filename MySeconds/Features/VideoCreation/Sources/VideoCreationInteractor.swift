@@ -12,12 +12,15 @@ import ModernRIBs
 
 import BaseRIBsKit
 import BGMSelect
+import ResourceKit
 import SharedModels
 import VideoDraftStorage
 
 public protocol VideoCreationRouting: ViewableRouting {
     func apply(bgm: BGM)
     func applyVideoCoverClip(clip: VideoCoverClip)
+    func routeToBGMSelect(bgmDirectoryURL: URL)
+    func closeBGMSelect()
 }
 
 protocol VideoCreationPresentable: Presentable {
@@ -26,8 +29,8 @@ protocol VideoCreationPresentable: Presentable {
 
 public protocol VideoCreationListener: AnyObject {
     func didSelectCoverClip(clip: VideoCoverClip)
-    func bgmSelectButtonTapped()
     func popToVideoCreation()
+    func didUpdateClips(_ clips: [CompositionClip])
 }
 
 final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresentable>, VideoCreationInteractable, VideoCreationPresentableListener {
@@ -41,6 +44,10 @@ final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresenta
     private let selectedBGMSubject = CurrentValueSubject<BGM?, Never>(nil)
     public var selectedBGMPublisher: AnyPublisher<BGM?, Never> {
         self.selectedBGMSubject.eraseToAnyPublisher()
+    }
+
+    private var bgmDirectoryURL: URL? {
+        ResourceKitResources.bundle.url(forResource: "BGMs", withExtension: nil)
     }
 
     let directoryURL: URL
@@ -66,15 +73,22 @@ extension VideoCreationInteractor {
         self.clipsSubject.send(self.component.clips)
     }
 
-    func update(clips: [CompositionClip]) {
-        self.clipsSubject.send(clips)
+    func updateClips(_ clips: [CompositionClip]) {
+        guard clips != self.clipsSubject.value else { return }
+        do {
+            try self.component.videoDraftStorage.updateClips(clips)
+            self.clipsSubject.send(clips)
+            self.listener?.didUpdateClips(clips)
+        } catch {
+            // TODO: - 에러처리 필요
+        }
     }
 
-    func delete(clip: CompositionClip) {
-        var current = self.clipsSubject.value
-        guard let removeIndex = current.firstIndex(of: clip) else { return }
-        current.remove(at: removeIndex)
-        self.clipsSubject.send(current)
+    func deleteClip(_ clip: CompositionClip) {
+        var currentClips = self.clipsSubject.value
+        guard let removeIndex = currentClips.firstIndex(of: clip) else { return }
+        currentClips.remove(at: removeIndex)
+        self.updateClips(currentClips)
     }
 
     func didSelectCoverClip(clip: VideoCoverClip) {
@@ -86,12 +100,13 @@ extension VideoCreationInteractor {
             let clips = try self.component.videoDraftStorage.saveVideoCoverMetadata(clip, into: self.clipsSubject.value)
             self.clipsSubject.send(clips)
         } catch {
-            print("적용 실패")
+            // TODO: - 에러처리 필요
         }
     }
 
     func bgmSelectButtonTapped() {
-        self.listener?.bgmSelectButtonTapped()
+        guard let bgmDirectoryURL else { return }
+        self.router?.routeToBGMSelect(bgmDirectoryURL: bgmDirectoryURL)
     }
 
     func apply(bgm: BGM) {
@@ -100,5 +115,9 @@ extension VideoCreationInteractor {
 
     func popToVideoCreation() {
         self.listener?.popToVideoCreation()
+    }
+
+    func closeBGMSelect() {
+        self.router?.closeBGMSelect()
     }
 }
