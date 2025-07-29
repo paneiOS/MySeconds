@@ -10,7 +10,9 @@ import UIKit
 import ModernRIBs
 
 import BaseRIBsKit
+import CoverClipCreation
 import SharedModels
+import VideoCreation
 import VideoDraftStorage
 import VideoRecordingManager
 
@@ -41,6 +43,18 @@ public final class VideoRecordComponent: Component<VideoRecordDependency> {
 
 extension VideoRecordComponent: VideoRecordDependency {}
 
+extension VideoRecordComponent: VideoCreationDependency {
+    var videoCreationBuilder: VideoCreationBuildable {
+        VideoCreationBuilder(dependency: self)
+    }
+}
+
+extension VideoRecordComponent: CoverClipCreationDependency {
+    var coverClipCreationBuilder: CoverClipCreationBuildable {
+        CoverClipCreationBuilder(dependency: self)
+    }
+}
+
 // MARK: - Builder
 
 public protocol VideoRecordBuildable: Buildable {
@@ -64,6 +78,10 @@ public final class VideoRecordBuilder: Builder<VideoRecordDependency>, VideoReco
             component: component
         )
         interactor.listener = listener
-        return VideoRecordRouter(interactor: interactor, viewController: viewController)
+        return VideoRecordRouter(
+            interactor: interactor,
+            viewController: viewController,
+            component: component
+        )
     }
 }

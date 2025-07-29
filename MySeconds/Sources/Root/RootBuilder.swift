@@ -7,14 +7,11 @@
 
 import ModernRIBs
 
-import BGMSelect
 import ComponentsKit
-import CoverClipCreation
 import FirebaseFirestore
 import Login
 import SignUp
 import SocialLoginKit
-import VideoCreation
 import VideoDraftStorage
 import VideoRecord
 import VideoRecordingManager
@@ -56,27 +53,9 @@ extension RootComponent: VideoRecordDependency {
     }
 }
 
-extension RootComponent: VideoCreationDependency {
-    var videoCreationBuilder: VideoCreationBuildable {
-        VideoCreationBuilder(dependency: self)
-    }
-}
-
 extension RootComponent: SignUpDependency {
     var signUpBuilder: SignUpBuildable {
         SignUpBuilder(dependency: self)
-    }
-}
-
-extension RootComponent: CoverClipCreationDependency {
-    var coverClipCreationBuilder: CoverClipCreationBuildable {
-        CoverClipCreationBuilder(dependency: self)
-    }
-}
-
-extension RootComponent: BGMSelectDependency {
-    var bgmSelectBuilder: BGMSelectBuildable {
-        BGMSelectBuilder(dependency: self)
     }
 }
 

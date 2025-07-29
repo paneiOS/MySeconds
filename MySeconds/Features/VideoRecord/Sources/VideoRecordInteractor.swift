@@ -16,19 +16,25 @@ import SharedModels
 import VideoDraftStorage
 import VideoRecordingManager
 
-public protocol VideoRecordRouting: ViewableRouting {}
+public protocol VideoRecordRouting: ViewableRouting {
+    func routeToVideoCreation(clips: [CompositionClip])
+    func showAlbumRIB()
+    func showMenuRIB()
+    func routeToCoverClipCreation(clip: VideoCoverClip)
+    func routeToBGMSelect(bgmDirectoryURL: URL)
+    func popToVideoCreation()
+//    func applyVideoCoverClip(clip: VideoCoverClip)
+//    func routeToVideoCreation(clips: [CompositionClip])
+//    func popToVideoCreation()
+}
 
 protocol VideoRecordPresentable: Presentable {
     var listener: VideoRecordPresentableListener? { get set }
 }
 
-public protocol VideoRecordListener: AnyObject {
-    func showVideoCreation(clips: [CompositionClip])
-    func showAlbumRIB()
-    func showMenuRIB()
-}
+public protocol VideoRecordListener: AnyObject {}
 
-final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordInteractable, VideoRecordPresentableListener {
+final class VideoRecordInteractor: PresentableInteractor<VideoRecordPresentable>, VideoRecordPresentableListener {
     private let cameraAuthorizationSubject = PassthroughSubject<Bool, Never>()
     var cameraAuthorizationPublisher: AnyPublisher<Bool, Never> {
         self.cameraAuthorizationSubject.eraseToAnyPublisher()
@@ -171,9 +177,37 @@ extension VideoRecordInteractor {
             })
             .store(in: &self.cancellables)
     }
+
+    func didTapThumbnailButton() {
+        guard self.clipsSubject.value.count - self.coverClipsCount > 0 else { return }
+        self.router?.routeToVideoCreation(clips: self.clipsSubject.value)
+    }
+
+    func didTapAlbumButton() {
+        self.router?.showAlbumRIB()
+    }
+
+    func didTapMenuButton() {
+        self.router?.showMenuRIB()
+    }
+
+    func didTapRatio() {
+        self.ratioIndex = (self.ratioIndex + 1) % self.ratioTypes.count
+        guard let ratio = self.ratioTypes[safe: ratioIndex] else { return }
+        self.ratioTypeSubject.send(ratio)
+    }
+
+    func didTapTimer() {
+        self.durationIndex = (self.durationIndex + 1) % self.recordDurations.count
+        guard let time = self.recordDurations[safe: self.durationIndex] else { return }
+        self.recordDurationSubject.send(time)
+    }
 }
 
 extension VideoRecordInteractor {
+
+    // MARK: - VideoRecordingManager
+
     func startSession() {
         self.recordingManager.startSession()
     }
@@ -212,29 +246,28 @@ extension VideoRecordInteractor {
     func didTapFlip() {
         self.recordingManager.switchCamera()
     }
+}
 
-    func didTapRatio() {
-        self.ratioIndex = (self.ratioIndex + 1) % self.ratioTypes.count
-        guard let ratio = self.ratioTypes[safe: ratioIndex] else { return }
-        self.ratioTypeSubject.send(ratio)
+extension VideoRecordInteractor: VideoRecordInteractable {
+    // MARK: - VideoCreation(영상제작)
+
+    func didSelectCoverClip(clip: VideoCoverClip) {
+        self.router?.routeToCoverClipCreation(clip: clip)
     }
 
-    func didTapTimer() {
-        self.durationIndex = (self.durationIndex + 1) % self.recordDurations.count
-        guard let time = self.recordDurations[safe: self.durationIndex] else { return }
-        self.recordDurationSubject.send(time)
+    func popToVideoCreation() {
+        self.router?.popToVideoCreation()
     }
 
-    func didTapThumbnailButton() {
-        guard self.clipsSubject.value.count - self.coverClipsCount > 0 else { return }
-        self.listener?.showVideoCreation(clips: self.clipsSubject.value)
+    func didUpdateClips(_ clips: [CompositionClip]) {
+        self.clipsSubject.send(clips)
     }
 
-    func didTapAlbumButton() {
-        self.listener?.showAlbumRIB()
-    }
+    // MARK: - VideoCoverclip(커버클립제작)
 
-    func didTapMenuButton() {
-        self.listener?.showMenuRIB()
-    }
+    func applyVideoCoverClip(clip: VideoCoverClip) {}
+
+    func closeCoverClipCreation() {}
+
+    // MARK: - BGMSelect(브금선택)
 }
