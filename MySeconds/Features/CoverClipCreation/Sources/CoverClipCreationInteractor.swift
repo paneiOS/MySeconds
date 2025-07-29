@@ -26,9 +26,9 @@ public protocol CoverClipCreationListener: AnyObject {
 final class CoverClipCreationInteractor: PresentableInteractor<CoverClipCreationPresentable>, CoverClipCreationInteractable {
     private let component: CoverClipCreationComponent
 
-    private let coverTypeSubject = PassthroughSubject<VideoCoverClip.CoverType, Never>()
-    public var coverTypePublisher: AnyPublisher<VideoCoverClip.CoverType, Never> {
-        self.coverTypeSubject.eraseToAnyPublisher()
+    private let coverClipSubject = PassthroughSubject<VideoCoverClip, Never>()
+    public var coverClipPublisher: AnyPublisher<VideoCoverClip, Never> {
+        self.coverClipSubject.eraseToAnyPublisher()
     }
 
     weak var router: CoverClipCreationRouting?
@@ -43,7 +43,7 @@ final class CoverClipCreationInteractor: PresentableInteractor<CoverClipCreation
 
 extension CoverClipCreationInteractor: CoverClipCreationPresentableListener {
     func initCoverClipCreation() {
-        self.coverTypeSubject.send(self.component.videoCoverClip.type)
+        self.coverClipSubject.send(self.component.videoCoverClip)
     }
 
     func closeButtonTapped() {

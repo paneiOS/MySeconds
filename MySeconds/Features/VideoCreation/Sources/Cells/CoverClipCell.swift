@@ -7,6 +7,9 @@
 
 import UIKit
 
+import SnapKit
+
+import ComponentsKit
 import ResourceKit
 import SharedModels
 import UtilsKit
@@ -28,6 +31,8 @@ final class CoverClipCell: UICollectionViewCell {
     }()
 
     private let label: UILabel = .init()
+    
+    private let previewView: PreviewView = .init()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -67,5 +72,9 @@ final class CoverClipCell: UICollectionViewCell {
             textColor: .neutral400,
             alignment: .center
         )
+        
+        if let title = data.title, let description = data.description {
+            self.
+        }
     }
 }

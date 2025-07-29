@@ -10,7 +10,6 @@ import UIKit
 import ModernRIBs
 
 import BaseRIBsKit
-import CoverClipCreation
 import SharedModels
 import VideoCreation
 import VideoDraftStorage
@@ -46,12 +45,6 @@ extension VideoRecordComponent: VideoRecordDependency {}
 extension VideoRecordComponent: VideoCreationDependency {
     var videoCreationBuilder: VideoCreationBuildable {
         VideoCreationBuilder(dependency: self)
-    }
-}
-
-extension VideoRecordComponent: CoverClipCreationDependency {
-    var coverClipCreationBuilder: CoverClipCreationBuildable {
-        CoverClipCreationBuilder(dependency: self)
     }
 }
 

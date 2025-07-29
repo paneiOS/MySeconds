@@ -13,7 +13,7 @@ import BGMSelect
 import CoverClipCreation
 import SharedModels
 
-protocol VideoCreationInteractable: Interactable, BGMSelectListener {
+protocol VideoCreationInteractable: Interactable, BGMSelectListener, CoverClipCreationListener {
     var router: VideoCreationRouting? { get set }
     var listener: VideoCreationListener? { get set }
     func apply(bgm: BGM)
@@ -25,6 +25,7 @@ protocol VideoCreationViewControllable: ViewControllable {}
 final class VideoCreationRouter: ViewableRouter<VideoCreationInteractable, VideoCreationViewController> {
     private let component: VideoCreationComponent
     private var bgmSelectRouter: BGMSelectRouting?
+    private var coverClipCreationRouter: CoverClipCreationRouting?
 
     init(
         interactor: VideoCreationInteractable,
@@ -52,6 +53,8 @@ extension VideoCreationRouter: VideoCreationRouting {
 //        self.interactor.applyVideoCoverClip(clip: clip)
     }
 
+    // MARK: - BGMSelect(브금선택)
+
     func routeToBGMSelect(bgmDirectoryURL: URL) {
         guard bgmSelectRouter == nil else { return }
         let bgmSelectRouter = self.component.bgmSelectBuilder.build(withListener: self.interactor, bgmDirectoryURL: bgmDirectoryURL)
@@ -67,5 +70,24 @@ extension VideoCreationRouter: VideoCreationRouting {
         self.detachChild(bgmSelectRouter)
         self.viewController.dismiss(animated: true)
         self.bgmSelectRouter = nil
+    }
+
+    // MARK: - VideoCoverclip(커버클립제작)
+
+    func routeToCoverClipCreation(clip: VideoCoverClip) {
+        guard coverClipCreationRouter == nil else { return }
+        let coverClipCreationRouter = self.component.coverClipCreationBuilder.build(withListener: self.interactor, videoCoverClip: clip)
+        let coverClipCreationViewController = coverClipCreationRouter.uiviewController
+        coverClipCreationViewController.modalPresentationStyle = .overFullScreen
+        self.coverClipCreationRouter = coverClipCreationRouter
+        self.attachChild(coverClipCreationRouter)
+        self.viewController.present(child: coverClipCreationRouter.viewControllable, animated: false)
+    }
+
+    func closeCoverClipCreation() {
+        guard let coverClipCreationRouter else { return }
+        self.detachChild(coverClipCreationRouter)
+        self.viewController.dismiss(animated: true)
+        self.coverClipCreationRouter = nil
     }
 }

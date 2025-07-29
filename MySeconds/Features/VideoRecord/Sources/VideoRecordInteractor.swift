@@ -20,8 +20,7 @@ public protocol VideoRecordRouting: ViewableRouting {
     func routeToVideoCreation(clips: [CompositionClip])
     func showAlbumRIB()
     func showMenuRIB()
-    func routeToCoverClipCreation(clip: VideoCoverClip)
-    func routeToBGMSelect(bgmDirectoryURL: URL)
+//    func routeToCoverClipCreation(clip: VideoCoverClip)
     func popToVideoCreation()
 //    func applyVideoCoverClip(clip: VideoCoverClip)
 //    func routeToVideoCreation(clips: [CompositionClip])
@@ -251,9 +250,9 @@ extension VideoRecordInteractor {
 extension VideoRecordInteractor: VideoRecordInteractable {
     // MARK: - VideoCreation(영상제작)
 
-    func didSelectCoverClip(clip: VideoCoverClip) {
-        self.router?.routeToCoverClipCreation(clip: clip)
-    }
+//    func didSelectCoverClip(clip: VideoCoverClip) {
+//        self.router?.routeToCoverClipCreation(clip: clip)
+//    }
 
     func popToVideoCreation() {
         self.router?.popToVideoCreation()
@@ -265,9 +264,9 @@ extension VideoRecordInteractor: VideoRecordInteractable {
 
     // MARK: - VideoCoverclip(커버클립제작)
 
-    func applyVideoCoverClip(clip: VideoCoverClip) {}
-
-    func closeCoverClipCreation() {}
+//    func applyVideoCoverClip(clip: VideoCoverClip) {}
+//
+//    func closeCoverClipCreation() {}
 
     // MARK: - BGMSelect(브금선택)
 }
