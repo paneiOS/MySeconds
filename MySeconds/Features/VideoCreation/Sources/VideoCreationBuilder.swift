@@ -35,6 +35,12 @@ extension VideoCreationComponent: BGMSelectDependency {
     }
 }
 
+extension VideoCreationComponent: CoverClipCreationDependency {
+    var coverClipCreationBuilder: CoverClipCreationBuildable {
+        CoverClipCreationBuilder(dependency: self)
+    }
+}
+
 // MARK: - Builder
 
 public protocol VideoCreationBuildable: Buildable {

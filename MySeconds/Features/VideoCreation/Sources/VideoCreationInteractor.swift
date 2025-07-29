@@ -21,6 +21,8 @@ public protocol VideoCreationRouting: ViewableRouting {
     func applyVideoCoverClip(clip: VideoCoverClip)
     func routeToBGMSelect(bgmDirectoryURL: URL)
     func closeBGMSelect()
+    func routeToCoverClipCreation(clip: VideoCoverClip)
+    func closeCoverClipCreation()
 }
 
 protocol VideoCreationPresentable: Presentable {
@@ -28,12 +30,12 @@ protocol VideoCreationPresentable: Presentable {
 }
 
 public protocol VideoCreationListener: AnyObject {
-    func didSelectCoverClip(clip: VideoCoverClip)
+//    func didSelectCoverClip(clip: VideoCoverClip)
     func popToVideoCreation()
     func didUpdateClips(_ clips: [CompositionClip])
 }
 
-final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresentable>, VideoCreationInteractable, VideoCreationPresentableListener {
+final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresentable> {
     private let component: VideoCreationComponent
 
     private let clipsSubject = CurrentValueSubject<[CompositionClip], Never>([])
@@ -68,7 +70,7 @@ final class VideoCreationInteractor: PresentableInteractor<VideoCreationPresenta
     }
 }
 
-extension VideoCreationInteractor {
+extension VideoCreationInteractor: VideoCreationPresentableListener {
     func initClips() {
         self.clipsSubject.send(self.component.clips)
     }
@@ -92,16 +94,7 @@ extension VideoCreationInteractor {
     }
 
     func didSelectCoverClip(clip: VideoCoverClip) {
-        self.listener?.didSelectCoverClip(clip: clip)
-    }
-
-    func applyVideoCoverClip(clip: VideoCoverClip) {
-        do {
-            let clips = try self.component.videoDraftStorage.saveVideoCoverMetadata(clip, into: self.clipsSubject.value)
-            self.clipsSubject.send(clips)
-        } catch {
-            // TODO: - 에러처리 필요
-        }
+        self.router?.routeToCoverClipCreation(clip: clip)
     }
 
     func bgmSelectButtonTapped() {
@@ -109,15 +102,35 @@ extension VideoCreationInteractor {
         self.router?.routeToBGMSelect(bgmDirectoryURL: bgmDirectoryURL)
     }
 
+    func popToVideoCreation() {
+        self.listener?.popToVideoCreation()
+    }
+}
+
+extension VideoCreationInteractor: VideoCreationInteractable {
+    // MARK: - BGMSelect
+
     func apply(bgm: BGM) {
         self.selectedBGMSubject.send(bgm)
     }
 
-    func popToVideoCreation() {
-        self.listener?.popToVideoCreation()
-    }
-
     func closeBGMSelect() {
         self.router?.closeBGMSelect()
+    }
+
+    // MARK: - CoverClipCreation
+
+    func applyVideoCoverClip(clip: VideoCoverClip) {
+        do {
+            let clips = try self.component.videoDraftStorage.saveVideoCoverMetadata(clip, into: self.clipsSubject.value)
+            self.clipsSubject.send(clips)
+            self.closeCoverClipCreation()
+        } catch {
+            // TODO: - 에러처리 필요
+        }
+    }
+
+    func closeCoverClipCreation() {
+        self.router?.closeCoverClipCreation()
     }
 }

@@ -17,7 +17,7 @@ import SharedModels
 import UtilsKit
 
 protocol CoverClipCreationPresentableListener: AnyObject {
-    var coverTypePublisher: AnyPublisher<VideoCoverClip.CoverType, Never> { get }
+    var coverClipPublisher: AnyPublisher<VideoCoverClip, Never> { get }
     func initCoverClipCreation()
     func closeButtonTapped()
     func addButtonTapped(clip: VideoCoverClip)
@@ -26,18 +26,8 @@ protocol CoverClipCreationPresentableListener: AnyObject {
 final class CoverClipCreationViewController: BaseBottomSheetViewController, CoverClipCreationPresentable, CoverClipCreationViewControllable, KeyboardAdjustable {
     private enum Constants {
         static let clipViewWidth: CGFloat = ceil(UIScreen.main.bounds.width * 160.0 / 393.0)
-    }
-
-    private enum Preview {
-        enum Title {
-            static let size: CGFloat = 12.0
-            static let weight: UIFont.Weight = .semibold
-        }
-
-        enum Description {
-            static let size: CGFloat = 10.0
-            static let weight: UIFont.Weight = .semibold
-        }
+        static let titleSize: CGFloat = 12.0
+        static let descriptionSize: CGFloat = 10.0
     }
 
     private let clipView: UIView = {
@@ -104,8 +94,8 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
     // MARK: - Properties
 
     weak var listener: CoverClipCreationPresentableListener?
-    private var clipCoverType: VideoCoverClip.CoverType?
-    private var selectedFont: FontRepresentable = UIFont.systemFont(ofSize: Preview.Title.size, weight: Preview.Title.weight) {
+    private var coverClip: VideoCoverClip?
+    private var selectedFont: FontRepresentable = UIFont.systemFont(ofSize: Constants.titleSize, weight: .semibold) {
         didSet {
             self.updateTextField(represent: self.selectedFont)
         }
@@ -177,13 +167,14 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
             })
             .store(in: &self.cancellables)
 
-        self.listener?.coverTypePublisher
+        self.listener?.coverClipPublisher
             .receive(on: DispatchQueue.main)
-            .sink(receiveValue: { [weak self] coverType in
+            .sink(receiveValue: { [weak self] coverClip in
                 guard let self else { return }
-                self.clipCoverType = coverType
+
+                self.coverClip = coverClip
                 self.headerLabel.attributedText = .makeAttributedString(
-                    text: coverType.rawValue,
+                    text: coverClip.type.rawValue,
                     font: .systemFont(ofSize: 20, weight: .heavy)
                 )
                 let placeholders = [("제목", Date().dateToString), ("설명", "지금은 여행중~")]
@@ -202,11 +193,11 @@ final class CoverClipCreationViewController: BaseBottomSheetViewController, Cove
 
         self.addButton.publisher(for: .touchUpInside)
             .sink(receiveValue: { [weak self] _ in
-                guard let self, let clipCoverType else { return }
+                guard let self, let type = coverClip?.type else { return }
                 let videoCoverClip: VideoCoverClip = .init(
                     title: self.previewTitleLabel.attributedText,
                     description: self.previewDescriptionLabel.attributedText,
-                    type: clipCoverType
+                    type: type
                 )
                 view.endEditing(true)
                 self.listener?.addButtonTapped(clip: videoCoverClip)
@@ -262,15 +253,15 @@ extension CoverClipCreationViewController {
             self.previewTitleLabel.attributedText = self.makePreviewAttributedText(
                 text,
                 fontRepresent: self.selectedFont,
-                size: Preview.Title.size,
-                weight: Preview.Title.weight
+                size: Constants.titleSize,
+                weight: .semibold
             )
         case 1:
             self.previewDescriptionLabel.attributedText = self.makePreviewAttributedText(
                 text,
                 fontRepresent: self.selectedFont,
-                size: Preview.Description.size,
-                weight: Preview.Description.weight
+                size: Constants.descriptionSize,
+                weight: .semibold
             )
         default: break
         }
@@ -288,8 +279,8 @@ extension CoverClipCreationViewController {
             self.previewTitleLabel.attributedText = self.makePreviewAttributedText(
                 title,
                 fontRepresent: represent,
-                size: Preview.Title.size,
-                weight: Preview.Title.weight
+                size: Constants.titleSize,
+                weight: .semibold
             )
         }
 
@@ -297,8 +288,8 @@ extension CoverClipCreationViewController {
             self.previewDescriptionLabel.attributedText = self.makePreviewAttributedText(
                 description,
                 fontRepresent: represent,
-                size: Preview.Description.size,
-                weight: Preview.Description.weight
+                size: Constants.descriptionSize,
+                weight: .semibold
             )
         }
     }
