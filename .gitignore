@@ -61,3 +61,4 @@ Packages/
 Package.pins
 Package.resolved
 .build/
+*.mobileprovision
